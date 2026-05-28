@@ -2597,11 +2597,11 @@ async function bootProduction(){
   hideLoading();
 }
 
-function initiateLogin(){
+async function initiateLogin(){
   // Generate PKCE challenge
   const codeVerifier = generateCodeVerifier();
   sessionStorage.setItem('pkce_verifier',codeVerifier);
-  const codeChallenge = generateCodeChallenge(codeVerifier);
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
 
   // Build auth URL
   const params = new URLSearchParams({
