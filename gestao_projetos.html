@@ -667,25 +667,26 @@ tr:hover td{background:var(--surface3);}
 
 <script>
 // ===================== CONFIGURAÇÃO =====================
-const CLIENT_ID   = 'd86f175d-2548-4d9f-b33a-57cda630412a';
-const TENANT_ID   = '254da802-695f-450f-bace-5187b3ed5459';
-const SCOPES      = ['Sites.ReadWrite.All','User.Read'];
+const CLIENT_ID    = 'd86f175d-2548-4d9f-b33a-57cda630412a';
+const TENANT_ID    = '254da802-695f-450f-bace-5187b3ed5459';
+const SCOPES       = ['Sites.ReadWrite.All','User.Read'];
 const REDIRECT_URI = 'https://inovatus-consultoria.github.io/gestao-projetos/gestao_projetos.html';
 const SHAREPOINT_SITE = 'https://inovatusconsultoria.sharepoint.com/sites/InovatusConsultoria';
 
-// SharePoint Lists — buscar por nome via API
-const LISTS_TO_LOAD = [
-  'Projetos',
-  'Plano_Orcamentario',
-  'Gastos',
-  'Marcos',
-  'Solicitacoes_Mudanca',
-  'SM_Itens',
-  'Rendimento',
-  'Uso_Rendimento',
-  'Prestacoes_Contas',
-  'Categorias_ANP'
-];
+// Real SharePoint list display names → internal DATA key + normalizer
+// Never depend on column visible names — always use field_N from Graph
+const SP_LISTS = {
+  KRN_Projetos        : { key: 'projetos',       normalize: normalizeProjeto      },
+  KRN_Plano           : { key: 'plano',           normalize: normalizePlano        },
+  KRN_Gastos          : { key: 'gastos',          normalize: normalizeGasto        },
+  KRN_Marcos          : { key: 'marcos',          normalize: normalizeMarco        },
+  KRN_Solicitacoes    : { key: 'solicitacoes',    normalize: normalizeSolicitacao  },
+  KRN_SMs_Gastos      : { key: 'sms',            normalize: normalizeSMItem       },
+  KRN_Rendimento      : { key: 'rendimento',      normalize: normalizeRendimento   },
+  KRN_Uso_Rendimento  : { key: 'uso_rendimento',  normalize: normalizeUsoRendimento},
+  KRN_PCs             : { key: 'prestacoes',      normalize: normalizePC           },
+  'INV_AssociaçãoPTRB': { key: 'categorias',      normalize: normalizeCategoria    },
+};
 
 let accessToken  = null;
 let excelFileId  = null;
@@ -911,7 +912,7 @@ function pctColor(v){
 }
 
 function getExec(pid){
-  const plan=DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
+  const plan=DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r.Plano_Atual||r['Plano_PTR-B']||0),0);
   const actual=DATA.gastos.filter(r=>r.Projetos===pid).reduce((s,r)=>s+parseFloat(r.Valor||0),0);
   return {plan,actual,pct:plan?actual/plan:0};
 }
@@ -2689,60 +2690,265 @@ async function handleAuthCallback(){
   return true;
 }
 
+// ═══════════════════════════════════════════════════════════
+// NORMALIZE — convert raw Graph fields → stable internal model
+// Values from SharePoint are integers representing cents (÷100)
+// ═══════════════════════════════════════════════════════════
+function money(v){ return v == null ? 0 : Number(v) / 100; }
+function isoDate(v){ return v ? String(v).split('T')[0] : ''; }
+
+function normalizeProjeto(r){
+  return {
+    // Internal stable model — UI uses these names
+    Projeto         : r.Title || r.LinkTitle || '',
+    'Título do projeto': r.field_1 || '',
+    Executor        : r.field_2 || '',
+    'Número ANP'    : r.field_3 || '',
+    'Project Manager': r.field_4 || '',
+    Gestor          : r.field_5 || '',
+    'Data de início ': isoDate(r.field_6),
+    'Data final'    : isoDate(r.field_7),
+    'Duração (meses)': r.field_9 || '',
+    'Planned Value (R$)': money(r.field_10),
+    Valor_PTRB      : money(r.field_10),
+    Status_Projeto  : r.field_11 || '',
+  };
+}
+
+function normalizePlano(r){
+  return {
+    Projeto          : r.Title || r.LinkTitle || '',
+    Executor         : r.field_1 || '',
+    Categoria_despesa: r.field_2 || '',
+    Codigo_ABA       : r.field_3 || '',
+    'Plano_PTR-B'    : money(r.field_4),
+    Plano_Atual      : money(r.field_4), // same as PTR-B until SM overrides
+  };
+}
+
+function normalizeGasto(r){
+  return {
+    Projetos         : r.Title || r.LinkTitle || '',
+    Projeto          : r.Title || r.LinkTitle || '',
+    Executor         : r.field_1 || '',
+    Data             : isoDate(r.field_2),
+    Ano              : r.field_2 ? String(r.field_2).substring(0,4) : '',
+    Mês              : r.field_2 ? mesFromISO(r.field_2) : '',
+    Categoria_despesa: r.field_3 || '',
+    Valor            : money(r.field_4),
+  };
+}
+
+function normalizeMarco(r){
+  return {
+    Projeto                          : r.Title || r.LinkTitle || '',
+    ID                               : r.field_1 || '',
+    'Descrição'                      : r.field_2 || '',
+    'Data Base'                      : isoDate(r.field_3),
+    'Data prevista / Data de entrega': isoDate(r.field_4),
+    Status                           : r.field_5 || '',
+  };
+}
+
+function normalizeSolicitacao(r){
+  return {
+    Projeto        : r.Title || r.LinkTitle || '',
+    'SM#'          : r.field_1 || '',
+    Numero         : r.field_1 || '',
+    Tipo           : r.field_2 || 'SM',
+    Data_Submissao : isoDate(r.field_3),
+    Data_Aprovacao : isoDate(r.field_4),
+    Status         : r.field_5 || '',
+    Observacoes    : r.field_6 || '',
+  };
+}
+
+function normalizeSMItem(r){
+  // Diagnostico sample: {Title:P001, field_1:'SM1', field_2:'DESPESAS OPERACIONAIS...', field_3:20503141}
+  // field_1=SM#, field_2=Categoria, field_3=Valor (integer cents)
+  return {
+    Projeto          : r.Title || r.LinkTitle || '',
+    'SM#'            : r.field_1 || '',
+    Categoria_despesa: r.field_2 || '',
+    Valor            : money(r.field_3),
+  };
+}
+
+function normalizeRendimento(r){
+  return {
+    Projeto      : r.Title || r.LinkTitle || '',
+    Executor     : r.field_1 || '',
+    Data         : isoDate(r.field_2),
+    Valor_Rendido: money(r.field_3),
+  };
+}
+
+function normalizeUsoRendimento(r){
+  return {
+    Projeto         : r.Title || r.LinkTitle || '',
+    SM              : r.field_2 || '',
+    Valor_Utilizado : money(r.field_3),
+    Descricao       : r.field_4 || '',
+  };
+}
+
+function normalizePC(r){
+  return {
+    Projeto           : r.Title || r.LinkTitle || '',
+    Numero_PC         : r.field_1 || '',
+    Periodo_Inicio    : isoDate(r.field_2),
+    Periodo_Fim       : isoDate(r.field_3),
+    Data_Prevista     : isoDate(r.field_4),
+    Previsao_Submissao: isoDate(r.field_4),
+    Data_Entregue     : isoDate(r.field_5),
+    Status            : r.field_6 || '',
+    status            : r.field_6 || '',
+  };
+}
+
+function normalizeCategoria(r){
+  return {
+    ABA                  : r.Title || r.LinkTitle || '',
+    Categoria_despesa_PT : r.field_1 || '',
+    Categoria_despesa_ENG: r.field_2 || '',
+  };
+}
+
+// Portuguese month name from ISO date string
+function mesFromISO(iso){
+  if(!iso) return '';
+  const m = parseInt(String(iso).substring(5,7),10);
+  return ['janeiro','fevereiro','março','abril','maio','junho',
+          'julho','agosto','setembro','outubro','novembro','dezembro'][m-1]||'';
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOAD — fetch site, discover lists by display name, paginate
+// ═══════════════════════════════════════════════════════════
+window.SP_LOAD_REPORT = {};
+
 async function loadSharePointData(){
   showLoading(lang==='pt'?'Carregando dados...':'Loading data...');
+  window.SP_LOAD_REPORT = {};
   try{
-    // Get site ID by hostname + server-relative path (Graph does not accept the full URL encoded here)
+    // 1. Resolve site ID — use hostname:pathname format (not full URL encoded)
     const siteUrl = new URL(SHAREPOINT_SITE);
-    const siteResp = await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${siteUrl.hostname}:${siteUrl.pathname}?$select=id,displayName,webUrl`,
-      {headers:{Authorization:`Bearer ${accessToken}`}}
+    const siteResp = await graphFetch(
+      `/sites/${siteUrl.hostname}:${siteUrl.pathname}?$select=id,displayName,webUrl`
     );
+    if(!siteResp.ok){
+      const err = await siteResp.json();
+      throw new Error('Site lookup failed: ' + (err.error?.message || siteResp.status));
+    }
     const site = await siteResp.json();
-    if(!siteResp.ok) throw new Error(site.error?.message || `Site lookup failed (${siteResp.status})`);
-    if(!site.id) throw new Error(`Site not found: ${SHAREPOINT_SITE}`);
+    if(!site.id) throw new Error('Site ID not found for ' + SHAREPOINT_SITE);
     const siteId = site.id;
+    console.log('✓ Site:', site.displayName, '|', site.webUrl);
 
-    // Load each list
-    for(const listName of LISTS_TO_LOAD){
+    // 2. Discover all lists in site once (avoid N calls to find each list)
+    const allListsResp = await graphFetch(`/sites/${siteId}/lists?$select=id,displayName&$top=200`);
+    const allLists = allListsResp.ok ? (await allListsResp.json()).value || [] : [];
+    const listIdMap = {};
+    allLists.forEach(l => { listIdMap[l.displayName] = l.id; });
+    console.log('Lists found:', Object.keys(listIdMap));
+
+    // 3. Load each list using real display names
+    for(const [listName, config] of Object.entries(SP_LISTS)){
+      const listId = listIdMap[listName];
+      if(!listId){
+        console.warn(`⚠ List not found: "${listName}"`);
+        window.SP_LOAD_REPORT[listName] = { status:'NOT_FOUND', count:0 };
+        continue;
+      }
       try{
-        const items = await loadListItems(siteId, listName);
-        // Map to DATA
-        const key = listName.toLowerCase();
-        if(key==='plano_orcamentario') DATA.plano = items;
-        else if(key==='prestacoes_contas') DATA.prestacoes = items;
-        else if(key==='solicitacoes_mudanca') DATA.solicitacoes = items;
-        else if(key==='sm_itens') DATA.sms = items;  // SM_Itens → sms (for compat)
-        else if(key==='uso_rendimento') DATA.uso_rendimento = items;
-        else if(key==='categorias_anp') DATA.categorias = items;
-        else DATA[key] = items;
-        console.log(`✓ ${listName}: ${items.length} items`);
+        const items = await loadAllListItems(siteId, listId);
+        const normalized = items.map(config.normalize);
+        DATA[config.key] = normalized;
+        window.SP_LOAD_REPORT[listName] = { status:'OK', count: normalized.length };
+        console.log(`✓ ${listName}: ${normalized.length} items`);
       }catch(e){
         console.warn(`⚠ ${listName}: ${e.message}`);
+        window.SP_LOAD_REPORT[listName] = { status:'ERROR', error: e.message, count:0 };
       }
     }
+
+    // 4. Post-load: apply SM overrides to Plano_Atual
+    applySMOverrides();
+
+    // 5. Normalize project IDs consistently
+    DATA.projetos.forEach(p=>{ p.Projeto = normalizeProjectId(p.Projeto); });
+    DATA.gastos.forEach(g=>{
+      g.Projetos = normalizeProjectId(g.Projetos||g.Projeto);
+      g.Projeto  = g.Projetos;
+    });
+    DATA.plano.forEach(r=>{ r.Projeto = normalizeProjectId(r.Projeto); });
+    DATA.marcos.forEach(m=>{ m.Projeto = normalizeProjectId(m.Projeto); });
+    DATA.sms.forEach(s=>{ s.Projeto = normalizeProjectId(s.Projeto); });
+    DATA.solicitacoes.forEach(s=>{ s.Projeto = normalizeProjectId(s.Projeto); });
+    DATA.rendimento.forEach(r=>{ r.Projeto = normalizeProjectId(r.Projeto); });
+    DATA.uso_rendimento.forEach(u=>{ u.Projeto = normalizeProjectId(u.Projeto); });
+    DATA.prestacoes.forEach(p=>{ p.Projeto = normalizeProjectId(p.Projeto); });
+
+    console.log('SP_LOAD_REPORT:', window.SP_LOAD_REPORT);
   }catch(e){
-    console.error('Load error:',e);
+    console.error('Fatal load error:', e);
+    showError(e.message);
     throw e;
   }
   hideLoading();
 }
 
-async function loadListItems(siteId, listName){
-  const listResp = await fetch(
-    `https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$filter=displayName eq '${listName}'`,
-    {headers:{Authorization:`Bearer ${accessToken}`}}
-  );
-  const lists = await listResp.json();
-  if(!lists.value||lists.value.length===0) throw new Error(`List "${listName}" not found`);
-  const listId = lists.value[0].id;
+// Follow @odata.nextLink for pagination
+async function loadAllListItems(siteId, listId){
+  let url = `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=5000`;
+  let allItems = [];
+  while(url){
+    const resp = await graphFetch(url.startsWith('http') ? url : url, url.startsWith('http'));
+    if(!resp.ok){
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'Items fetch failed');
+    }
+    const data = await resp.json();
+    const items = (data.value||[]).map(i => i.fields||{});
+    allItems = allItems.concat(items);
+    url = data['@odata.nextLink'] || null;
+  }
+  return allItems;
+}
 
-  const itemsResp = await fetch(
-    `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=5000`,
-    {headers:{Authorization:`Bearer ${accessToken}`}}
-  );
-  const items = await itemsResp.json();
-  return (items.value||[]).map(item=>item.fields||{});
+// Graph API fetch helper — handles both relative paths and full URLs
+async function graphFetch(pathOrUrl, isFullUrl=false){
+  const base = 'https://graph.microsoft.com/v1.0';
+  const url  = isFullUrl ? pathOrUrl : base + pathOrUrl;
+  return fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+}
+
+// Apply SM overrides: Plano_Atual for each project/category = value from latest SM
+function applySMOverrides(){
+  if(!DATA.sms || !DATA.solicitacoes) return;
+  // Build map: project → highest SM number → category → value
+  const smByProj = {};
+  DATA.sms.forEach(s=>{
+    const proj = s.Projeto;
+    const smNum = parseInt((s['SM#']||'').replace(/\D/g,''))||0;
+    if(!smByProj[proj]) smByProj[proj] = {};
+    const cat = s.Categoria_despesa;
+    if(!smByProj[proj][cat] || smNum > smByProj[proj][cat].num){
+      smByProj[proj][cat] = { num: smNum, valor: s.Valor };
+    }
+  });
+  // Apply to Plano
+  DATA.plano.forEach(r=>{
+    const override = smByProj[r.Projeto]?.[r.Categoria_despesa];
+    if(override) r.Plano_Atual = override.valor;
+  });
+}
+
+// Show a visible error to user (not just console)
+function showError(msg){
+  hideLoading();
+  const errDiv = document.getElementById('sp-error-banner');
+  if(errDiv){ errDiv.textContent = '⚠ ' + msg; errDiv.style.display='block'; }
 }
 
 // ─────────────────────────────────────────────
