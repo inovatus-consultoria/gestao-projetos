@@ -2587,7 +2587,7 @@ async function bootProduction(){
       await loadSharePointData();
     } else {
       // Redirect to login
-      initiateLogin();
+      await initiateLogin();
       return;
     }
   }catch(e){
@@ -2692,14 +2692,15 @@ async function handleAuthCallback(){
 async function loadSharePointData(){
   showLoading(lang==='pt'?'Carregando dados...':'Loading data...');
   try{
-    // Get site ID
+    // Get site ID by hostname + server-relative path (Graph does not accept the full URL encoded here)
+    const siteUrl = new URL(SHAREPOINT_SITE);
     const siteResp = await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${encodeURIComponent(SHAREPOINT_SITE)}`+
-      `?$select=id`,
+      `https://graph.microsoft.com/v1.0/sites/${siteUrl.hostname}:${siteUrl.pathname}?$select=id,displayName,webUrl`,
       {headers:{Authorization:`Bearer ${accessToken}`}}
     );
     const site = await siteResp.json();
-    if(!site.id) throw new Error('Site not found');
+    if(!siteResp.ok) throw new Error(site.error?.message || `Site lookup failed (${siteResp.status})`);
+    if(!site.id) throw new Error(`Site not found: ${SHAREPOINT_SITE}`);
     const siteId = site.id;
 
     // Load each list
