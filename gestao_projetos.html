@@ -673,24 +673,7 @@ const SCOPES       = ['Sites.ReadWrite.All','User.Read'];
 const REDIRECT_URI = 'https://inovatus-consultoria.github.io/gestao-projetos/gestao_projetos.html';
 const SHAREPOINT_SITE = 'https://inovatusconsultoria.sharepoint.com/sites/InovatusConsultoria';
 
-// Real SharePoint list display names → internal DATA key + normalizer
-// Never depend on column visible names — always use field_N from Graph
-const SP_LISTS = {
-  KRN_Projetos        : { key: 'projetos',       normalize: normalizeProjeto      },
-  KRN_Plano           : { key: 'plano',           normalize: normalizePlano        },
-  KRN_Gastos          : { key: 'gastos',          normalize: normalizeGasto        },
-  KRN_Marcos          : { key: 'marcos',          normalize: normalizeMarco        },
-  KRN_Solicitacoes    : { key: 'solicitacoes',    normalize: normalizeSolicitacao  },
-  KRN_SMs_Gastos      : { key: 'sms',            normalize: normalizeSMItem       },
-  KRN_Rendimento      : { key: 'rendimento',      normalize: normalizeRendimento   },
-  KRN_Uso_Rendimento  : { key: 'uso_rendimento',  normalize: normalizeUsoRendimento},
-  KRN_PCs             : { key: 'prestacoes',      normalize: normalizePC           },
-  'INV_AssociaçãoPTRB': { key: 'categorias',      normalize: normalizeCategoria    },
-};
-
 let accessToken  = null;
-let excelFileId  = null;
-let excelDriveId = null;
 let currentUser  = null;
 let lang         = 'en';
 let gestorFilter = 'ALL'; // global gestor filter
@@ -912,7 +895,7 @@ function pctColor(v){
 }
 
 function getExec(pid){
-  const plan=DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r.Plano_Atual||r['Plano_PTR-B']||0),0);
+  const plan=DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
   const actual=DATA.gastos.filter(r=>r.Projetos===pid).reduce((s,r)=>s+parseFloat(r.Valor||0),0);
   return {plan,actual,pct:plan?actual/plan:0};
 }
@@ -1033,161 +1016,283 @@ async function graphGet(path){
 }
 
 // ===================== EXCEL / ONEDRIVE =====================
-async function inicializarExcel(){
-  if(EXCEL_SHARE_ID==='COLE_AQUI_O_SHARE_ID'){
-    // Dev mode: use empty data
-    return false;
-  }
-  const result=await graphGet(`/shares/${EXCEL_SHARE_ID}/driveItem`);
-  excelFileId=result.id;
-  excelDriveId=result.parentReference?.driveId;
-  return true;
+// ═══════════════════════════════════════════════════════════════
+// SHAREPOINT — normalize raw Graph fields → stable internal model
+// All monetary values stored as integers in SharePoint → divide by 100
+// ═══════════════════════════════════════════════════════════════
+const SP_LISTS = {
+  'KRN_Projetos'        : { key:'projetos',      norm: normalizeProjeto       },
+  'KRN_Plano'           : { key:'plano',          norm: normalizePlano         },
+  'KRN_Gastos'          : { key:'gastos',         norm: normalizeGasto         },
+  'KRN_Marcos'          : { key:'marcos',         norm: normalizeMarco         },
+  'KRN_Solicitacoes'    : { key:'solicitacoes',   norm: normalizeSolicitacao   },
+  'KRN_SMs_Gastos'      : { key:'sms',            norm: normalizeSMItem        },
+  'KRN_Rendimento'      : { key:'rendimento',     norm: normalizeRendimento    },
+  'KRN_Uso_Rendimento'  : { key:'uso_rendimento', norm: normalizeUsoRendimento },
+  'KRN_PCs'             : { key:'prestacoes',     norm: normalizePC            },
+  'INV_AssociaçãoPTRB': { key:'categorias',    norm: normalizeCategoria     },
+};
+
+function money(v){ return v==null?0:Number(v)/100; }
+function isoDate(v){
+  if(!v) return '';
+  const s=String(v);
+  // SharePoint returns ISO datetime — keep only date part
+  return s.length>=10?s.substring(0,10):'';
+}
+function mesFromDate(iso){
+  if(!iso) return '';
+  const m=parseInt(iso.substring(5,7),10);
+  return ['janeiro','fevereiro','março','abril','maio','junho',
+          'julho','agosto','setembro','outubro','novembro','dezembro'][m-1]||'';
 }
 
-async function lerExcel(){
-  const path=excelDriveId
-    ?`https://graph.microsoft.com/v1.0/drives/${excelDriveId}/items/${excelFileId}/content`
-    :`https://graph.microsoft.com/v1.0/me/drive/items/${excelFileId}/content`;
-  const res=await fetch(path,{headers:{Authorization:`Bearer ${accessToken}`}});
-  return XLSX.read(await res.arrayBuffer(),{type:'array',cellDates:true});
-}
-
-async function salvarExcel(workbook){
-  const wbout=XLSX.write(workbook,{bookType:'xlsx',type:'array'});
-  const blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const path=excelDriveId
-    ?`https://graph.microsoft.com/v1.0/drives/${excelDriveId}/items/${excelFileId}/content`
-    :`https://graph.microsoft.com/v1.0/me/drive/items/${excelFileId}/content`;
-  const res=await fetch(path,{method:'PUT',headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':blob.type},body:blob});
-  if(!res.ok)throw new Error('Save failed: '+res.status);
-}
-
-function parseWorkbook(wb){
-  const parse=(name)=>{
-    const ws=wb.Sheets[name];
-    if(!ws)return [];
-    return XLSX.utils.sheet_to_json(ws,{defval:''});
+function normalizeProjeto(r){
+  return {
+    Projeto             : r.Title||r.LinkTitle||'',
+    'Título do projeto' : r.field_1||'',
+    Executor            : r.field_2||'',
+    'Número ANP'        : r.field_3||'',
+    'Project Manager'   : r.field_4||'',
+    Gestor              : r.field_5||'',
+    'Data de início '   : isoDate(r.field_6),
+    'Data final'        : isoDate(r.field_7),
+    'Duração (meses)'   : r.field_9||'',
+    'Planned Value (R$)': money(r.field_10),
+    Valor_PTRB          : money(r.field_10),
+    Status_Projeto      : r.field_11||'',
   };
+}
+function normalizePlano(r){
+  return {
+    Projeto             : r.Title||r.LinkTitle||'',
+    Executor            : r.field_1||'',
+    Categoria_despesa   : r.field_2||'',
+    Codigo_ABA          : r.field_3||'',
+    'Plano_PTR-B'       : money(r.field_4),
+    Plano_Atual         : money(r.field_4),
+  };
+}
+function normalizeGasto(r){
+  const data = isoDate(r.field_2);
+  return {
+    Projetos            : r.Title||r.LinkTitle||'',
+    Projeto             : r.Title||r.LinkTitle||'',
+    Executor            : r.field_1||'',
+    Data                : data,
+    Ano                 : data?data.substring(0,4):'',
+    Mês                 : mesFromDate(data),
+    Categoria_despesa   : r.field_3||'',
+    Valor               : money(r.field_4),
+  };
+}
+function normalizeMarco(r){
+  return {
+    Projeto                             : r.Title||r.LinkTitle||'',
+    ID                                  : r.field_1||'',
+    'Descrição'                         : r.field_2||'',
+    'Data Base'                         : isoDate(r.field_3),
+    'Data prevista / Data de entrega'   : isoDate(r.field_4),
+    Status                              : r.field_5||'',
+    _userStatus                         : r.field_5||'',
+  };
+}
+function normalizeSolicitacao(r){
+  return {
+    Projeto         : r.Title||r.LinkTitle||'',
+    'SM#'           : r.field_1||'',
+    Numero          : r.field_1||'',
+    Tipo            : r.field_2||'SM',
+    Data_Submissao  : isoDate(r.field_3),
+    Data_Aprovacao  : isoDate(r.field_4),
+    Status          : r.field_5||'',
+    Observacoes     : r.field_6||'',
+  };
+}
+function normalizeSMItem(r){
+  // Diagnostico: {Title:P001, field_1:'SM1', field_2:'CATEGORIA...', field_3:valor_int}
+  return {
+    Projeto           : r.Title||r.LinkTitle||'',
+    'SM#'             : r.field_1||'',
+    Categoria_despesa : r.field_2||'',
+    Valor             : money(r.field_3),
+  };
+}
+function normalizeRendimento(r){
+  return {
+    Projeto      : r.Title||r.LinkTitle||'',
+    Executor     : r.field_1||'',
+    Data         : isoDate(r.field_2),
+    Valor_Rendido: money(r.field_3),
+  };
+}
+function normalizeUsoRendimento(r){
+  return {
+    Projeto         : r.Title||r.LinkTitle||'',
+    SM              : r.field_2||'',
+    Valor_Utilizado : money(r.field_3),
+    Descricao       : r.field_4||'',
+  };
+}
+function normalizePC(r){
+  return {
+    Projeto            : r.Title||r.LinkTitle||'',
+    Numero_PC          : r.field_1||'',
+    Periodo_Inicio     : isoDate(r.field_2),
+    Periodo_Fim        : isoDate(r.field_3),
+    Data_Prevista      : isoDate(r.field_4),
+    Previsao_Submissao : isoDate(r.field_4),
+    Data_Entregue      : isoDate(r.field_5),
+    Status             : r.field_6||'',
+    status             : r.field_6||'',
+  };
+}
+function normalizeCategoria(r){
+  return {
+    ABA                  : r.Title||r.LinkTitle||'',
+    Categoria_despesa_PT : r.field_1||'',
+    Categoria_despesa_ENG: r.field_2||'',
+  };
+}
 
-  DATA.projetos = parse('Projetos').map(r=>{
-    r.Projeto = normalizeProjectId(r.Projeto||r['Projeto']);
-    return r;
-  });
-  DATA.gastos   = parse('Gastos');
-  DATA.plano    = parse('Plano');
-  DATA.sms      = parse('SMs');
-  DATA.marcos   = parse('Marcos').map(m=>{
-    m._userStatus = m.Status||'';
-    return m;
-  });
-  DATA.categorias = parse('Categorias_Index').filter(r=>r['Categoria_despesa_PT']);
+// ─── Graph helper ────────────────────────────────────────────
+async function graphFetch(pathOrUrl){
+  const url = pathOrUrl.startsWith('http')
+    ? pathOrUrl
+    : 'https://graph.microsoft.com/v1.0'+pathOrUrl;
+  return fetch(url,{headers:{Authorization:`Bearer ${accessToken}`}});
+}
 
-  // Populate project filter dropdowns
+// ─── Paginated list loader ────────────────────────────────────
+async function loadAllListItems(siteId,listId){
+  let url=`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=5000`;
+  let all=[];
+  while(url){
+    const resp=await graphFetch(url);
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Items fetch failed');}
+    const data=await resp.json();
+    all=all.concat((data.value||[]).map(i=>i.fields||{}));
+    url=data['@odata.nextLink']||null;
+  }
+  return all;
+}
+
+// ─── SM override: Plano_Atual = value from latest SM ─────────
+function applySMOverrides(){
+  if(!DATA.sms||!DATA.sms.length) return;
+  const latest={};
+  DATA.sms.forEach(s=>{
+    const num=parseInt((s['SM#']||'').replace(/\D/g,''))||0;
+    const k=s.Projeto+'|'+s.Categoria_despesa;
+    if(!latest[k]||num>latest[k].num) latest[k]={num,valor:s.Valor};
+  });
+  DATA.plano.forEach(r=>{
+    const k=r.Projeto+'|'+r.Categoria_despesa;
+    if(latest[k]) r.Plano_Atual=latest[k].valor;
+  });
+}
+
+// ─── Populate UI dropdowns after data load ───────────────────
+function populateDropdowns(){
+  const projs=gestorProjects();
+  const allLbl=lang==='pt'?'Todos os Projetos':'All Projects';
   ['ms-project-filter','rub-project-filter','sm-project-filter'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
-    el.innerHTML=`<option value="ALL">${t('all_projects')}</option>`;
-    gestorProjects().forEach(p=>{
-      const pid=p.Projeto;
-      const short=p['Título do projeto']||'';
-      const label=pid+' — '+(short.split(':')[0]||'').trim();
-      el.innerHTML+=`<option value="${pid}">${label}</option>`;
+    el.innerHTML=`<option value="ALL">${allLbl}</option>`;
+    projs.forEach(p=>{
+      const lbl=p.Projeto+' — '+(p['Título do projeto']||'').split(':')[0].trim();
+      el.innerHTML+=`<option value="${p.Projeto}">${lbl}</option>`;
     });
   });
-
-  // Gasto modal project/cat selectors
   const gp=document.getElementById('gasto-project');
   if(gp){
     gp.innerHTML='';
-    DATA.projetos.forEach(p=>{
+    projs.forEach(p=>{
       gp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`;
-    });
-    gp.addEventListener('change',()=>{
-      const proj=DATA.projetos.find(p=>p.Projeto===gp.value);
-      document.getElementById('gasto-executor').value=proj?proj.Executor:'';
     });
     gp.dispatchEvent(new Event('change'));
   }
   const gc=document.getElementById('gasto-cat');
   if(gc){
     gc.innerHTML='';
-    DATA.categorias.forEach(c=>{
-      gc.innerHTML+=`<option value="${c['Categoria_despesa_PT']}">${c['Categoria_despesa_PT']}</option>`;
-    });
+    DATA.categorias.forEach(c=>{ gc.innerHTML+=`<option value="${c.Categoria_despesa_PT}">${c.Categoria_despesa_PT}</option>`; });
   }
-  const gd=document.getElementById('gasto-date');
-  if(gd){
-    gd.value=new Date().toISOString().split('T')[0];
-    gd.addEventListener('change',()=>{
-      document.getElementById('gasto-ano').value=gd.value.split('-')[0];
-    });
-    document.getElementById('gasto-ano').value=new Date().getFullYear();
-  }
-
-  // SM modal selectors
   const sp=document.getElementById('sm-project');
   if(sp){
     sp.innerHTML='';
-    DATA.projetos.forEach(p=>{
-      sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`;
-    });
+    projs.forEach(p=>{ sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`; });
   }
   const sc=document.getElementById('sm-cat');
   if(sc){
     sc.innerHTML='';
-    DATA.categorias.forEach(c=>{
-      sc.innerHTML+=`<option value="${c['Categoria_despesa_PT']}">${c['Categoria_despesa_PT']}</option>`;
-    });
+    DATA.categorias.forEach(c=>{ sc.innerHTML+=`<option value="${c.Categoria_despesa_PT}">${c.Categoria_despesa_PT}</option>`; });
   }
-
-  // Project selector on project page
   const ps=document.getElementById('project-selector');
   if(ps){
     ps.innerHTML='';
-    DATA.projetos.forEach(p=>{
-      ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`;
-    });
+    projs.forEach(p=>{ ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`; });
   }
 }
 
-function buildWorkbook(){
-  const wb=XLSX.utils.book_new();
+// ─── MAIN SharePoint loader (called after auth) ──────────────
+window.SP_LOAD_REPORT={};
 
-  // Projetos
-  const pHeaders=['Projeto','OP ID','Título do projeto','Executor','Número ANP','Research\nArea - ANP','Project Manager','Planned Value (R$)','Actual Value\n(R$)','Data de início ','Data final','Duração (meses)','Gestor'];
-  const pRows=[pHeaders,...DATA.projetos.map(p=>pHeaders.map(h=>p[h]||''))];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pRows),'Projetos');
+async function carregarSharePoint(){
+  showLoading(lang==='pt'?'Conectando ao SharePoint...':'Connecting to SharePoint...');
+  // Resolve site
+  const siteUrl=new URL(SHAREPOINT_SITE);
+  const siteResp=await graphFetch(`/sites/${siteUrl.hostname}:${siteUrl.pathname}?$select=id,displayName`);
+  if(!siteResp.ok){
+    const e=await siteResp.json();
+    throw new Error('Site não encontrado: '+(e.error?.message||siteResp.status));
+  }
+  const site=await siteResp.json();
+  const siteId=site.id;
+  console.log('✓ Site:',site.displayName,'id:',siteId);
 
-  // Gastos
-  const gHeaders=['Projetos','Executor','Ano','Mês','Data','Categoria_despesa','Valor'];
-  const gRows=[gHeaders,...DATA.gastos.map(g=>gHeaders.map(h=>g[h]||''))];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gRows),'Gastos');
+  // Discover all lists in one call
+  const listsResp=await graphFetch(`/sites/${siteId}/lists?$select=id,displayName&$top=200`);
+  const allLists=listsResp.ok?(await listsResp.json()).value||[]:[];
+  const listIdMap={};
+  allLists.forEach(l=>{ listIdMap[l.displayName]=l.id; });
+  console.log('Listas encontradas:',Object.keys(listIdMap));
 
-  // Plano
-  const plHeaders=['Projeto','Executor','Categoria_despesa','Plano_PTR-B','Plano_Atual','Coluna1'];
-  const plRows=[plHeaders,...DATA.plano.map(r=>plHeaders.map(h=>r[h]||''))];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(plRows),'Plano');
+  // Load each list
+  for(const [name,cfg] of Object.entries(SP_LISTS)){
+    const listId=listIdMap[name];
+    if(!listId){
+      console.warn(`Lista não encontrada: "${name}"`);
+      window.SP_LOAD_REPORT[name]={status:'NOT_FOUND',count:0};
+      continue;
+    }
+    try{
+      showLoading(`Carregando ${name}...`);
+      const raw=await loadAllListItems(siteId,listId);
+      DATA[cfg.key]=raw.map(cfg.norm);
+      window.SP_LOAD_REPORT[name]={status:'OK',count:DATA[cfg.key].length};
+      console.log(`✓ ${name}:`,DATA[cfg.key].length,'itens');
+    }catch(e){
+      console.warn(`✗ ${name}:`,e.message);
+      window.SP_LOAD_REPORT[name]={status:'ERROR',error:e.message,count:0};
+    }
+  }
 
-  // SMs
-  const smHeaders=['Projeto','Código_Aba','Categoria_despesa','SM#','Valor'];
-  const smRows=[smHeaders,...DATA.sms.map(s=>smHeaders.map(h=>s[h]||''))];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(smRows),'SMs');
+  // Normalize project IDs
+  ['projetos','gastos','plano','marcos','sms','solicitacoes','rendimento','uso_rendimento','prestacoes'].forEach(key=>{
+    (DATA[key]||[]).forEach(r=>{
+      if(r.Projeto)  r.Projeto  = normalizeProjectId(r.Projeto);
+      if(r.Projetos) r.Projetos = normalizeProjectId(r.Projetos);
+    });
+  });
 
-  // Marcos
-  const mHeaders=['ID','Projeto','Descrição','Data Base','Data prevista / Data de entrega','Status'];
-  const mRows=[mHeaders,...DATA.marcos.map(m=>[
-    m.ID,m.Projeto,m['Descrição'],m['Data Base'],m['Data prevista / Data de entrega'],m._userStatus||''
-  ])];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mRows),'Marcos');
+  // Apply SM price overrides to Plano_Atual
+  applySMOverrides();
 
-  // Categorias_Index
-  const cHeaders=['Unnamed: 0','Unnamed: 1','ABA','Categoria_despesa_PT','Categoria_despesa_ENG'];
-  const cRows=[cHeaders,...DATA.categorias.map(c=>cHeaders.map(h=>c[h]||''))];
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cRows),'Categorias_Index');
-
-  return wb;
+  console.log('SP_LOAD_REPORT:',window.SP_LOAD_REPORT);
 }
 
+// ===================== LOADING =====================
 // ===================== LOADING =====================
 function showLoading(msg){
   document.getElementById('loading-text').textContent=msg||'Loading...';
@@ -1224,33 +1329,31 @@ function destroyChart(id){
 
 // ===================== INIT =====================
 async function inicializarApp(){
-  showLoading('Loading user profile...');
+  showLoading(lang==='pt'?'Carregando perfil...':'Loading user profile...');
   try{
     const user=await graphGet('/me');
     currentUser=user;
-    document.getElementById('user-name-display').textContent=user.displayName||user.userPrincipalName;
-    document.getElementById('user-email-display').textContent=user.userPrincipalName||'';
-    const initials=(user.displayName||'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-    document.getElementById('user-avatar').textContent=initials;
+    const dn=document.getElementById('user-name-display');
+    const de=document.getElementById('user-email-display');
+    const av=document.getElementById('user-avatar');
+    if(dn) dn.textContent=user.displayName||user.userPrincipalName;
+    if(de) de.textContent=user.userPrincipalName||'';
+    if(av) av.textContent=(user.displayName||'U').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   }catch(e){console.warn('User profile error',e);}
 
-  showLoading('Connecting to Excel...');
-  const connected=await inicializarExcel();
-
-  if(connected){
-    showLoading('Reading data...');
-    try{
-      const wb=await lerExcel();
-      parseWorkbook(wb);
-    }catch(e){
-      console.error('Read error',e);
-    }
-  } else {
+  try{
+    await carregarSharePoint();
+  }catch(e){
+    console.error('SharePoint load error:',e);
+    const banner=document.getElementById('sp-error-banner');
+    if(banner){banner.textContent='⚠ Erro ao conectar ao SharePoint: '+e.message;banner.style.display='block';}
   }
 
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.add('show');
   applyTranslations();
+  populateDropdowns();
+  repopulateProjectDropdowns();
   navigate('portfolio');
   hideLoading();
 }
@@ -1987,18 +2090,9 @@ function updateMilestoneStatus(idx,val){
 
 async function saveMilestones(){
   if(!milestonesChanged){alert(lang==='pt'?'Nenhuma alteração para salvar.':'No changes to save.');return;}
-  if(EXCEL_SHARE_ID==='COLE_AQUI_O_SHARE_ID'){
-    alert(lang==='pt'?'Share ID não configurado. As alterações foram salvas localmente.':'Share ID not configured. Changes saved locally.');
-    milestonesChanged=false;return;
-  }
-  showLoading(lang==='pt'?'Salvando marcos...':'Saving milestones...');
-  try{
-    const wb=buildWorkbook();
-    await salvarExcel(wb);
-    milestonesChanged=false;
-    alert(lang==='pt'?'Marcos salvos com sucesso!':'Milestones saved!');
-  }catch(e){alert(t('error_save')+' '+e.message);}
-  hideLoading();
+  // TODO: PATCH to SharePoint KRN_Marcos
+  alert(lang==='pt'?'Marcos salvos localmente. Persistência no SharePoint em breve.':'Milestones saved locally. SharePoint persistence coming soon.');
+  milestonesChanged=false;
 }
 
 // ===================== RENDER — RUBRICAS =====================
@@ -2262,23 +2356,12 @@ function cancelRubEdits(){
 }
 
 async function saveRubEdits(){
-  if(EXCEL_SHARE_ID==='COLE_AQUI_O_SHARE_ID'){
-    const L=lang==='pt';
-    alert(L?'Alterações salvas localmente (SharePoint não configurado ainda).':'Changes saved locally (SharePoint not configured yet).');
-    rubPendingChanges=0;
-    document.getElementById('rub-save-bar').style.display='none';
-    document.querySelectorAll('.cell-changed').forEach(c=>c.classList.remove('cell-changed'));
-    return;
-  }
-  showLoading(lang==='pt'?'Salvando...':'Saving...');
-  try{
-    const wb=buildWorkbook();
-    await salvarExcel(wb);
-    rubPendingChanges=0;
-    document.getElementById('rub-save-bar').style.display='none';
-    document.querySelectorAll('.cell-changed').forEach(c=>c.classList.remove('cell-changed'));
-  }catch(e){alert(t('error_save')+' '+e.message);}
-  hideLoading();
+  // TODO: PATCH individual gasto items to SharePoint KRN_Gastos
+  alert(lang==='pt'?'Alterações salvas localmente. Persistência no SharePoint em breve.':'Changes saved locally. SharePoint persistence coming soon.');
+  rubPendingChanges=0;
+  const bar=document.getElementById('rub-save-bar');
+  if(bar) bar.style.display='none';
+  document.querySelectorAll('.cell-changed').forEach(c=>c.classList.remove('cell-changed'));
 }
 
 function exportRubricasExcel(){
@@ -2518,15 +2601,7 @@ async function saveGasto(){
   }
 
   DATA.gastos.push({Projetos:pid,Executor:proj?proj.Executor:'',Ano:ano,Mês:mes,Data:date,Categoria_despesa:cat,Valor:valor});
-
-  if(EXCEL_SHARE_ID!=='COLE_AQUI_O_SHARE_ID'){
-    showLoading(lang==='pt'?'Salvando...':'Saving...');
-    try{
-      const wb=buildWorkbook();
-      await salvarExcel(wb);
-    }catch(e){hideLoading();alert(t('error_save'));return;}
-    hideLoading();
-  }
+  // TODO: POST to SharePoint KRN_Gastos
 
   closeModal('gasto-modal');
   document.getElementById('gasto-valor').value='';
@@ -2551,15 +2626,7 @@ async function saveSM(){
   }
 
   DATA.sms.push({Projeto:pid,Código_Aba:codigo,Categoria_despesa:cat,'SM#':smNum,Valor:valor});
-
-  if(EXCEL_SHARE_ID!=='COLE_AQUI_O_SHARE_ID'){
-    showLoading(lang==='pt'?'Salvando...':'Saving...');
-    try{
-      const wb=buildWorkbook();
-      await salvarExcel(wb);
-    }catch(e){hideLoading();alert(t('error_save'));return;}
-    hideLoading();
-  }
+  // TODO: POST to SharePoint KRN_SMs_Gastos
 
   closeModal('sm-modal');
   document.getElementById('sm-number').value='';
@@ -2570,399 +2637,10 @@ async function saveSM(){
 }
 
 // ===================== INIT =====================
-// DEMO MODE — sem autenticação
+
+// ===================== INIT =====================
 
 
-// ═════════════════════════════════════════════════════════════════
-// PRODUCTION BOOT — Login + Load SharePoint Lists
-// ═════════════════════════════════════════════════════════════════
-
-async function bootProduction(){
-  showLoading(lang==='pt'?'Iniciando...':'Starting...');
-  try{
-    // Check if already logged in (token in sessionStorage)
-    const token = sessionStorage.getItem('access_token');
-    if(token){
-      accessToken = token;
-      currentUser = sessionStorage.getItem('user_name');
-      await loadSharePointData();
-    } else {
-      // Redirect to login
-      await initiateLogin();
-      return;
-    }
-  }catch(e){
-    console.error('Boot error:',e);
-    alert('Erro ao iniciar: '+e.message);
-  }
-  hideLoading();
-}
-
-async function initiateLogin(){
-  // Generate PKCE challenge
-  const codeVerifier = generateCodeVerifier();
-  sessionStorage.setItem('pkce_verifier',codeVerifier);
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-  // Build auth URL
-  const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: REDIRECT_URI,
-    scope: SCOPES.join(' '),
-    response_mode: 'fragment',
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256'
-  });
-  
-  const authURL = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?${params}`;
-  window.location.href = authURL;
-}
-
-function generateCodeVerifier(){
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let result = '';
-  for(let i=0; i<128; i++) result += chars.charAt(Math.floor(Math.random()*chars.length));
-  return result;
-}
-
-async function generateCodeChallenge(verifier){
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hashBuffer = await crypto.subtle.digest('SHA-256',data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashString = hashArray.map(b=>String.fromCharCode(b)).join('');
-  return btoa(hashString).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-
-async function handleAuthCallback(){
-  const hash = window.location.hash.substring(1);
-  if(!hash) return false;
-  
-  const params = new URLSearchParams(hash);
-  const code = params.get('code');
-  
-  if(!code) return false;
-  
-  showLoading(lang==='pt'?'Autenticando...':'Authenticating...');
-  try{
-    const verifier = sessionStorage.getItem('pkce_verifier');
-    const body = new URLSearchParams({
-      client_id: CLIENT_ID,
-      scope: SCOPES.join(' '),
-      code: code,
-      redirect_uri: REDIRECT_URI,
-      grant_type: 'authorization_code',
-      code_verifier: verifier
-    });
-
-    const response = await fetch(`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: body.toString()
-    });
-
-    const data = await response.json();
-    if(!data.access_token) throw new Error(data.error_description||'Token error');
-    
-    accessToken = data.access_token;
-    sessionStorage.setItem('access_token',accessToken);
-
-    // Get user info
-    const userResp = await fetch('https://graph.microsoft.com/v1.0/me',{
-      headers:{Authorization:`Bearer ${accessToken}`}
-    });
-    const user = await userResp.json();
-    currentUser = user.displayName||user.userPrincipalName;
-    sessionStorage.setItem('user_name',currentUser);
-
-    // Load data
-    await loadSharePointData();
-    
-    // Clear hash
-    window.location.hash = '';
-    renderCurrentPage();
-  }catch(e){
-    console.error('Auth error:',e);
-    alert('Erro de autenticação: '+e.message);
-  }
-  hideLoading();
-  return true;
-}
-
-// ═══════════════════════════════════════════════════════════
-// NORMALIZE — convert raw Graph fields → stable internal model
-// Values from SharePoint are integers representing cents (÷100)
-// ═══════════════════════════════════════════════════════════
-function money(v){ return v == null ? 0 : Number(v) / 100; }
-function isoDate(v){ return v ? String(v).split('T')[0] : ''; }
-
-function normalizeProjeto(r){
-  return {
-    // Internal stable model — UI uses these names
-    Projeto         : r.Title || r.LinkTitle || '',
-    'Título do projeto': r.field_1 || '',
-    Executor        : r.field_2 || '',
-    'Número ANP'    : r.field_3 || '',
-    'Project Manager': r.field_4 || '',
-    Gestor          : r.field_5 || '',
-    'Data de início ': isoDate(r.field_6),
-    'Data final'    : isoDate(r.field_7),
-    'Duração (meses)': r.field_9 || '',
-    'Planned Value (R$)': money(r.field_10),
-    Valor_PTRB      : money(r.field_10),
-    Status_Projeto  : r.field_11 || '',
-  };
-}
-
-function normalizePlano(r){
-  return {
-    Projeto          : r.Title || r.LinkTitle || '',
-    Executor         : r.field_1 || '',
-    Categoria_despesa: r.field_2 || '',
-    Codigo_ABA       : r.field_3 || '',
-    'Plano_PTR-B'    : money(r.field_4),
-    Plano_Atual      : money(r.field_4), // same as PTR-B until SM overrides
-  };
-}
-
-function normalizeGasto(r){
-  return {
-    Projetos         : r.Title || r.LinkTitle || '',
-    Projeto          : r.Title || r.LinkTitle || '',
-    Executor         : r.field_1 || '',
-    Data             : isoDate(r.field_2),
-    Ano              : r.field_2 ? String(r.field_2).substring(0,4) : '',
-    Mês              : r.field_2 ? mesFromISO(r.field_2) : '',
-    Categoria_despesa: r.field_3 || '',
-    Valor            : money(r.field_4),
-  };
-}
-
-function normalizeMarco(r){
-  return {
-    Projeto                          : r.Title || r.LinkTitle || '',
-    ID                               : r.field_1 || '',
-    'Descrição'                      : r.field_2 || '',
-    'Data Base'                      : isoDate(r.field_3),
-    'Data prevista / Data de entrega': isoDate(r.field_4),
-    Status                           : r.field_5 || '',
-  };
-}
-
-function normalizeSolicitacao(r){
-  return {
-    Projeto        : r.Title || r.LinkTitle || '',
-    'SM#'          : r.field_1 || '',
-    Numero         : r.field_1 || '',
-    Tipo           : r.field_2 || 'SM',
-    Data_Submissao : isoDate(r.field_3),
-    Data_Aprovacao : isoDate(r.field_4),
-    Status         : r.field_5 || '',
-    Observacoes    : r.field_6 || '',
-  };
-}
-
-function normalizeSMItem(r){
-  // Diagnostico sample: {Title:P001, field_1:'SM1', field_2:'DESPESAS OPERACIONAIS...', field_3:20503141}
-  // field_1=SM#, field_2=Categoria, field_3=Valor (integer cents)
-  return {
-    Projeto          : r.Title || r.LinkTitle || '',
-    'SM#'            : r.field_1 || '',
-    Categoria_despesa: r.field_2 || '',
-    Valor            : money(r.field_3),
-  };
-}
-
-function normalizeRendimento(r){
-  return {
-    Projeto      : r.Title || r.LinkTitle || '',
-    Executor     : r.field_1 || '',
-    Data         : isoDate(r.field_2),
-    Valor_Rendido: money(r.field_3),
-  };
-}
-
-function normalizeUsoRendimento(r){
-  return {
-    Projeto         : r.Title || r.LinkTitle || '',
-    SM              : r.field_2 || '',
-    Valor_Utilizado : money(r.field_3),
-    Descricao       : r.field_4 || '',
-  };
-}
-
-function normalizePC(r){
-  return {
-    Projeto           : r.Title || r.LinkTitle || '',
-    Numero_PC         : r.field_1 || '',
-    Periodo_Inicio    : isoDate(r.field_2),
-    Periodo_Fim       : isoDate(r.field_3),
-    Data_Prevista     : isoDate(r.field_4),
-    Previsao_Submissao: isoDate(r.field_4),
-    Data_Entregue     : isoDate(r.field_5),
-    Status            : r.field_6 || '',
-    status            : r.field_6 || '',
-  };
-}
-
-function normalizeCategoria(r){
-  return {
-    ABA                  : r.Title || r.LinkTitle || '',
-    Categoria_despesa_PT : r.field_1 || '',
-    Categoria_despesa_ENG: r.field_2 || '',
-  };
-}
-
-// Portuguese month name from ISO date string
-function mesFromISO(iso){
-  if(!iso) return '';
-  const m = parseInt(String(iso).substring(5,7),10);
-  return ['janeiro','fevereiro','março','abril','maio','junho',
-          'julho','agosto','setembro','outubro','novembro','dezembro'][m-1]||'';
-}
-
-// ═══════════════════════════════════════════════════════════
-// LOAD — fetch site, discover lists by display name, paginate
-// ═══════════════════════════════════════════════════════════
-window.SP_LOAD_REPORT = {};
-
-async function loadSharePointData(){
-  showLoading(lang==='pt'?'Carregando dados...':'Loading data...');
-  window.SP_LOAD_REPORT = {};
-  try{
-    // 1. Resolve site ID — use hostname:pathname format (not full URL encoded)
-    const siteUrl = new URL(SHAREPOINT_SITE);
-    const siteResp = await graphFetch(
-      `/sites/${siteUrl.hostname}:${siteUrl.pathname}?$select=id,displayName,webUrl`
-    );
-    if(!siteResp.ok){
-      const err = await siteResp.json();
-      throw new Error('Site lookup failed: ' + (err.error?.message || siteResp.status));
-    }
-    const site = await siteResp.json();
-    if(!site.id) throw new Error('Site ID not found for ' + SHAREPOINT_SITE);
-    const siteId = site.id;
-    console.log('✓ Site:', site.displayName, '|', site.webUrl);
-
-    // 2. Discover all lists in site once (avoid N calls to find each list)
-    const allListsResp = await graphFetch(`/sites/${siteId}/lists?$select=id,displayName&$top=200`);
-    const allLists = allListsResp.ok ? (await allListsResp.json()).value || [] : [];
-    const listIdMap = {};
-    allLists.forEach(l => { listIdMap[l.displayName] = l.id; });
-    console.log('Lists found:', Object.keys(listIdMap));
-
-    // 3. Load each list using real display names
-    for(const [listName, config] of Object.entries(SP_LISTS)){
-      const listId = listIdMap[listName];
-      if(!listId){
-        console.warn(`⚠ List not found: "${listName}"`);
-        window.SP_LOAD_REPORT[listName] = { status:'NOT_FOUND', count:0 };
-        continue;
-      }
-      try{
-        const items = await loadAllListItems(siteId, listId);
-        const normalized = items.map(config.normalize);
-        DATA[config.key] = normalized;
-        window.SP_LOAD_REPORT[listName] = { status:'OK', count: normalized.length };
-        console.log(`✓ ${listName}: ${normalized.length} items`);
-      }catch(e){
-        console.warn(`⚠ ${listName}: ${e.message}`);
-        window.SP_LOAD_REPORT[listName] = { status:'ERROR', error: e.message, count:0 };
-      }
-    }
-
-    // 4. Post-load: apply SM overrides to Plano_Atual
-    applySMOverrides();
-
-    // 5. Normalize project IDs consistently
-    DATA.projetos.forEach(p=>{ p.Projeto = normalizeProjectId(p.Projeto); });
-    DATA.gastos.forEach(g=>{
-      g.Projetos = normalizeProjectId(g.Projetos||g.Projeto);
-      g.Projeto  = g.Projetos;
-    });
-    DATA.plano.forEach(r=>{ r.Projeto = normalizeProjectId(r.Projeto); });
-    DATA.marcos.forEach(m=>{ m.Projeto = normalizeProjectId(m.Projeto); });
-    DATA.sms.forEach(s=>{ s.Projeto = normalizeProjectId(s.Projeto); });
-    DATA.solicitacoes.forEach(s=>{ s.Projeto = normalizeProjectId(s.Projeto); });
-    DATA.rendimento.forEach(r=>{ r.Projeto = normalizeProjectId(r.Projeto); });
-    DATA.uso_rendimento.forEach(u=>{ u.Projeto = normalizeProjectId(u.Projeto); });
-    DATA.prestacoes.forEach(p=>{ p.Projeto = normalizeProjectId(p.Projeto); });
-
-    console.log('SP_LOAD_REPORT:', window.SP_LOAD_REPORT);
-  }catch(e){
-    console.error('Fatal load error:', e);
-    showError(e.message);
-    throw e;
-  }
-  hideLoading();
-}
-
-// Follow @odata.nextLink for pagination
-async function loadAllListItems(siteId, listId){
-  let url = `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=5000`;
-  let allItems = [];
-  while(url){
-    const resp = await graphFetch(url.startsWith('http') ? url : url, url.startsWith('http'));
-    if(!resp.ok){
-      const err = await resp.json();
-      throw new Error(err.error?.message || 'Items fetch failed');
-    }
-    const data = await resp.json();
-    const items = (data.value||[]).map(i => i.fields||{});
-    allItems = allItems.concat(items);
-    url = data['@odata.nextLink'] || null;
-  }
-  return allItems;
-}
-
-// Graph API fetch helper — handles both relative paths and full URLs
-async function graphFetch(pathOrUrl, isFullUrl=false){
-  const base = 'https://graph.microsoft.com/v1.0';
-  const url  = isFullUrl ? pathOrUrl : base + pathOrUrl;
-  return fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-}
-
-// Apply SM overrides: Plano_Atual for each project/category = value from latest SM
-function applySMOverrides(){
-  if(!DATA.sms || !DATA.solicitacoes) return;
-  // Build map: project → highest SM number → category → value
-  const smByProj = {};
-  DATA.sms.forEach(s=>{
-    const proj = s.Projeto;
-    const smNum = parseInt((s['SM#']||'').replace(/\D/g,''))||0;
-    if(!smByProj[proj]) smByProj[proj] = {};
-    const cat = s.Categoria_despesa;
-    if(!smByProj[proj][cat] || smNum > smByProj[proj][cat].num){
-      smByProj[proj][cat] = { num: smNum, valor: s.Valor };
-    }
-  });
-  // Apply to Plano
-  DATA.plano.forEach(r=>{
-    const override = smByProj[r.Projeto]?.[r.Categoria_despesa];
-    if(override) r.Plano_Atual = override.valor;
-  });
-}
-
-// Show a visible error to user (not just console)
-function showError(msg){
-  hideLoading();
-  const errDiv = document.getElementById('sp-error-banner');
-  if(errDiv){ errDiv.textContent = '⚠ ' + msg; errDiv.style.display='block'; }
-}
-
-// ─────────────────────────────────────────────
-// AUTO BOOT — check for auth callback or existing token
-// ─────────────────────────────────────────────
-(async function(){
-  // Check if returning from auth
-  if(window.location.hash){
-    const handled = await handleAuthCallback();
-    if(handled) return;
-  }
-  // Otherwise boot normally
-  bootProduction();
-})();
 </script>
 </body>
 </html>
