@@ -23,7 +23,7 @@
   --shadow:0 2px 16px rgba(26,36,32,0.08);
   --sidebar:220px;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
 h1,h2,h3,.page-title{font-family:'DM Serif Display',serif;}
 button{cursor:pointer;font-family:'DM Sans',sans-serif;}
 input,select,textarea{font-family:'DM Sans',sans-serif;}
@@ -114,7 +114,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif;}
 .sidebar-version{font-size:9px;color:rgba(255,255,255,0.2);text-align:center;margin-top:8px;}
 
 /* ===================== MAIN CONTENT ===================== */
-#main-content{margin-left:var(--sidebar);flex:1;min-height:100vh;}
+#main-content{margin-left:var(--sidebar);flex:1;min-height:100vh;overflow-x:auto;}
 .page{display:none;padding:32px 36px;animation:fadeIn .2s ease;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
@@ -301,7 +301,7 @@ tr:hover td{background:var(--surface3);}
 .empty-state{text-align:center;padding:40px;color:var(--ink3);}
 
 /* ===================== PIVOT TABLE ===================== */
-.pivot-outer{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);}
+.pivot-outer{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);}
 .pivot-table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowrap;min-width:100%;}
 .pivot-table th,.pivot-table td{padding:9px 12px;border-bottom:1px solid var(--surface2);border-right:1px solid var(--surface2);vertical-align:middle;}
 .pivot-table thead th{background:var(--surface2);font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;position:sticky;top:0;z-index:3;}
@@ -341,18 +341,6 @@ tr:hover td{background:var(--surface3);}
 }
 
 
-/* ── Sidebar gestor filter ── */
-.sidebar-filter{padding:8px 12px 4px;}
-.sidebar-filter-label{font-size:9px;font-weight:600;color:rgba(255,255,255,0.3);
-  letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px;}
-.sidebar-filter select{
-  width:100%;padding:6px 10px;background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);border-radius:6px;
-  color:rgba(255,255,255,0.8);font-size:12px;font-family:'DM Sans',sans-serif;
-  outline:none;cursor:pointer;
-}
-.sidebar-filter select:focus{border-color:var(--accent2);}
-.sidebar-filter select option{background:#1A2420;color:#fff;}
 /* ── Type badges for SM/DV/DE ── */
 .badge-purple{background:#EEE8FF;color:#5B3DBE;}
 .badge-teal{background:#E4F7F5;color:#1A7A6E;}
@@ -412,16 +400,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="nav-item" onclick="navigate('sms')" id="nav-sms">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      <span id="nav-sms-label">SMs &amp; PCs</span>
-    </div>
-
-    <div class="sidebar-filter">
-      <div class="sidebar-filter-label" id="filter-gestor-label">Gestor</div>
-      <select id="global-gestor-filter" onchange="setGestorFilter(this.value)">
-        <option value="ALL" id="gf-all">All</option>
-        <option value="Yiannis">Yiannis</option>
-        <option value="Diogo">Diogo</option>
-      </select>
+      <span id="nav-sms-label">SMs &amp; DVs</span>
     </div>
 
     <div class="sidebar-bottom">
@@ -452,6 +431,15 @@ tr:hover td{background:var(--surface3);}
             <button class="lang-btn active" onclick="setLang('en')">EN</button>
             <button class="lang-btn" onclick="setLang('pt')">PT</button>
           </div>
+          <select id="global-gestor-filter" onchange="setGestorFilter(this.value)" class="form-select" style="width:auto;">
+            <option value="ALL" id="gf-all">All managers</option>
+            <option value="Yiannis">Yiannis</option>
+            <option value="Diogo">Diogo</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);white-space:nowrap;">
+            <input type="checkbox" id="show-completed-toggle" onchange="setShowCompleted(this.checked)">
+            <span id="lbl-show-completed">Show completed</span>
+          </label>
           <button class="btn btn-secondary btn-sm" onclick="syncData()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
             <span id="btn-sync">Sync</span>
@@ -580,8 +568,8 @@ tr:hover td{background:var(--surface3);}
     <div class="page" id="page-sms">
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="title-sms">SMs &amp; Prestações de Contas</h1>
-          <div class="page-subtitle" id="sub-sms">Change Requests and Accountability Reports</div>
+          <h1 class="page-title" id="title-sms">SMs &amp; DVs</h1>
+          <div class="page-subtitle" id="sub-sms">Change Requests, Travel Requests and Special Expenses</div>
         </div>
         <div class="page-header-right">
           <button class="btn btn-primary btn-sm" onclick="openSMModal()" id="btn-new-sm">+ New SM</button>
@@ -643,12 +631,12 @@ tr:hover td{background:var(--surface3);}
 
 <!-- ===================== MODAL: ADD SM ===================== -->
 <div class="modal-overlay" id="sm-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:680px;">
     <h2 class="modal-title" id="modal-sm-title">New Change Request (SM)</h2>
     <div class="form-grid">
       <div class="form-group">
         <label class="form-label">Project</label>
-        <select class="form-select" id="sm-project"></select>
+        <select class="form-select" id="sm-project" onchange="onSMProjectChange()"></select>
       </div>
       <div class="form-group">
         <label class="form-label">SM #</label>
@@ -657,17 +645,25 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">Category</label>
-        <select class="form-select" id="sm-cat"></select>
+        <label class="form-label">Submission Date</label>
+        <input class="form-input" type="date" id="sm-date-submissao">
       </div>
       <div class="form-group">
-        <label class="form-label">Código Aba</label>
-        <input class="form-input" id="sm-codigo" placeholder="F, N1...">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="sm-status">
+          <option value="Pendente">Pendente</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Aprovada">Aprovada</option>
+          <option value="Rejeitada">Rejeitada</option>
+        </select>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Amount (R$)</label>
-      <input class="form-input" type="number" id="sm-valor" min="0" step="0.01">
+    <div style="margin-top:12px;">
+      <label class="form-label">Budget by Category (leave blank to skip)</label>
+      <div id="sm-categories-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);">
+      <div style="font-size:13px;color:var(--ink3);">Total: <strong id="sm-total-display">R$ 0</strong></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button>
@@ -726,13 +722,23 @@ async function resolveExcelItem(){
 let accessToken  = null;
 let currentUser  = null;
 let lang         = 'en';
-let gestorFilter = 'ALL'; // global gestor filter
+let gestorFilter = 'ALL'; // portfolio-only manager filter
+let showCompleted = false;
+let smTypeFilter = 'SM';
 
 function setGestorFilter(val){
   gestorFilter = val;
-  // Re-populate all project dropdowns to only show filtered projects
-  repopulateProjectDropdowns();
   renderCurrentPage();
+}
+
+function setShowCompleted(val){
+  showCompleted = !!val;
+  renderPortfolio();
+}
+
+function isProjectCompleted(p){
+  const st = String(p.Status_Projeto||'').trim().toLowerCase();
+  return st === 'concluído' || st === 'concluido';
 }
 
 function gestorProjects(){
@@ -741,7 +747,7 @@ function gestorProjects(){
 }
 
 function repopulateProjectDropdowns(){
-  const projs = gestorProjects();
+  const projs = DATA.projetos;
   const allLabel = lang==='pt'?'Todos os Projetos':'All Projects';
   ['fin-project-filter','ms-project-filter','rub-project-filter','sm-project-filter'].forEach(id=>{
     const el=document.getElementById(id);
@@ -791,15 +797,15 @@ const T = {
     project:'Project Detail',financial:'Financial Overview',sub_financial:'PTR-B vs Current Plan vs Actuals',
     milestones:'Milestones',sub_milestones:'All 127 deliverables and milestones',
     rubricas:'Budget Lines',sub_rubricas:'ANP categories — PTR-B vs Current vs Actuals',
-    sms:'SMs & PCs',sub_sms:'Change Requests and Accountability Reports',
+    sms:'SMs & DVs',sub_sms:'Change Requests, Travel Requests and Special Expenses',
     nav_portfolio:'Portfolio',nav_project:'Project',nav_financial:'Financial',
-    nav_milestones:'Milestones',nav_rubricas:'Budget Lines',nav_sms:'SMs & PCs',
+    nav_milestones:'Milestones',nav_rubricas:'Budget Lines',nav_sms:'SMs & DVs',
     nav_section:'Navigation',
     kpi_total:'Total Budget',kpi_actuals:'Total Actuals',kpi_exec:'Avg. Execution',
     kpi_overdue:'Overdue Milestones',kpi_upcoming:'Upcoming (60d)',kpi_projects:'Active Projects',
     sync:'Sync',
     col_id:'ID',col_title:'Title',col_executor:'Executor',col_anp:'ANP #',col_pm:'Manager',
-    col_budget:'Budget',col_actuals:'Actuals',col_pct:'Exec%',col_time:'Time%',col_start:'Start',col_end:'End',col_gestor:'Gestor',
+    col_budget:'Budget',col_actuals:'Actuals',col_pct:'Exec%',col_time:'Time%',col_start:'Start',col_end:'End',col_gestor:'Gestor',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
     overdue:'Overdue',upcoming:'Upcoming',planned:'Planned',completed:'Completed',suspended:'Suspended',
     ms_id:'ID',ms_project:'Project',ms_desc:'Description',ms_baseline:'Baseline',ms_forecast:'Forecast',ms_status:'Status',
     btn_sync:'Sync',btn_save:'Save Changes',btn_new_sm:'+ New SM',btn_new_gasto:'+ New Expense',
@@ -821,15 +827,15 @@ const T = {
     project:'Detalhes do Projeto',financial:'Visão Financeira',sub_financial:'PTR-B vs Plano Atual vs Realizado',
     milestones:'Marcos',sub_milestones:'127 entregáveis e marcos',
     rubricas:'Rubricas',sub_rubricas:'Categorias ANP — PTR-B vs Plano vs Realizado',
-    sms:'SMs & PCs',sub_sms:'Solicitações de Mudança e Prestações de Contas',
+    sms:'SMs & DVs',sub_sms:'Solicitações de Mudança, Viagens e Despesas Especiais',
     nav_portfolio:'Portfólio',nav_project:'Projeto',nav_financial:'Financeiro',
-    nav_milestones:'Marcos',nav_rubricas:'Rubricas',nav_sms:'SMs & PCs',
+    nav_milestones:'Marcos',nav_rubricas:'Rubricas',nav_sms:'SMs & DVs',
     nav_section:'Navegação',
     kpi_total:'Orçamento Total',kpi_actuals:'Total Realizado',kpi_exec:'Exec. Média',
     kpi_overdue:'Marcos Atrasados',kpi_upcoming:'Próximos (60d)',kpi_projects:'Projetos Ativos',
     sync:'Sincronizar',
     col_id:'ID',col_title:'Título',col_executor:'Executor',col_anp:'Nº ANP',col_pm:'Gerente',
-    col_budget:'Orçamento',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Início',col_end:'Fim',col_gestor:'Gestor',
+    col_budget:'Orçamento',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Início',col_end:'Fim',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluídos',all_managers:'Todos os gestores',
     overdue:'Atrasado',upcoming:'Próximo',planned:'Planejado',completed:'Concluído',suspended:'Suspenso',
     ms_id:'ID',ms_project:'Projeto',ms_desc:'Descrição',ms_baseline:'Baseline',ms_forecast:'Previsão',ms_status:'Status',
     btn_sync:'Sincronizar',btn_save:'Salvar Alterações',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
@@ -869,7 +875,7 @@ function applyTranslations(){
     ['nav-milestones-label','nav_milestones'],
     ['nav-rubricas-label','nav_rubricas'],['nav-sms-label','nav_sms'],
     ['nav-section-label','nav_section'],
-    ['btn-sync','sync'],['btn-save-milestones','btn_save'],
+    ['btn-sync','sync'],['gf-all','all_managers'],['lbl-show-completed','show_completed'],['btn-save-milestones','btn_save'],
     ['btn-new-sm','btn_new_sm'],
     ['btn-cancel','cancel'],['btn-save-gasto','save_gasto'],
     ['ms-opt-all','all_projects'],
@@ -938,6 +944,23 @@ function statusBadge(s){
   }[s]||s;
   return `<span class="badge ${cls}">${lbl}</span>`;
 }
+
+
+function projectStatusBadge(status){
+  const s = String(status||'').trim();
+  const low = s.toLowerCase();
+  let cls = 'badge-gray';
+  if(low === 'em andamento') cls = 'badge-green';
+  else if(low === 'concluído' || low === 'concluido') cls = 'badge-gray';
+  else if(low === 'suspenso') cls = 'badge-amber';
+  else if(low === 'cancelado') cls = 'badge-red';
+  return `<span class="badge ${cls}">${s||'—'}</span>`;
+}
+
+function escapeHtml(v){
+  return String(v??'').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function escapeAttr(v){ return escapeHtml(v); }
 
 function pctColor(v){
   if(v>=1) return 'color-red';
@@ -1082,7 +1105,6 @@ const EXCEL_SHEETS = {
   'SM_Itens'           : { key:'sms',            norm: normalizeSMItem        },
   'Rendimento'         : { key:'rendimento',     norm: normalizeRendimento    },
   'Uso_Rendimento'     : { key:'uso_rendimento', norm: normalizeUsoRendimento },
-  'Prestacoes_Contas'  : { key:'prestacoes',     norm: normalizePC            },
   'Categorias_ANP'     : { key:'categorias',     norm: normalizeCategoria     },
 };
 
@@ -1184,6 +1206,7 @@ function normalizeSolicitacao(r){
     Data_Aprovacao : excelDate(r.Data_Aprovacao),
     Status         : r.Status||'',
     Observacoes    : r.Observacoes||'',
+    Valor          : parseFloat(r.Valor)||0,
   };
 }
 function normalizeSMItem(r){
@@ -1195,10 +1218,13 @@ function normalizeSMItem(r){
   };
 }
 function normalizeRendimento(r){
+  const data = excelDate(r.Data);
   return {
     Projeto      : r.Projeto||'',
     Executor     : r.Executor||'',
-    Data         : excelDate(r.Data),
+    Data         : data,
+    Ano          : data ? data.substring(0,4) : '',
+    Mês          : mesFromDate(data),
     Valor_Rendido: parseFloat(r.Valor_Rendido)||0,
   };
 }
@@ -1208,19 +1234,6 @@ function normalizeUsoRendimento(r){
     SM              : r.Numero_SM||'',
     Valor_Utilizado : parseFloat(r.Valor_Utilizado)||0,
     Descricao       : r.Descricao||'',
-  };
-}
-function normalizePC(r){
-  return {
-    Projeto            : r.Projeto||'',
-    Numero_PC          : r.Numero_PC||'',
-    Periodo_Inicio     : excelDate(r.Periodo_Inicio),
-    Periodo_Fim        : excelDate(r.Periodo_Fim),
-    Data_Prevista      : excelDate(r.Data_Prevista),
-    Previsao_Submissao : excelDate(r.Data_Prevista),
-    Data_Entregue      : excelDate(r.Data_Entregue),
-    Status             : r.Status||'',
-    status             : r.Status||'',
   };
 }
 function normalizeCategoria(r){
@@ -1307,7 +1320,7 @@ function applySMOverrides(){
 
 // ─── Populate UI dropdowns after data load ───────────────────
 function populateDropdowns(){
-  const projs=gestorProjects();
+  const projs=DATA.projetos;
   const allLbl=lang==='pt'?'Todos os Projetos':'All Projects';
   ['ms-project-filter','rub-project-filter','sm-project-filter'].forEach(id=>{
     const el=document.getElementById(id);
@@ -1335,11 +1348,6 @@ function populateDropdowns(){
   if(sp){
     sp.innerHTML='';
     projs.forEach(p=>{ sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`; });
-  }
-  const sc=document.getElementById('sm-cat');
-  if(sc){
-    sc.innerHTML='';
-    DATA.categorias.forEach(c=>{ sc.innerHTML+=`<option value="${c.Categoria_despesa_PT}">${c.Categoria_despesa_PT}</option>`; });
   }
   const ps=document.getElementById('project-selector');
   if(ps){
@@ -1389,7 +1397,7 @@ async function carregarExcel(){
   }
 
   // Normaliza IDs de projeto
-  ['projetos','gastos','plano','marcos','sms','solicitacoes','rendimento','uso_rendimento','prestacoes'].forEach(key=>{
+  ['projetos','gastos','plano','marcos','sms','solicitacoes','rendimento','uso_rendimento'].forEach(key=>{
     (DATA[key]||[]).forEach(r=>{
       if(r.Projeto)  r.Projeto  = normalizeProjectId(r.Projeto);
       if(r.Projetos) r.Projetos = normalizeProjectId(r.Projetos);
@@ -1400,6 +1408,21 @@ async function carregarExcel(){
   applySMOverrides();
 
   console.log('EXCEL_LOAD_REPORT:', window.EXCEL_LOAD_REPORT);
+}
+
+async function syncData(){
+  try{
+    await carregarExcel();
+    populateDropdowns();
+    repopulateProjectDropdowns();
+    applyTranslations();
+    renderCurrentPage();
+  }catch(e){
+    console.error('syncData error:', e);
+    alert((lang==='pt'?'Erro ao sincronizar dados: ':'Error syncing data: ')+e.message);
+  }finally{
+    hideLoading();
+  }
 }
 
 // ===================== LOADING =====================
@@ -1470,85 +1493,65 @@ async function inicializarApp(){
 
 function renderPortfolio(){
   const today=new Date(); today.setHours(0,0,0,0);
-  const d90=new Date(today); d90.setDate(d90.getDate()+90);
+  const d60=new Date(today); d60.setDate(d60.getDate()+60);
 
-  // Compute totals (respects gestor filter)
-  const gProjs = gestorProjects();
+  const toggle=document.getElementById('show-completed-toggle');
+  if(toggle) toggle.checked = showCompleted;
+  const gestorSelect=document.getElementById('global-gestor-filter');
+  if(gestorSelect) gestorSelect.value = gestorFilter;
+
+  let gProjs = gestorProjects();
+  if(!showCompleted) gProjs = gProjs.filter(p=>!isProjectCompleted(p));
   const gProjIds = new Set(gProjs.map(p=>p.Projeto));
+
   const totalPlan=gProjs.reduce((s,p)=>s+parseFloat(p['Planned Value (R$)']||p.Valor_PTRB||0),0);
   const totalActual=DATA.gastos.filter(g=>gProjIds.has(g.Projetos||g.Projeto)).reduce((s,g)=>s+parseFloat(g.Valor||0),0);
   const avgExec=totalPlan?totalActual/totalPlan:0;
 
   const allMarcos=DATA.marcos.filter(m=>gProjIds.has(m.Projeto)).map(m=>({...m,_status:getMilestoneStatus(m)}));
-  const overdueMarcosCnt=allMarcos.filter(m=>m._status==='Overdue');
-  const upcomingMarcosCnt=allMarcos.filter(m=>m._status==='Upcoming');
+  const overdue=allMarcos.filter(m=>m._status==='Overdue');
+  const upcoming=allMarcos.filter(m=>m._status==='Upcoming');
 
-  // PC status for KPI counts
-  const today2=new Date(); today2.setHours(0,0,0,0);
-  const d60kpi=new Date(today2); d60kpi.setDate(d60kpi.getDate()+60);
-  const overduePCsCnt=DATA.prestacoes.filter(pc=>{
-    const st=(pc.Status||pc.status||'').toLowerCase();
-    if(st.includes('conclu')||st==='entregue') return false;
-    const d=new Date(pc.Data_Prevista||pc.Previsao_Submissao||'');
-    return !isNaN(d)&&d<today2;
-  });
-  const upcomingPCsCnt=DATA.prestacoes.filter(pc=>{
-    const st=(pc.Status||pc.status||'').toLowerCase();
-    if(st.includes('conclu')||st==='entregue') return false;
-    const d=new Date(pc.Data_Prevista||pc.Previsao_Submissao||'');
-    return !isNaN(d)&&d>=today2&&d<=d60kpi;
-  });
-
-  const totalOverdue  = overdueMarcosCnt.length  + overduePCsCnt.length;
-  const totalUpcoming = upcomingMarcosCnt.length + upcomingPCsCnt.length;
-  const overdue=overdueMarcosCnt;   // keep ref for alerts below
-  const upcoming=upcomingMarcosCnt; // keep ref for tables below
-
-  // KPIs
   const kpiEl=document.getElementById('kpi-grid');
   kpiEl.innerHTML=`
     <div class="kpi-card accent">
       <div class="kpi-label">${t('kpi_total')}</div>
       <div class="kpi-value">${FMTK(totalPlan)}</div>
-      <div class="kpi-sub">10 ${lang==='pt'?'projetos':'projects'}</div>
+      <div class="kpi-sub">${gProjs.length} ${lang==='pt'?'projetos':'projects'}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">${t('kpi_actuals')}</div>
       <div class="kpi-value">${FMTK(totalActual)}</div>
       <div class="kpi-sub ${pctColor(avgExec)}">${PCT(avgExec)} ${lang==='pt'?'executado':'executed'}</div>
     </div>
-    <div class="kpi-card ${totalOverdue>5?'red':totalOverdue>0?'amber':''}">
+    <div class="kpi-card ${overdue.length>5?'red':overdue.length>0?'amber':''}">
       <div class="kpi-label">${t('kpi_overdue')}</div>
-      <div class="kpi-value">${totalOverdue}</div>
-      <div class="kpi-sub">${lang==='pt'?`${overdueMarcosCnt.length} marcos · ${overduePCsCnt.length} PCs`:`${overdueMarcosCnt.length} milestones · ${overduePCsCnt.length} PCs`}</div>
+      <div class="kpi-value">${overdue.length}</div>
+      <div class="kpi-sub">${lang==='pt'?`${overdue.length} marcos`:`${overdue.length} milestones`}</div>
     </div>
-    <div class="kpi-card ${totalUpcoming>0?'amber':''}">
+    <div class="kpi-card ${upcoming.length>0?'amber':''}">
       <div class="kpi-label">${t('kpi_upcoming')}</div>
-      <div class="kpi-value">${totalUpcoming}</div>
-      <div class="kpi-sub">${lang==='pt'?`${upcomingMarcosCnt.length} marcos · ${upcomingPCsCnt.length} PCs`:`${upcomingMarcosCnt.length} milestones · ${upcomingPCsCnt.length} PCs`}</div>
+      <div class="kpi-value">${upcoming.length}</div>
+      <div class="kpi-sub">${lang==='pt'?`${upcoming.length} marcos`:`${upcoming.length} milestones`}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">${t('kpi_projects')}</div>
-      <div class="kpi-value">10</div>
-      <div class="kpi-sub">${lang==='pt'?'portfólio ativo':'active portfolio'}</div>
+      <div class="kpi-value">${gProjs.length}</div>
+      <div class="kpi-sub">${lang==='pt'?'projetos exibidos':'displayed projects'}</div>
     </div>
   `;
 
-  // Alerts
   const alerts=document.getElementById('alerts-container');
   alerts.innerHTML='';
-  const overdueProjs=DATA.projetos.filter(p=>{
-    const pms=allMarcos.filter(m=>m.Projeto===p.Projeto&&m._status==='Overdue');
-    return pms.length>0;
-  });
+  const overdueProjs=gProjs.filter(p=>allMarcos.some(m=>m.Projeto===p.Projeto&&m._status==='Overdue'));
   if(overdueProjs.length)
     alerts.innerHTML+=`<div class="alert-box alert-red">⚠ ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
 
-  // Projects table
   const thead=document.getElementById('projects-thead');
   thead.innerHTML=`<tr>
     <th>${t('col_id')}</th>
     <th>${t('col_title')}</th>
+    <th>${t('col_status')}</th>
     <th>${t('col_executor')}</th>
     <th>${t('col_anp')}</th>
     <th>${t('col_gestor')}</th>
@@ -1562,18 +1565,18 @@ function renderPortfolio(){
 
   const tbody=document.getElementById('projects-tbody');
   tbody.innerHTML='';
-  DATA.projetos.forEach(p=>{
+  gProjs.forEach(p=>{
     const pid=p.Projeto;
     const fin=getExec(pid);
     const timePct=getTimePct(p);
     const execPct=fin.pct;
     const execCls=execPct>=1?'color-red':execPct>=0.85?'color-amber':'color-green';
     const bar=`<div class="progress-bar"><div class="progress-fill ${execPct>=1?'red':execPct>=0.85?'amber':''}" style="width:${Math.min(100,execPct*100).toFixed(0)}%"></div></div>`;
-
     const title=(p['Título do projeto']||'').split(':')[0].trim();
     tbody.innerHTML+=`<tr class="tr-clickable" onclick="openProject('${pid}')">
       <td><span class="fw-600">${pid}</span></td>
-      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${p['Título do projeto']||''}">${title}</div></td>
+      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(p['Título do projeto']||'')}">${escapeHtml(title)}</div></td>
+      <td>${projectStatusBadge(p.Status_Projeto)}</td>
       <td class="fs-12 color-ink3">${p.Executor||'—'}</td>
       <td class="fs-12">${p['Número ANP']||'—'}</td>
       <td class="fs-12">${p.Gestor||'—'}</td>
@@ -1589,83 +1592,37 @@ function renderPortfolio(){
     </tr>`;
   });
 
-  // ── Build unified upcoming/overdue lists (Marcos + PCs) ──
-  const d60=new Date(today); d60.setDate(d60.getDate()+60);
-
-  // PCs upcoming/overdue
-  const allPCs = DATA.prestacoes.map(pc=>{
-    const d=new Date(pc.Previsao_Submissao||pc.Data_Prevista||'');
-    const st = pc.Status||'';
-    let status='Planned';
-    if(st.toLowerCase().includes('conclu')||st.toLowerCase()==='entregue') status='Completed';
-    else if(!isNaN(d)){
-      if(d<today) status='Overdue';
-      else if(d<=d60) status='Upcoming';
-    }
-    return {...pc, _date:d, _status:status, _type:'PC'};
-  });
-
-  // Upcoming: marcos + PCs in next 60d, sorted by date
-  const upcomingMarcos = upcoming.map(m=>({...m,_date:new Date(m['Data prevista / Data de entrega']),_type:'Marco'}));
-  const upcomingPCs    = allPCs.filter(p=>p._status==='Upcoming');
-  const allUpcoming    = [...upcomingMarcos,...upcomingPCs].sort((a,b)=>a._date-b._date);
-
-  // Overdue: marcos + PCs
-  const overdueMarcos = overdue.map(m=>({...m,_date:new Date(m['Data prevista / Data de entrega']),_type:'Marco'}));
-  const overduePCs    = allPCs.filter(p=>p._status==='Overdue');
-  const allOverdue    = [...overdueMarcos,...overduePCs].sort((a,b)=>a._date-b._date);
-
-  function typeChip(type){
-    return type==='PC'
-      ? `<span class="badge badge-blue" style="font-size:10px;padding:2px 6px;">PC</span>`
-      : `<span class="badge badge-gray" style="font-size:10px;padding:2px 6px;">${lang==='pt'?'Marco':'MS'}</span>`;
-  }
+  const upcomingMarcos = upcoming.map(m=>({...m,_date:new Date(m['Data prevista / Data de entrega']),_type:'Marco'})).sort((a,b)=>a._date-b._date);
+  const overdueMarcos = overdue.map(m=>({...m,_date:new Date(m['Data prevista / Data de entrega']),_type:'Marco'})).sort((a,b)=>a._date-b._date);
+  const typeChip = () => `<span class="badge badge-gray" style="font-size:10px;padding:2px 6px;">${lang==='pt'?'Marco':'MS'}</span>`;
 
   const nextEl=document.getElementById('next-milestones-list');
   nextEl.innerHTML='';
-  if(!allUpcoming.length) nextEl.innerHTML=`<div class="empty-state fs-12">${t('no_milestones')}</div>`;
-  allUpcoming.slice(0,10).forEach(item=>{
-    const desc = item._type==='PC'
-      ? (item.Numero_PC||item['Número da PC']||'PC')
-      : (item['Descrição']||'—');
-    const proj = item._type==='PC' ? item.Projeto : item.Projeto;
-    const date = item._type==='PC'
-      ? (item.Previsao_Submissao||item.Data_Prevista||'')
-      : (item['Data prevista / Data de entrega']||'');
+  if(!upcomingMarcos.length) nextEl.innerHTML=`<div class="empty-state fs-12">${t('no_milestones')}</div>`;
+  upcomingMarcos.slice(0,10).forEach(item=>{
     nextEl.innerHTML+=`<div class="milestone-item">
       <div class="milestone-dot" style="background:var(--amber)"></div>
       <div style="flex:1;min-width:0;">
-        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc}</div>
-        <div class="fs-12 color-ink3">${proj} · ${FMTD(date)}</div>
+        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['Descrição']||'—')}</div>
+        <div class="fs-12 color-ink3">${item.Projeto} · ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
-      ${typeChip(item._type)}
+      ${typeChip()}
     </div>`;
   });
 
   const overdueEl=document.getElementById('overdue-milestones-list');
   overdueEl.innerHTML='';
-  if(!allOverdue.length) overdueEl.innerHTML=`<div class="empty-state fs-12">${t('no_milestones')}</div>`;
-  allOverdue.slice(0,10).forEach(item=>{
-    const desc = item._type==='PC'
-      ? (item.Numero_PC||item['Número da PC']||'PC')
-      : (item['Descrição']||'—');
-    const proj = item.Projeto||'';
-    const date = item._type==='PC'
-      ? (item.Previsao_Submissao||item.Data_Prevista||'')
-      : (item['Data prevista / Data de entrega']||'');
+  if(!overdueMarcos.length) overdueEl.innerHTML=`<div class="empty-state fs-12">${t('no_milestones')}</div>`;
+  overdueMarcos.slice(0,10).forEach(item=>{
     overdueEl.innerHTML+=`<div class="milestone-item">
       <div class="milestone-dot" style="background:var(--red)"></div>
       <div style="flex:1;min-width:0;">
-        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc}</div>
-        <div class="fs-12 color-ink3">${proj} · ${FMTD(date)}</div>
+        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['Descrição']||'—')}</div>
+        <div class="fs-12 color-ink3">${item.Projeto} · ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
-      ${typeChip(item._type)}
+      ${typeChip()}
     </div>`;
   });
-
-  // Update KPI for upcoming (marcos + PCs combined)
-  const kpiUpcomingEl=document.querySelector('#kpi-grid .kpi-card:nth-child(4) .kpi-value');
-  if(kpiUpcomingEl) kpiUpcomingEl.textContent=allUpcoming.length;
 }
 
 function openProject(pid){
@@ -1675,18 +1632,6 @@ function openProject(pid){
 
 // ===================== RENDER — PROJECT DETAIL =====================
 function selectProject(pid){ renderProjectDetail(pid); }
-
-function getPCStatus(pc){
-  const us = pc._userStatus || pc.Status || '';
-  if(us && us !== '') return us;
-  const d = new Date(pc.Previsao_Submissao);
-  if(isNaN(d)) return 'Planned';
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d30 = new Date(today); d30.setDate(d30.getDate()+30);
-  if(d < today) return 'Overdue';
-  if(d <= d30) return 'Upcoming';
-  return 'Planned';
-}
 
 function renderProjectDetail(pid){
   if(!pid) pid = document.getElementById('project-selector').value;
@@ -1755,12 +1700,6 @@ function renderProjectDetail(pid){
   // Cumulative rendimento with usos plotted
   let cum=0; const rendCum=[];
   rendKeys.forEach(k=>{ cum+=rendMonthlyMap[k]; rendCum.push(cum); });
-
-  // ---- Prestações de Contas ----
-  const projPCs = DATA.prestacoes.filter(p=>p.Projeto===pid).map(p=>({...p,_status:getPCStatus(p)}));
-  const pcOverdue   = projPCs.filter(p=>p._status==='Overdue').length;
-  const pcUpcoming  = projPCs.filter(p=>p._status==='Upcoming').length;
-  const pcCompleted = projPCs.filter(p=>p._status==='Completed').length;
 
   const L = lang==='pt';
   const content = document.getElementById('project-detail-content');
@@ -1859,9 +1798,12 @@ function renderProjectDetail(pid){
                 : `<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${(m['Data prevista / Data de entrega']||'').split('T')[0]}" onchange="updateMilestoneDate(${origIdx},this.value)">`
               }</td>
               <td>
-                <select class="form-select fs-12" style="padding:4px 8px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
-                  ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${m._userStatus===s||(!m._userStatus&&s==='')?'selected':''}>${s||'(Auto)'}</option>`).join('')}
-                </select>
+                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+                  ${statusBadge(m._status)}
+                  <select class="form-select fs-12" style="padding:3px 6px;font-size:11px;max-width:120px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
+                    ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${(m._userStatus||'')===s?'selected':''}>${s||'(Auto)'}</option>`).join('')}
+                  </select>
+                </div>
               </td>
             </tr>`;
           }).join('')}
@@ -1930,7 +1872,7 @@ function renderProjectDetail(pid){
   <!-- ── SECTION: SMs ── -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
     <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'Solicitações de Mudança':'Change Requests (SM)'}</div>
-    <button class="btn btn-secondary btn-sm" onclick="openSMModal()">+ ${L?'Nova SM':'New SM'}</button>
+    <button class="btn btn-secondary btn-sm" onclick="openSMModal('${pid}')">+ ${L?'Nova SM':'New SM'}</button>
   </div>
 
   ${projSMs.length===0
@@ -2031,48 +1973,6 @@ function renderProjectDetail(pid){
       </table>
     </div>
   </div>` : `<div class="card empty-state" style="margin-bottom:20px;">${L?'Nenhum uso de rendimento registrado.':'No income usage recorded.'}</div>`}
-
-  <!-- ── SECTION: Prestações de Contas ── -->
-  <div style="font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:12px;">${L?'Prestações de Contas':'Accountability Reports (PC)'}</div>
-
-  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
-    <div class="kpi-card ${pcOverdue>0?'red':''}">
-      <div class="kpi-label">${L?'Atrasadas':'Overdue'}</div>
-      <div class="kpi-value" style="font-size:22px;">${pcOverdue}</div>
-    </div>
-    <div class="kpi-card ${pcUpcoming>0?'amber':''}">
-      <div class="kpi-label">${L?'Próximas (30d)':'Upcoming (30d)'}</div>
-      <div class="kpi-value" style="font-size:22px;">${pcUpcoming}</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">${L?'Concluídas':'Completed'}</div>
-      <div class="kpi-value" style="font-size:22px;color:var(--green);">${pcCompleted}</div>
-    </div>
-  </div>
-
-  ${projPCs.length===0
-    ? `<div class="card empty-state" style="margin-bottom:20px;">${L?'Nenhuma PC cadastrada.':'No accountability reports found.'}</div>`
-    : `<div class="table-card" style="margin-bottom:20px;">
-        <div class="table-scroll">
-          <table>
-            <thead><tr>
-              <th>${L?'Nº PC':'PC #'}</th>
-              <th>${L?'Período':'Period'}</th>
-              <th>${L?'Previsão de Submissão':'Submission Forecast'}</th>
-              <th>Status</th>
-            </tr></thead>
-            <tbody>
-              ${projPCs.map(pc=>`<tr>
-                <td class="fw-600 fs-12">${pc.Numero_PC||'—'}</td>
-                <td class="fs-12">${pc.Periodo||'—'}</td>
-                <td class="fs-12 color-ink3">${FMTD(pc.Previsao_Submissao)}</td>
-                <td>${statusBadge(pc._status)}</td>
-              </tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>`
-  }
   `;
 
   // ── Charts ──
@@ -2089,13 +1989,17 @@ function renderProjectDetail(pid){
            backgroundColor:'rgba(45,92,78,0.7)',borderColor:'#2D5C4E',borderWidth:1,borderRadius:4,yAxisID:'y'},
           {type:'line', label:L?'Acumulado':'Cumulative', data:cumM,
            borderColor:'#B8963C',backgroundColor:'rgba(184,150,60,0.08)',
-           tension:0.3,fill:true,pointRadius:3,yAxisID:'y'},
+           tension:0.3,fill:true,pointRadius:3,yAxisID:'y1'},
         ]
       },
       options:{
         responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'bottom'}},
-        scales:{y:{ticks:{callback:v=>FMTK(v)},grid:{color:'rgba(0,0,0,0.05)'}},x:{grid:{display:false}}}
+        scales:{
+          y:{position:'left',ticks:{callback:v=>FMTK(v)},grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Mensal'}},
+          y1:{position:'right',ticks:{callback:v=>FMTK(v)},grid:{drawOnChartArea:false},title:{display:true,text:'Acumulado'}},
+          x:{grid:{display:false}}
+        }
       }
     });
   }
@@ -2177,9 +2081,10 @@ function renderMilestones(){
       <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
       <td>${dateCell}</td>
       <td>
-        <div class="inline-edit">
-          <select class="form-select fs-12" style="padding:4px 8px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
-            ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${(m._userStatus||''===s)||(!m._userStatus&&s==='')?'selected':''}>${s?t(s.toLowerCase()):t('overdue').replace(t('overdue'),lang==='pt'?'(Auto)':'(Auto)')}</option>`).join('')}
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+          ${statusBadge(m._status)}
+          <select class="form-select fs-12" style="padding:3px 6px;font-size:11px;max-width:120px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
+            ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${(m._userStatus||'')===s?'selected':''}>${s||'(Auto)'}</option>`).join('')}
           </select>
         </div>
       </td>
@@ -2195,6 +2100,7 @@ function updateMilestoneDate(idx,val){
 function updateMilestoneStatus(idx,val){
   if(idx<0||idx>=DATA.marcos.length)return;
   DATA.marcos[idx]._userStatus=val;
+  DATA.marcos[idx].Status=val;
   milestonesChanged=true;
 }
 
@@ -2584,144 +2490,75 @@ function smStatusBadge(st){
 }
 
 function renderSMs(){
-  const pFilter = document.getElementById('sm-project-filter').value;
-  const L = lang === 'pt';
-  const L_projs = gestorProjects().map(p=>p.Projeto);
+  const pFilter=document.getElementById('sm-project-filter').value;
+  const L=lang==='pt';
+  const visibleProjs = pFilter==='ALL' ? DATA.projetos.map(p=>p.Projeto) : [pFilter];
 
-  // Determine which projects to show
-  const visibleProjs = pFilter==='ALL' ? L_projs : (L_projs.includes(pFilter) ? [pFilter] : []);
+  const rows=(DATA.solicitacoes||[])
+    .filter(s=>visibleProjs.includes(s.Projeto))
+    .filter(s=>(s.Tipo||'SM')===smTypeFilter)
+    .sort((a,b)=>(a.Projeto||'').localeCompare(b.Projeto||'') || (a.Data_Submissao||'').localeCompare(b.Data_Submissao||''));
 
-  function buildRequestBlock(tipo, labelEN, labelPT){
-    // Get entries for this type from DATA.solicitacoes
-    const entries = (DATA.solicitacoes||[]).filter(s=>{
-      if(!visibleProjs.includes(s.Projeto)) return false;
-      return s.Tipo===tipo;
-    });
+  const valueLabel = smTypeFilter==='SM' ? 'Total' : (L?'Valor':'Value');
+  const buttons = `
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="btn ${smTypeFilter==='SM'?'btn-primary':'btn-secondary'}" onclick="setSMType('SM')">SM</button>
+      <button class="btn ${smTypeFilter==='DV'?'btn-primary':'btn-secondary'}" onclick="setSMType('DV')">DV</button>
+      <button class="btn ${smTypeFilter==='DE'?'btn-primary':'btn-secondary'}" onclick="setSMType('DE')">DE</button>
+    </div>`;
 
-    if(!entries.length) return `
-      <div class="card empty-state" style="margin-bottom:20px;">
-        ${L?`Nenhum(a) ${labelPT} cadastrado(a).`:`No ${labelEN} found.`}
-      </div>`;
-
-    // Group by project
-    const byProj={};
-    entries.forEach(e=>{ byProj[e.Projeto]=byProj[e.Projeto]||[]; byProj[e.Projeto].push(e); });
-
-    let html='';
-    Object.entries(byProj).sort(([a],[b])=>a.localeCompare(b)).forEach(([pid,items])=>{
-      const sorted=items.sort((a,b)=>{
-        const na=parseInt((a['SM#']||'').replace(/\D/g,''))||0;
-        const nb=parseInt((b['SM#']||'').replace(/\D/g,''))||0;
-        return na-nb;
-      });
-
-      html+=`<div class="table-card" style="margin-bottom:16px;">
+  const table = !rows.length
+    ? `<div class="card empty-state">${L?'Nenhum registro encontrado para o filtro selecionado.':'No records found for the selected filter.'}</div>`
+    : `<div class="table-card">
         <div class="table-header">
-          <div class="table-title">${pid}</div>
-          <div style="font-size:12px;color:var(--ink3);">${sorted.length} ${tipo}</div>
+          <div class="table-title">${smTypeFilterBadgeLabel(smTypeFilter,L)}</div>
+          <div style="font-size:12px;color:var(--ink3);">${rows.length} ${L?'registros':'records'}</div>
         </div>
         <div class="table-scroll"><table>
           <thead><tr>
+            <th>${L?'Projeto':'Project'}</th>
             <th>${L?'Código':'Code'}</th>
             <th>${L?'Submissão':'Submitted'}</th>
             <th>${L?'Aprovação':'Approved'}</th>
             <th>Status</th>
             <th>${L?'Observações':'Notes'}</th>
-            <th class="text-right">${L?'Valor':'Value'}</th>
+            <th class="text-right">${valueLabel}</th>
           </tr></thead>
           <tbody>
-            ${sorted.map(s=>{
-              // For SM type: get total from SM_Itens
-              let valor = '';
-              if(tipo==='SM'){
-                const total=DATA.sms.filter(i=>i.Projeto===pid&&i['SM#']===s['SM#'])
+            ${rows.map(s=>{
+              let valor = '—';
+              if(smTypeFilter==='SM'){
+                const total=(DATA.sms||[])
+                  .filter(i=>i.Projeto===s.Projeto && (i['SM#']===s['SM#'] || i['SM#']===s.Numero))
                   .reduce((acc,i)=>acc+parseFloat(i.Valor||0),0);
                 valor = total ? FMTK(total) : '—';
               } else {
                 valor = s.Valor ? FMTK(parseFloat(s.Valor)) : '—';
               }
               return `<tr>
-                <td class="fw-600">${s['SM#']||'—'}</td>
+                <td class="fs-12 color-ink3">${s.Projeto||'—'}</td>
+                <td class="fw-600">${s['SM#']||s.Numero||'—'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'—'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'—'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
-                <td class="fs-12 color-ink3" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.Observacoes||'—'}</td>
+                <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'—')}</td>
                 <td class="text-right fw-600">${valor}</td>
               </tr>`;
             }).join('')}
           </tbody>
         </table></div>
       </div>`;
-    });
-    return html;
-  }
 
-  // ── PC block ──
-  const pcs = DATA.prestacoes.filter(p=>visibleProjs.includes(p.Projeto));
-  const pcsByProj={};
-  pcs.forEach(p=>{ pcsByProj[p.Projeto]=pcsByProj[p.Projeto]||[]; pcsByProj[p.Projeto].push(p); });
-  let pcHTML='';
-  if(!pcs.length){
-    pcHTML=`<div class="card empty-state">${L?'Nenhuma PC cadastrada.':'No accountability reports found.'}</div>`;
-  } else {
-    Object.entries(pcsByProj).sort(([a],[b])=>a.localeCompare(b)).forEach(([pid,items])=>{
-      pcHTML+=`<div class="table-card" style="margin-bottom:16px;">
-        <div class="table-header">
-          <div class="table-title">${pid}</div>
-          <div style="font-size:12px;color:var(--ink3);">${items.length} PCs</div>
-        </div>
-        <div class="table-scroll"><table>
-          <thead><tr>
-            <th>${L?'Nº PC':'PC #'}</th>
-            <th>${L?'Período Início':'Period Start'}</th>
-            <th>${L?'Período Fim':'Period End'}</th>
-            <th>${L?'Previsão Submissão':'Submission Forecast'}</th>
-            <th>${L?'Data Entregue':'Date Delivered'}</th>
-            <th>Status</th>
-          </tr></thead>
-          <tbody>
-            ${items.map(pc=>{
-              const st=pc.Status||pc.status||'';
-              const low=st.toLowerCase();
-              const cls=low.includes('conclu')||low==='entregue'?'badge-green'
-                :low.includes('atraso')||low.includes('overdue')?'badge-red'
-                :low.includes('análise')||low.includes('revisão')||low.includes('distribuição')||low.includes('executor')||low.includes('incompleta')?'badge-amber'
-                :'badge-gray';
-              return `<tr>
-                <td class="fw-600 fs-12">${pc.Numero_PC||'—'}</td>
-                <td class="fs-12 color-ink3">${pc.Periodo_Inicio?FMTD(pc.Periodo_Inicio):'—'}</td>
-                <td class="fs-12 color-ink3">${pc.Periodo_Fim?FMTD(pc.Periodo_Fim):'—'}</td>
-                <td class="fs-12">${(pc.Data_Prevista||pc.Previsao_Submissao)?FMTD(pc.Data_Prevista||pc.Previsao_Submissao):'—'}</td>
-                <td class="fs-12 color-ink3">${pc.Data_Entregue?FMTD(pc.Data_Entregue):'—'}</td>
-                <td>${st?`<span class="badge ${cls}">${st}</span>`:'—'}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table></div>
-      </div>`;
-    });
-  }
-
-  const divider = (label, count) => `
-    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;margin-top:4px;">
-      <div style="font-family:'DM Serif Display',serif;font-size:18px;">${label}</div>
-      ${count!==null?`<div style="font-size:12px;color:var(--ink3);">${count} ${L?'registros':'records'}</div>`:''}
-    </div>`;
-
-  const smEntries=(DATA.solicitacoes||[]).filter(s=>visibleProjs.includes(s.Projeto)&&s.Tipo==='SM');
-  const dvEntries=(DATA.solicitacoes||[]).filter(s=>visibleProjs.includes(s.Projeto)&&s.Tipo==='DV');
-  const deEntries=(DATA.solicitacoes||[]).filter(s=>visibleProjs.includes(s.Projeto)&&s.Tipo==='DE');
-
-  document.getElementById('sms-content').innerHTML =
-    divider(L?'Solicitações de Mudança (SM)':'Change Requests (SM)', smEntries.length) +
-    buildRequestBlock('SM','Change Requests','Solicitações de Mudança') +
-    divider(L?'Viagens (DV)':'Travel Requests (DV)', dvEntries.length) +
-    buildRequestBlock('DV','Travel Requests','Viagens') +
-    divider(L?'Despesas Especiais (DE)':'Special Expenses (DE)', deEntries.length) +
-    buildRequestBlock('DE','Special Expenses','Despesas Especiais') +
-    divider(L?'Prestações de Contas (PC)':'Accountability Reports (PC)', pcs.length) +
-    pcHTML;
+  document.getElementById('sms-content').innerHTML = buttons + table;
 }
+
+function smTypeFilterBadgeLabel(type,L){
+  if(type==='DV') return L?'Viagens (DV)':'Travel Requests (DV)';
+  if(type==='DE') return L?'Despesas Especiais (DE)':'Special Expenses (DE)';
+  return L?'Solicitações de Mudança (SM)':'Change Requests (SM)';
+}
+
+function setSMType(type){ smTypeFilter = type; renderSMs(); }
 
 // ===================== MODAL: GASTO =====================
 function openGastoModal(pid){
@@ -2770,37 +2607,117 @@ async function saveGasto(){
 }
 
 // ===================== MODAL: SM =====================
-function openSMModal(){
+function openSMModal(pid){
+  const smNum=document.getElementById('sm-number');
+  const smDate=document.getElementById('sm-date-submissao');
+  const smStatus=document.getElementById('sm-status');
+  if(smNum) smNum.value='';
+  if(smDate) smDate.value='';
+  if(smStatus) smStatus.value='Pendente';
+  const sp=document.getElementById('sm-project');
+  if(sp && pid) sp.value=pid;
+  onSMProjectChange();
+  updateSMTotal();
   document.getElementById('sm-modal').classList.add('show');
 }
 
+function onSMProjectChange(){
+  const pid=document.getElementById('sm-project')?.value||'';
+  const table=document.getElementById('sm-categories-table');
+  if(!table) return;
+
+  const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid);
+  let cats=[...new Set(planoRows.map(r=>r.Categoria_despesa).filter(Boolean))];
+  if(!cats.length) cats=(DATA.categorias||[]).map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG).filter(Boolean);
+  cats.sort((a,b)=>a.localeCompare(b));
+
+  if(!cats.length){
+    table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponível.':'No categories available.'}</div>`;
+    return;
+  }
+
+  table.innerHTML=`<div class="table-scroll"><table style="font-size:12px;">
+    <thead><tr>
+      <th>${lang==='pt'?'Categoria':'Category'}</th>
+      <th>Cód. ABA</th>
+      <th class="text-right">PTR-B Atual</th>
+      <th class="text-right">Plano Atual</th>
+      <th class="text-right">Novo Valor</th>
+    </tr></thead>
+    <tbody>
+      ${cats.map(cat=>{
+        const rows=planoRows.filter(r=>r.Categoria_despesa===cat);
+        const catRef=(DATA.categorias||[]).find(c=>c.Categoria_despesa_PT===cat||c.Categoria_despesa_ENG===cat)||{};
+        const aba=(rows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || '—';
+        const ptrb=rows.reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
+        const plan=rows.reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
+        return `<tr>
+          <td>${escapeHtml(cat)}</td>
+          <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
+          <td class="text-right">${FMTK(ptrb)}</td>
+          <td class="text-right fw-600">${FMTK(plan)}</td>
+          <td><input type="number" class="form-input" step="0.01" placeholder="—" data-cat="${escapeAttr(cat)}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function updateSMTotal(){
+  const inputs=document.querySelectorAll('#sm-categories-table input[data-cat]');
+  let total=0;
+  inputs.forEach(inp=>{
+    const v=parseFloat(inp.value);
+    if(v>0) total+=v;
+  });
+  const el=document.getElementById('sm-total-display');
+  if(el) el.textContent=FMT.format(total);
+}
+
 async function saveSM(){
-  const pid=document.getElementById('sm-project').value;
-  const smNum=document.getElementById('sm-number').value.trim();
-  const cat=document.getElementById('sm-cat').value;
-  const codigo=document.getElementById('sm-codigo').value.trim();
-  const valor=parseFloat(document.getElementById('sm-valor').value);
+  const pid = document.getElementById('sm-project').value;
+  const smNum = document.getElementById('sm-number').value.trim();
+  const dataSubmissao = document.getElementById('sm-date-submissao').value;
+  const status = document.getElementById('sm-status').value;
 
-  if(!pid||!smNum||!cat||isNaN(valor)){
-    alert(lang==='pt'?'Preencha todos os campos.':'Fill in all fields.');return;
+  if(!pid || !smNum){ alert('Preencha Projeto e Número da SM.'); return; }
+
+  const inputs = document.querySelectorAll('#sm-categories-table input[data-cat]');
+  const linhas = [];
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value);
+    if(v > 0) linhas.push({ cat: inp.dataset.cat, valor: v });
+  });
+
+  if(!linhas.length){ alert('Informe ao menos um valor.'); return; }
+
+  showLoading('Saving SM...');
+  try {
+    await appendExcelRow('Solicitacoes', [
+      pid, smNum, 'SM',
+      isoToExcelSerial(dataSubmissao) || '',
+      '',
+      status, ''
+    ]);
+    DATA.solicitacoes.push({
+      Projeto: pid, 'SM#': smNum, Numero: smNum, Tipo: 'SM',
+      Data_Submissao: dataSubmissao, Data_Aprovacao: '', Status: status, Observacoes: '', Valor: 0
+    });
+
+    for(const linha of linhas){
+      await appendExcelRow('SM_Itens', [pid, smNum, linha.cat, linha.valor]);
+      DATA.sms.push({ Projeto: pid, 'SM#': smNum, Categoria_despesa: linha.cat, Valor: linha.valor });
+    }
+
+    applySMOverrides();
+    closeModal('sm-modal');
+    hideLoading();
+    renderCurrentPage();
+    alert('SM saved successfully!');
+  } catch(e) {
+    hideLoading();
+    alert('Error saving SM: ' + e.message);
   }
-
-  // Primeiro atualiza DATA em memória
-  DATA.sms.push({Projeto:pid,Código_Aba:codigo,Categoria_despesa:cat,'SM#':smNum,Valor:valor});
-  // Persiste no Excel via Graph API (append na sheet SM_Itens)
-  try{
-    await appendExcelRow('SM_Itens',[pid, smNum, cat, valor]);
-  }catch(e){
-    console.error('saveSM Excel error:',e);
-    alert((lang==='pt'?'Aviso: SM salva em memória mas erro ao gravar no Excel: ':'Warning: SM saved in memory but Excel write failed: ')+e.message);
-  }
-
-  closeModal('sm-modal');
-  document.getElementById('sm-number').value='';
-  document.getElementById('sm-valor').value='';
-  document.getElementById('sm-codigo').value='';
-  renderSMs();
-  alert(lang==='pt'?'SM salva!':'SM saved!');
 }
 
 // ===================== INIT =====================
