@@ -1137,9 +1137,18 @@ function normalizeProjectId(id){
   return 'P'+s.padStart(3,'0');
 }
 
+// Reconhece um marco concluído. A planilha pode gravar "Completo", "Concluído",
+// "Concluido", "Completed" (com/sem acento) — todos contam como concluído.
+function isMilestoneCompleted(status){
+  const s=String(status||'').trim().toLowerCase();
+  return ['completo','concluído','concluido','concluída','concluida','completed','complete'].includes(s);
+}
+
 // A1/A2: classificação POR JANELA DE DATA — usada apenas nos painéis do Portfólio
 // (atrasados / próximos 60 dias). NÃO é o status do marco; o status real vem da planilha.
+// Marco concluído NUNCA é atrasado/próximo: tem prioridade sobre a janela de data.
 function milestoneDateBucket(marco){
+  if(isMilestoneCompleted(marco.Status)) return 'Completed';
   const dp = marco['Data prevista / Data de entrega'];
   if(!dp || String(dp).toLowerCase()==='suspended') return 'Suspended';
   const date = parseMilestoneDate(dp);
@@ -1667,9 +1676,9 @@ function applySMOverrides(){
   });
 }
 
-// B2/B3: rótulo da SM/FM mais recente (por NÚMERO) usada como base de um projeto.
+// B2/B3: rótulo da SM mais recente (por NÚMERO) usada como base de um projeto.
 // Considera tanto itens de SM (DATA.sms) quanto solicitações (DATA.solicitacoes) tipo SM.
-// Retorna ex.: "SM3" ou '' se não houver SM/FM.
+// Retorna ex.: "SM3" ou '' se não houver SM.
 function latestSMLabel(pid){
   let best=null;
   const consider=(raw)=>{
@@ -2182,14 +2191,14 @@ function buildProjectAlerts(pid){
   // (b/c/d) solicitações ativas por tipo
   const sols=(DATA.solicitacoes||[]).filter(s=>s.Projeto===pid);
   const tipoAtivo=(re)=>sols.filter(s=>re.test(String(s.Tipo||'SM')) && isSolicitacaoAtiva(s));
-  const smAtivas=tipoAtivo(/^sm$|^fm$/i);
+  const smAtivas=tipoAtivo(/^sm$/i);
   const dvAtivas=tipoAtivo(/^dv$/i);
   const deAtivas=tipoAtivo(/^de$/i);
 
   if(smAtivas.length){
     const nums=smAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
     alerts.push({cls:'alert-amber', icon:'•',
-      msg:(L?`Projeto possui SM/FM ativa: ${nums||smAtivas.length}.`:`Project has active SM/FM: ${nums||smAtivas.length}.`)});
+      msg:(L?`Projeto possui SM ativa: ${nums||smAtivas.length}.`:`Project has active SM: ${nums||smAtivas.length}.`)});
   }
   if(dvAtivas.length){
     const nums=dvAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
@@ -2224,9 +2233,8 @@ function renderProjectDetail(pid){
   const projMarcos = DATA.marcos.filter(m=>m.Projeto===pid).map(m=>({...m,_bucket:milestoneDateBucket(m)}));
   const msOverdue   = projMarcos.filter(m=>m._bucket==='Overdue');
   const msUpcoming  = projMarcos.filter(m=>m._bucket==='Upcoming');
-  const isCompletedStatus = s=>['concluído','concluido','completed'].includes(String(s||'').trim().toLowerCase());
-  const msCompleted = projMarcos.filter(m=>isCompletedStatus(m.Status));
-  const msPlanned   = projMarcos.filter(m=>!isCompletedStatus(m.Status) && m._bucket!=='Overdue' && m._bucket!=='Upcoming');
+  const msCompleted = projMarcos.filter(m=>isMilestoneCompleted(m.Status));
+  const msPlanned   = projMarcos.filter(m=>!isMilestoneCompleted(m.Status) && m._bucket!=='Overdue' && m._bucket!=='Upcoming');
 
   // D1: avisos automáticos do projeto
   const projAlerts = buildProjectAlerts(pid);
@@ -2770,6 +2778,9 @@ function catCompare(a,b){
 }
 
 let rubPendingChanges = 0;
+// Buffer de alterações pendentes da aba Rubricas (proj|cat|month|exec → {…,newVal}).
+// Nada é gravado em DATA.gastos até o usuário clicar em "Salvar alterações".
+const rubPending = new Map();
 
 // Constrói o pivot (cat x mês) para um projeto, opcionalmente filtrado por executor.
 // Retorna { months, allCats, pivot, planMap, ptrbMap }
@@ -2991,6 +3002,7 @@ function renderRubricas(){
 
   // Store months/cats for edit functions
   window._rubState = { months, allCats, pFilter, execFilter, hasMultiExec, planMap, ptrbMap };
+  rubPending.clear();
   rubPendingChanges = 0;
 }
 
@@ -3022,20 +3034,23 @@ function rubStartEdit(cell){
 
   const finish=()=>{
     const newVal = parseFloat(input.value)||0;
-    // Update DATA.gastos
-    rubApplyChange(proj, cat, month, exec, newVal);
-    // Update cell display
+    const key = rubKey(proj, cat, month, exec);
+
+    // Se voltou ao valor original, a célula deixa de ser uma alteração pendente.
+    if(Math.abs(newVal-curVal) < 0.005){
+      rubPending.delete(key);
+      cell.classList.remove('cell-changed');
+    }else{
+      // Apenas BUFFER — não mexe em DATA.gastos. Reeditar a mesma célula
+      // sobrescreve a mesma chave (sem duplicar a contagem).
+      rubPending.set(key, {proj, cat, month, exec, newVal});
+      cell.classList.add('cell-changed');
+    }
+    // Atualiza só a exibição da célula (não a fonte de dados)
     cell.innerHTML = newVal ? FMTK(newVal) : '';
-    cell.classList.add('cell-changed');
-    // Recalculate row and column totals
+    // Recalcula totais a partir do texto exibido
     rubUpdateTotals(ci, mi);
-    // Pending counter
-    rubPendingChanges++;
-    const bar=document.getElementById('rub-save-bar');
-    if(bar){ bar.style.display='flex'; }
-    const badge=document.getElementById('rub-change-count');
-    const L=lang==='pt';
-    if(badge) badge.textContent=`${rubPendingChanges} ${L?'alterações pendentes':'pending changes'}`;
+    rubRefreshSaveBar();
   };
 
   input.addEventListener('blur', finish);
@@ -3045,6 +3060,20 @@ function rubStartEdit(cell){
   });
 }
 
+// Chave única de uma célula da pivot (projeto|categoria|mês|executor)
+function rubKey(proj, cat, month, exec){ return `${proj}|${cat}|${month}|${exec}`; }
+
+// Contador = nº de chaves únicas no buffer. Atualiza barra e badge.
+function rubRefreshSaveBar(){
+  rubPendingChanges = rubPending.size;
+  const L=lang==='pt';
+  const bar=document.getElementById('rub-save-bar');
+  if(bar) bar.style.display = rubPendingChanges>0 ? 'flex' : 'none';
+  const badge=document.getElementById('rub-change-count');
+  if(badge) badge.textContent=`${rubPendingChanges} ${L?'alterações pendentes':'pending changes'}`;
+}
+
+// Aplica UMA alteração pendente a DATA.gastos (chamada só no save, por chave única).
 function rubApplyChange(proj, cat, month, exec, newVal){
   const [year, mo] = month.split('-');
   const monthName = Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo))?.[0]||'janeiro';
@@ -3110,14 +3139,23 @@ function rubUpdateTotals(ci, mi){
 }
 
 function cancelRubEdits(){
+  // Descarta TODAS as alterações pendentes. Como nada foi escrito em DATA.gastos,
+  // o re-render restaura exatamente os valores originais.
+  rubPending.clear();
   rubPendingChanges=0;
   renderRubricas();
 }
 
 async function saveRubEdits(){
-  if(rubPendingChanges===0) return;
+  if(rubPending.size===0) return;
   showLoading(lang==='pt'?'Salvando gastos no Excel...':'Saving expenses to Excel...');
+  // Snapshot para rollback caso a escrita no Excel falhe
+  const snapshot = JSON.parse(JSON.stringify(DATA.gastos));
   try{
+    // Aplica cada alteração pendente UMA vez (chaves únicas → sem updates múltiplos)
+    rubPending.forEach(({proj, cat, month, exec, newVal})=>{
+      rubApplyChange(proj, cat, month, exec, newVal);
+    });
     // Reescreve a sheet Gastos completa com DATA.gastos atualizado em memória
     const headers=['Projeto','Executor','Data','Categoria','Valor','Descricao'];
     const dataRows = DATA.gastos.map(g=>[
@@ -3129,6 +3167,7 @@ async function saveRubEdits(){
       g.Descricao||'',
     ]);
     await rewriteExcelSheet('Gastos', headers, dataRows);
+    rubPending.clear();
     rubPendingChanges=0;
     const bar=document.getElementById('rub-save-bar');
     if(bar) bar.style.display='none';
@@ -3136,6 +3175,8 @@ async function saveRubEdits(){
     hideLoading();
     alert(lang==='pt'?'Gastos salvos com sucesso!':'Expenses saved successfully!');
   }catch(e){
+    // Rollback: restaura DATA.gastos; mantém o buffer para o usuário tentar de novo
+    DATA.gastos = snapshot;
     hideLoading();
     console.error('saveRubEdits error:',e);
     alert((lang==='pt'?'Erro ao salvar gastos: ':'Error saving expenses: ')+e.message);
@@ -3245,7 +3286,6 @@ function renderSMs(){
             <th>${L?'Submissão':'Submitted'}</th>
             <th>${L?'Aprovação':'Approved'}</th>
             <th>Status</th>
-            <th class="text-right">${L?'Valor':'Value'}</th>
             <th>${L?'Observações':'Notes'}</th>
           </tr></thead>
           <tbody>
@@ -3257,7 +3297,6 @@ function renderSMs(){
                 <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'—'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'—'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
-                <td class="text-right fs-12">${parseFloat(s.Valor||0)?FMT.format(parseFloat(s.Valor)):'—'}</td>
                 <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'—')}</td>
               </tr>`;
             }).join('')}
