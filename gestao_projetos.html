@@ -345,6 +345,39 @@ tr:hover td{background:var(--surface3);}
 .badge-purple{background:#EEE8FF;color:#5B3DBE;}
 .badge-teal{background:#E4F7F5;color:#1A7A6E;}
 
+/* ── SM: célula alterada vs SM anterior ── */
+.cell-sm-changed{background:var(--amber-light)!important;color:var(--amber);font-weight:600;}
+
+/* ── Status select unificado (marcos) ── */
+.status-select{padding:3px 10px;font-size:11px;font-weight:600;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;outline:none;max-width:150px;}
+.status-select:focus{border-color:var(--accent);}
+.status-select.st-red{background:var(--red-light);color:var(--red);border-color:#f0c8c8;}
+.status-select.st-amber{background:var(--amber-light);color:var(--amber);border-color:#e8d8a8;}
+.status-select.st-blue{background:var(--blue-light);color:var(--blue);border-color:#cdd9ef;}
+.status-select.st-green{background:var(--green-light);color:var(--green);border-color:#c0ddd5;}
+.status-select.st-gray{background:var(--surface2);color:var(--ink3);}
+
+/* ── Status select do projeto ── */
+.proj-status-select{padding:5px 12px;font-size:13px;font-weight:600;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;outline:none;}
+.proj-status-select.st-green{background:var(--green-light);color:var(--green);border-color:#c0ddd5;}
+.proj-status-select.st-gray{background:var(--surface2);color:var(--ink3);}
+.proj-status-select.st-amber{background:var(--amber-light);color:var(--amber);border-color:#e8d8a8;}
+.proj-status-select.st-red{background:var(--red-light);color:var(--red);border-color:#f0c8c8;}
+
+/* ── Gantt chart ── */
+.gantt-wrap{overflow-x:auto;padding:4px 0;}
+.gantt-row{display:flex;align-items:center;height:30px;font-size:11px;}
+.gantt-label{flex:0 0 150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2);padding-right:10px;font-weight:500;}
+.gantt-track{position:relative;flex:1;height:18px;background:var(--surface2);border-radius:4px;min-width:300px;}
+.gantt-bar{position:absolute;height:100%;border-radius:4px;background:var(--accent2);}
+.gantt-bar-over{position:absolute;height:100%;border-radius:0 4px 4px 0;
+  background:repeating-linear-gradient(45deg,var(--red) 0,var(--red) 4px,transparent 4px,transparent 8px);
+  opacity:0.65;border:1px dashed var(--red);box-sizing:border-box;}
+.gantt-axis{display:flex;flex:1;min-width:300px;justify-content:space-between;font-size:10px;color:var(--ink3);margin-left:160px;border-top:1px solid var(--border);padding-top:4px;}
+.gantt-today{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--gold);z-index:2;}
+
 </style>
 </head>
 <body>
@@ -444,6 +477,9 @@ tr:hover td{background:var(--surface3);}
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
             <span id="btn-sync">Sync</span>
           </button>
+          <button class="btn btn-primary btn-sm" onclick="openProjectModal()" id="btn-new-project">
+            <span id="lbl-new-project">+ New Project</span>
+          </button>
         </div>
       </div>
 
@@ -483,6 +519,15 @@ tr:hover td{background:var(--surface3);}
           </div>
           <div id="overdue-milestones-list"></div>
         </div>
+      </div>
+
+      <!-- Gantt -->
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+          <span id="card-gantt">Timeline</span>
+        </div>
+        <div id="gantt-content"></div>
       </div>
     </div>
 
@@ -555,9 +600,13 @@ tr:hover td{background:var(--surface3);}
         <select class="form-select" id="rub-exec-filter" onchange="renderRubricas()" style="display:none;">
           <option value="ALL">All Executors</option>
         </select>
-        <button class="btn btn-secondary btn-sm" onclick="exportRubricasExcel()" id="btn-export-rubricas" style="display:none;margin-left:auto;">
+        <button class="btn btn-secondary btn-sm" onclick="exportRubricasProjeto()" id="btn-export-rub-proj" style="display:none;margin-left:auto;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export Excel
+          <span id="lbl-export-proj">Export project</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="exportRubricasTodos()" id="btn-export-rub-all" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="lbl-export-all">Export all projects</span>
         </button>
       </div>
 
@@ -668,6 +717,83 @@ tr:hover td{background:var(--surface3);}
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSM()">Save SM</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: ADD PROJECT ===================== -->
+<div class="modal-overlay" id="project-modal">
+  <div class="modal" style="max-width:680px;">
+    <h2 class="modal-title" id="modal-project-title">New Project</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-codigo">Code *</label>
+        <input class="form-input" id="pm-codigo" placeholder="P011">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-anp">ANP #</label>
+        <input class="form-input" id="pm-anp">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="lbl-pm-titulo">Title *</label>
+      <input class="form-input" id="pm-titulo">
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-executor">Executor</label>
+        <input class="form-input" id="pm-executor">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-pmanager">Project Manager</label>
+        <input class="form-input" id="pm-pmanager">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-gestor">Gestor</label>
+        <select class="form-select" id="pm-gestor">
+          <option value="Yiannis">Yiannis</option>
+          <option value="Diogo">Diogo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-status">Status</label>
+        <select class="form-select" id="pm-status">
+          <option value="Em andamento">Em andamento</option>
+          <option value="Concluído">Concluído</option>
+          <option value="Suspenso">Suspenso</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-inicio">Start *</label>
+        <input class="form-input" type="date" id="pm-inicio">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-fim">End *</label>
+        <input class="form-input" type="date" id="pm-fim">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-fimreal">Actual End</label>
+        <input class="form-input" type="date" id="pm-fimreal">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-duracao">Duration (months)</label>
+        <input class="form-input" type="number" id="pm-duracao" min="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="lbl-pm-valor">PTR-B Value (R$) *</label>
+      <input class="form-input" type="number" id="pm-valor" min="0" step="0.01">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('project-modal')" id="btn-pm-cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewProject()" id="btn-pm-save">Save Project</button>
     </div>
   </div>
 </div>
@@ -821,6 +947,12 @@ const T = {
     rub_cat:'Category',rub_ptrb:'PTR-B',rub_plan:'Current Plan',rub_actual:'Actuals',rub_balance:'Balance',rub_pct:'Exec%',
     no_milestones:'No milestones in this period.',search:'Search...',
     alert_overdue:'projects have overdue milestones',alert_fin:'projects over 100% budget execution',
+    new_project:'+ New Project',modal_new_project:'New Project',gantt:'Timeline',
+    export_proj:'Export project',export_all:'Export all projects',
+    pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor',
+    pm_pmanager:'Project Manager',pm_gestor:'Gestor',pm_status:'Status',
+    pm_inicio:'Start *',pm_fim:'End *',pm_fimreal:'Actual End',pm_duracao:'Duration (months)',
+    pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',
   },
   pt:{
     portfolio:'Visão Geral do Portfólio',sub_portfolio:'10 projetos RD&I · Cláusula ANP Petrobras',
@@ -851,6 +983,12 @@ const T = {
     rub_cat:'Categoria',rub_ptrb:'PTR-B',rub_plan:'Plano Atual',rub_actual:'Realizado',rub_balance:'Saldo',rub_pct:'Exec%',
     no_milestones:'Nenhum marco neste período.',search:'Buscar...',
     alert_overdue:'projetos com marcos atrasados',alert_fin:'projetos com execução acima de 100%',
+    new_project:'+ Novo Projeto',modal_new_project:'Novo Projeto',gantt:'Linha do Tempo',
+    export_proj:'Exportar projeto',export_all:'Exportar todos',
+    pm_codigo:'Código *',pm_anp:'Nº ANP',pm_titulo:'Título *',pm_executor:'Executor',
+    pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
+    pm_inicio:'Início *',pm_fim:'Fim *',pm_fimreal:'Fim real',pm_duracao:'Duração (meses)',
+    pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',
   }
 };
 function t(k){return (T[lang]||T.en)[k]||k;}
@@ -887,6 +1025,14 @@ function applyTranslations(){
     ['lbl-gasto-project','lbl_project'],['lbl-gasto-executor','lbl_executor'],
     ['lbl-gasto-cat','lbl_cat'],['lbl-gasto-valor','lbl_amount'],
     ['lbl-gasto-date','lbl_date'],['lbl-gasto-ano','lbl_year'],
+    ['lbl-new-project','new_project'],['card-gantt','gantt'],
+    ['lbl-export-proj','export_proj'],['lbl-export-all','export_all'],
+    ['modal-project-title','modal_new_project'],
+    ['lbl-pm-codigo','pm_codigo'],['lbl-pm-anp','pm_anp'],['lbl-pm-titulo','pm_titulo'],
+    ['lbl-pm-executor','pm_executor'],['lbl-pm-pmanager','pm_pmanager'],['lbl-pm-gestor','pm_gestor'],
+    ['lbl-pm-status','pm_status'],['lbl-pm-inicio','pm_inicio'],['lbl-pm-fim','pm_fim'],
+    ['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
+    ['btn-pm-save','pm_save'],['btn-pm-cancel','cancel'],
   ];
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
   const msSearch=document.getElementById('ms-search');
@@ -957,6 +1103,72 @@ function projectStatusBadge(status){
   return `<span class="badge ${cls}">${s||'—'}</span>`;
 }
 
+// opções de status do projeto (rótulos vindos do Excel — PT)
+const PROJECT_STATUSES = ['Em andamento','Concluído','Suspenso','Cancelado'];
+
+function projectStatusSelectClass(status){
+  const low=String(status||'').trim().toLowerCase();
+  if(low==='em andamento') return 'st-green';
+  if(low==='concluído'||low==='concluido') return 'st-gray';
+  if(low==='suspenso') return 'st-amber';
+  if(low==='cancelado') return 'st-red';
+  return 'st-gray';
+}
+
+// select editável de status do projeto (aba Projeto)
+function projectStatusSelect(proj){
+  const cur=String(proj.Status_Projeto||'').trim();
+  const cls=projectStatusSelectClass(cur);
+  // garante que o valor atual apareça mesmo se fora da lista padrão
+  const opts=[...new Set([...PROJECT_STATUSES, cur].filter(Boolean))];
+  const optHtml=opts.map(s=>`<option value="${escapeAttr(s)}" ${s===cur?'selected':''}>${escapeHtml(s)}</option>`).join('');
+  return `<select class="proj-status-select ${cls}" onchange="updateProjectStatus('${escapeAttr(proj.Projeto)}',this.value)">${optHtml}</select>`;
+}
+
+// altera status em memória e persiste na sheet Projetos
+async function updateProjectStatus(pid, newStatus){
+  const proj=DATA.projetos.find(p=>p.Projeto===pid);
+  if(!proj) return;
+  const old=proj.Status_Projeto;
+  proj.Status_Projeto=newStatus;
+  showLoading(lang==='pt'?'Salvando status no Excel...':'Saving status to Excel...');
+  try{
+    await rewriteProjetosSheet();
+    hideLoading();
+    // re-render para refletir cor do select e badge no portfólio
+    if(currentPage==='project') renderProjectDetail(pid);
+  }catch(e){
+    proj.Status_Projeto=old; // rollback em memória
+    hideLoading();
+    console.error('updateProjectStatus error:',e);
+    alert((lang==='pt'?'Erro ao salvar status: ':'Error saving status: ')+e.message);
+    if(currentPage==='project') renderProjectDetail(pid);
+  }
+}
+
+// reescreve a sheet Projetos inteira a partir de DATA.projetos
+// Ordem exata das colunas do Excel:
+// Codigo Titulo Executor Numero_ANP Project_Manager Gestor Data_Inicio Data_Fim Data_Fim_Real Duracao_Meses Valor_PTRB Status_Projeto
+async function rewriteProjetosSheet(){
+  const headers=['Codigo','Titulo','Executor','Numero_ANP','Project_Manager','Gestor',
+    'Data_Inicio','Data_Fim','Data_Fim_Real','Duracao_Meses','Valor_PTRB','Status_Projeto'];
+  const dataRows=DATA.projetos.map(p=>[
+    p.Projeto||'',
+    p['Título do projeto']||'',
+    p.Executor||'',
+    p.Numero_ANP||p['Número ANP']||'',
+    p.Project_Manager||p['Project Manager']||'',
+    p.Gestor||'',
+    isoToExcelSerial(p['Data de início ']||p['Data de início'])||'',
+    isoToExcelSerial(p['Data final'])||'',
+    p['Data final real'] ? (isoToExcelSerial(p['Data final real'])||'') : '',
+    p.Duracao_Meses||p['Duração (meses)']||'',
+    parseFloat(p.Valor_PTRB||p['Planned Value (R$)']||0)||0,
+    p.Status_Projeto||'',
+  ]);
+  await rewriteExcelSheet('Projetos', headers, dataRows);
+}
+
 function escapeHtml(v){
   return String(v??'').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 }
@@ -966,6 +1178,35 @@ function pctColor(v){
   if(v>=1) return 'color-red';
   if(v>=0.85) return 'color-amber';
   return 'color-green';
+}
+
+// classe de cor do select de status de marco, a partir do status calculado
+function statusSelectClass(s){
+  return {
+    'Overdue':'st-red','Upcoming':'st-amber','Planned':'st-blue',
+    'Completed':'st-green','Suspended':'st-gray'
+  }[s]||'st-gray';
+}
+
+// rótulo do status calculado, traduzido — usado como texto da opção (Auto)
+function statusAutoLabel(s){
+  const lbl={'Overdue':t('overdue'),'Upcoming':t('upcoming'),'Planned':t('planned'),
+    'Completed':t('completed'),'Suspended':t('suspended')}[s]||s;
+  return (lang==='pt'?'Automático':'Auto')+(s?` · ${lbl}`:'');
+}
+
+// monta o <select> unificado de status do marco (badge + override num só controle)
+function milestoneStatusSelect(m, origIdx){
+  const calc = m._status;                    // status calculado
+  const isOverride = !!(m._userStatus && m._userStatus!=='');
+  const current = isOverride ? m._userStatus : calc;
+  const colorCls = statusSelectClass(current);
+  const opts = ['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>{
+    const label = s ? t(s.toLowerCase()) : statusAutoLabel(calc);
+    const sel = (m._userStatus||'')===s ? 'selected':'';
+    return `<option value="${s}" ${sel}>${label}</option>`;
+  }).join('');
+  return `<select class="status-select ${colorCls}" onchange="updateMilestoneStatus(${origIdx},this.value)">${opts}</select>`;
 }
 
 function getExec(pid){
@@ -1154,7 +1395,13 @@ function normalizeProjeto(r){
     Gestor              : r.Gestor||'',
     'Data de início '   : excelDate(r.Data_Inicio),
     'Data final'        : excelDate(r.Data_Fim),
+    'Data final real'   : excelDate(r.Data_Fim_Real),
+    Data_Fim_Real       : excelDate(r.Data_Fim_Real),
     'Duração (meses)'   : r.Duracao_Meses||'',
+    Duracao_Meses       : r.Duracao_Meses||'',
+    'Numero ANP raw'    : r.Numero_ANP||'',
+    Numero_ANP          : r.Numero_ANP||'',
+    Project_Manager     : r.Project_Manager||'',
     'Planned Value (R$)': parseFloat(r.Valor_PTRB)||0,
     Valor_PTRB          : parseFloat(r.Valor_PTRB)||0,
     Status_Projeto      : r.Status_Projeto||'',
@@ -1623,6 +1870,85 @@ function renderPortfolio(){
       ${typeChip()}
     </div>`;
   });
+
+  renderGantt(gProjs);
+}
+
+// ===================== GANTT =====================
+function renderGantt(projs){
+  const el=document.getElementById('gantt-content');
+  if(!el) return;
+  const L=lang==='pt';
+
+  // coleta projetos com datas válidas
+  const items=projs.map(p=>{
+    const start=new Date(p['Data de início ']||p['Data de início']);
+    const end=new Date(p['Data final']);
+    const realRaw=p['Data final real'];
+    const real=realRaw?new Date(realRaw):null;
+    return {p,start,end,real:(real&&!isNaN(real))?real:null};
+  }).filter(it=>!isNaN(it.start)&&!isNaN(it.end));
+
+  if(!items.length){
+    el.innerHTML=`<div class="empty-state fs-12">${L?'Sem datas de projeto para exibir.':'No project dates to display.'}</div>`;
+    return;
+  }
+
+  // escala temporal: menor início → maior fim (considerando fim real)
+  let minT=Infinity, maxT=-Infinity;
+  items.forEach(it=>{
+    minT=Math.min(minT, it.start.getTime());
+    const farEnd=Math.max(it.end.getTime(), it.real?it.real.getTime():0);
+    maxT=Math.max(maxT, farEnd);
+  });
+  const span=maxT-minT || 1;
+  const pos=t=>((t-minT)/span)*100;
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayPct=(today.getTime()>=minT&&today.getTime()<=maxT)?pos(today.getTime()):null;
+
+  const rowsHtml=items.map(it=>{
+    const officialEnd=it.end.getTime();
+    const left=pos(it.start.getTime());
+    const officialRight=pos(officialEnd);
+    const baseW=Math.max(0.5, officialRight-left);
+    // trecho excedente: fim real > fim oficial
+    let overHtml='';
+    if(it.real && it.real.getTime()>officialEnd){
+      const overRight=pos(it.real.getTime());
+      const overW=Math.max(0.5, overRight-officialRight);
+      overHtml=`<div class="gantt-bar-over" style="left:${officialRight}%;width:${overW}%;" title="${L?'Prolongamento':'Extension'}: ${FMTD(it.p['Data final'])} → ${FMTD(it.p['Data final real'])}"></div>`;
+    }
+    const dur=it.p['Duração (meses)']||'';
+    const endLabel = it.real && it.real.getTime()!==officialEnd
+      ? `${FMTD(it.p['Data final'])} → ${FMTD(it.p['Data final real'])}`
+      : FMTD(it.p['Data final']);
+    const tip=`${it.p.Projeto} · ${FMTD(it.p['Data de início ']||it.p['Data de início'])} → ${endLabel}${dur?` · ${dur} ${L?'meses':'mo'}`:''}`;
+    return `<div class="gantt-row" title="${escapeAttr(tip)}">
+      <div class="gantt-label">${it.p.Projeto}</div>
+      <div class="gantt-track">
+        <div class="gantt-bar" style="left:${left}%;width:${baseW}%;"></div>
+        ${overHtml}
+        ${todayPct!==null?`<div class="gantt-today" style="left:${todayPct}%;" title="${L?'Hoje':'Today'}"></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // eixo: início, meio, fim
+  const midT=minT+span/2;
+  const axis=`<div class="gantt-axis">
+    <span>${FMTD(new Date(minT))}</span>
+    <span>${FMTD(new Date(midT))}</span>
+    <span>${FMTD(new Date(maxT))}</span>
+  </div>`;
+
+  const legend=`<div style="display:flex;gap:16px;align-items:center;margin-top:10px;font-size:10px;color:var(--ink3);">
+    <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;background:var(--accent2);border-radius:2px;display:inline-block;"></span>${L?'Período oficial':'Official period'}</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;border:1px dashed var(--red);background:repeating-linear-gradient(45deg,var(--red) 0,var(--red) 3px,transparent 3px,transparent 6px);opacity:0.65;border-radius:2px;display:inline-block;"></span>${L?'Prolongamento (fim real)':'Extension (actual end)'}</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:2px;height:12px;background:var(--gold);display:inline-block;"></span>${L?'Hoje':'Today'}</span>
+  </div>`;
+
+  el.innerHTML=`<div class="gantt-wrap">${rowsHtml}${axis}</div>${legend}`;
 }
 
 function openProject(pid){
@@ -1678,7 +2004,8 @@ function renderProjectDetail(pid){
 
   // ---- SMs ----
   const projSMs = DATA.sms.filter(s=>s.Projeto===pid);
-  const smNums  = [...new Set(projSMs.map(s=>s['SM#']))].sort();
+  const smNums  = [...new Set(projSMs.map(s=>s['SM#']))]
+    .sort((a,b)=>(parseInt(String(a).replace(/\D/g,''))||0)-(parseInt(String(b).replace(/\D/g,''))||0));
 
   // ---- Rendimento ----
   const projRend = DATA.rendimento.filter(r=>r.Projeto===pid);
@@ -1744,7 +2071,9 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'—'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Início':'Start'}</td><td>${FMTD(proj['Data de início ']||proj['Data de início'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim':'End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
+        ${proj['Data final real'] ? `<tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End'}</td><td>${FMTD(proj['Data final real'])}</td></tr>` : ''}
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Duração':'Duration'}</td><td>${proj['Duração (meses)']||'—'} ${L?'meses':'months'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
       </table>
     </div>
     <div class="card">
@@ -1797,14 +2126,7 @@ function renderProjectDetail(pid){
                 ? `<span class="badge badge-gray">${L?'Suspenso':'Suspended'}</span>`
                 : `<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${(m['Data prevista / Data de entrega']||'').split('T')[0]}" onchange="updateMilestoneDate(${origIdx},this.value)">`
               }</td>
-              <td>
-                <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
-                  ${statusBadge(m._status)}
-                  <select class="form-select fs-12" style="padding:3px 6px;font-size:11px;max-width:120px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
-                    ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${(m._userStatus||'')===s?'selected':''}>${s||'(Auto)'}</option>`).join('')}
-                  </select>
-                </div>
-              </td>
+              <td>${milestoneStatusSelect(m, origIdx)}</td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -1843,10 +2165,10 @@ function renderProjectDetail(pid){
             const bal=plan_c-act_c, pct=plan_c?act_c/plan_c:0;
             return `<tr>
               <td class="fs-12">${c}</td>
-              <td class="text-right fs-12 color-ink3">${FMTK(ptrb_c)}</td>
-              <td class="text-right fw-600">${FMTK(plan_c)}</td>
-              <td class="text-right">${FMTK(act_c)}</td>
-              <td class="text-right ${bal<0?'color-red':'color-green'} fw-600">${FMTK(bal)}</td>
+              <td class="text-right fs-12 color-ink3">${FMT.format(ptrb_c)}</td>
+              <td class="text-right fw-600">${FMT.format(plan_c)}</td>
+              <td class="text-right">${FMT.format(act_c)}</td>
+              <td class="text-right ${bal<0?'color-red':'color-green'} fw-600">${FMT.format(bal)}</td>
               <td class="text-right"><span class="${pctColor(pct)} fw-600">${PCT(pct)}</span></td>
             </tr>`;
           }).join('')}
@@ -1857,10 +2179,10 @@ function renderProjectDetail(pid){
             const tb=tpl-ta, tpct=tpl?ta/tpl:0;
             return `<tr style="background:var(--surface2);font-weight:600;">
               <td>TOTAL</td>
-              <td class="text-right">${FMTK(tp)}</td>
-              <td class="text-right">${FMTK(tpl)}</td>
-              <td class="text-right">${FMTK(ta)}</td>
-              <td class="text-right ${tb<0?'color-red':'color-green'}">${FMTK(tb)}</td>
+              <td class="text-right">${FMT.format(tp)}</td>
+              <td class="text-right">${FMT.format(tpl)}</td>
+              <td class="text-right">${FMT.format(ta)}</td>
+              <td class="text-right ${tb<0?'color-red':'color-green'}">${FMT.format(tb)}</td>
               <td class="text-right"><span class="${pctColor(tpct)}">${PCT(tpct)}</span></td>
             </tr>`;
           })()}
@@ -1894,10 +2216,18 @@ function renderProjectDetail(pid){
                 return catsSM.map(cat=>{
                   const ptrbRow = catPtrbMap[cat]||0;
                   const aba = (projSMs.find(s=>s.Categoria_despesa===cat)||{}).Código_Aba||'—';
-                  const cells = smNums.map(sn=>{
+                  const cells = smNums.map((sn,si)=>{
                     const match = projSMs.find(s=>s.Categoria_despesa===cat&&s['SM#']===sn);
                     const v = match?parseFloat(match.Valor||0):null;
-                    return `<td class="text-right ${v!==null&&v!==ptrbRow?'color-amber fw-600':''}">${v!==null?FMTK(v):'—'}</td>`;
+                    // valor de referência: SM anterior se existir; senão PTR-B original
+                    let ref;
+                    if(si===0){ ref = ptrbRow; }
+                    else {
+                      const prevMatch = projSMs.find(s=>s.Categoria_despesa===cat&&s['SM#']===smNums[si-1]);
+                      ref = prevMatch ? parseFloat(prevMatch.Valor||0) : ptrbRow;
+                    }
+                    const changed = v!==null && Math.abs(v-ref)>0.005;
+                    return `<td class="text-right ${changed?'cell-sm-changed':''}">${v!==null?FMTK(v):'—'}</td>`;
                   }).join('');
                   return `<tr>
                     <td class="fs-12">${cat}</td>
@@ -2080,14 +2410,7 @@ function renderMilestones(){
       <td style="max-width:280px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${m['Descrição']||'—'}</div></td>
       <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
       <td>${dateCell}</td>
-      <td>
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
-          ${statusBadge(m._status)}
-          <select class="form-select fs-12" style="padding:3px 6px;font-size:11px;max-width:120px;" onchange="updateMilestoneStatus(${origIdx},this.value)">
-            ${['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>`<option value="${s}" ${(m._userStatus||'')===s?'selected':''}>${s||'(Auto)'}</option>`).join('')}
-          </select>
-        </div>
-      </td>
+      <td>${milestoneStatusSelect(m, origIdx)}</td>
     </tr>`;
   });
 }
@@ -2141,17 +2464,108 @@ function getCatABA(cat){
 
 let rubPendingChanges = 0;
 
+// Constrói o pivot (cat x mês) para um projeto, opcionalmente filtrado por executor.
+// Retorna { months, allCats, pivot, planMap, ptrbMap }
+function buildRubPivot(pid, execFilter){
+  let gastos = DATA.gastos.filter(g => (g.Projetos||g.Projeto) === pid);
+  let plano  = DATA.plano.filter(r => r.Projeto === pid);
+  if(execFilter && execFilter!=='ALL'){
+    gastos = gastos.filter(g=>g.Executor===execFilter);
+    plano  = plano.filter(r=>r.Executor===execFilter);
+  }
+  const pivot={}, monthSet=new Set();
+  gastos.forEach(g=>{
+    const mo=MONTHS_PT[g.Mês?.toLowerCase()]||1;
+    const key=`${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
+    monthSet.add(key);
+    const cat=g.Categoria_despesa||'Outros';
+    (pivot[cat]=pivot[cat]||{})[key]=(pivot[cat][key]||0)+parseFloat(g.Valor||0);
+  });
+  const months=[...monthSet].sort();
+  const planMap={}, ptrbMap={};
+  plano.forEach(r=>{
+    const cc=r.Categoria_despesa;
+    planMap[cc]=(planMap[cc]||0)+parseFloat(r.Plano_Atual||0);
+    ptrbMap[cc]=(ptrbMap[cc]||0)+parseFloat(r['Plano_PTR-B']||0);
+  });
+  const allCats=[...new Set([...Object.keys(pivot),...Object.keys(planMap)])].filter(Boolean).sort();
+  return {months, allCats, pivot, planMap, ptrbMap};
+}
+
+// Render somente-leitura da pivot de UM projeto (usado no modo "Todos")
+function renderRubReadonlyTable(pid){
+  const L=lang==='pt';
+  const {months, allCats, pivot, planMap, ptrbMap}=buildRubPivot(pid,'ALL');
+  if(!allCats.length) return '';
+  const proj=DATA.projetos.find(p=>p.Projeto===pid);
+  const title=pid+' — '+((proj&&(proj['Título do projeto']||''))||'').split(':')[0].trim();
+  const frozenHeaders=`
+    <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
+    <th class="col-frozen col-aba">ABA</th>
+    <th class="col-frozen col-ptrb">PTR-B</th>
+    <th class="col-frozen col-plan">${L?'Plano Atual':'Curr. Plan'}</th>
+    <th class="col-frozen col-total">Total</th>
+    <th class="col-frozen col-pct">%</th>`;
+  const monthHeaders=months.map(m=>`<th class="col-month">${m}</th>`).join('');
+  const monthTotals={}; months.forEach(m=>monthTotals[m]=0);
+  let gT=0,gP=0,gPl=0;
+  const rows=allCats.map(cat=>{
+    const aba=getCatABA(cat), ptrb=ptrbMap[cat]||0, plan=planMap[cat]||0;
+    let rowTotal=0;
+    months.forEach(m=>{const v=(pivot[cat]||{})[m]||0;rowTotal+=v;monthTotals[m]+=v;});
+    gT+=rowTotal;gP+=ptrb;gPl+=plan;
+    const pct=plan?rowTotal/plan:0;
+    const fc=`
+      <td class="col-frozen col-cat fs-12">${cat}</td>
+      <td class="col-frozen col-aba fw-600 fs-12 color-ink3">${aba}</td>
+      <td class="col-frozen col-ptrb color-ink3">${FMTK(ptrb)}</td>
+      <td class="col-frozen col-plan fw-600">${FMTK(plan)}</td>
+      <td class="col-frozen col-total fw-600">${FMTK(rowTotal)}</td>
+      <td class="col-frozen col-pct"><span class="${pctColor(pct)}">${PCT(pct)}</span></td>`;
+    const mc=months.map(m=>{const v=(pivot[cat]||{})[m]||0;return `<td class="col-month">${v?FMTK(v):''}</td>`;}).join('');
+    return `<tr>${fc}${mc}</tr>`;
+  }).join('');
+  const gPct=gPl?gT/gPl:0;
+  const totalRow=`<tr class="row-total">
+    <td class="col-frozen col-cat">TOTAL</td>
+    <td class="col-frozen col-aba"></td>
+    <td class="col-frozen col-ptrb">${FMTK(gP)}</td>
+    <td class="col-frozen col-plan">${FMTK(gPl)}</td>
+    <td class="col-frozen col-total">${FMTK(gT)}</td>
+    <td class="col-frozen col-pct">${PCT(gPct)}</td>
+    ${months.map(m=>`<td class="col-month">${monthTotals[m]?FMTK(monthTotals[m]):''}</td>`).join('')}
+  </tr>`;
+  return `
+    <div style="font-family:'DM Serif Display',serif;font-size:16px;margin:18px 0 8px;">${title}</div>
+    <div class="pivot-outer" style="margin-bottom:8px;">
+      <table class="pivot-table">
+        <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
+        <tbody>${rows}${totalRow}</tbody>
+      </table>
+    </div>`;
+}
+
 function renderRubricas(){
   const pFilter = document.getElementById('rub-project-filter').value;
   const L = lang === 'pt';
 
-  // Export button visibility
-  const expBtn = document.getElementById('btn-export-rubricas');
-  if(expBtn) expBtn.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
+  // Export buttons visibility
+  const expProj = document.getElementById('btn-export-rub-proj');
+  const expAll  = document.getElementById('btn-export-rub-all');
+  if(expProj) expProj.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
+  if(expAll)  expAll.style.display  = 'flex';
+  if(expProj && pFilter==='ALL' && expAll) expAll.style.marginLeft='auto';
+  else if(expAll) expAll.style.marginLeft='';
 
   if(pFilter === 'ALL'){
-    document.getElementById('rubricas-content').innerHTML =
-      `<div class="card empty-state" style="padding:48px;">${L?'Selecione um projeto para ver o detalhamento por rubrica.':'Select a project to view budget line details.'}</div>`;
+    // Modo "Todos os projetos": tabelas somente-leitura empilhadas
+    const execEl=document.getElementById('rub-exec-filter');
+    if(execEl) execEl.style.display='none';
+    const projs=DATA.projetos;
+    const blocks=projs.map(p=>renderRubReadonlyTable(p.Projeto)).filter(Boolean).join('');
+    document.getElementById('rubricas-content').innerHTML = blocks ||
+      `<div class="card empty-state" style="padding:48px;">${L?'Sem dados de rubricas.':'No budget line data.'}</div>`;
+    window._rubState=null;
     return;
   }
 
@@ -2421,55 +2835,59 @@ async function saveRubEdits(){
   }
 }
 
-function exportRubricasExcel(){
-  const pFilter=document.getElementById('rub-project-filter').value;
-  if(pFilter==='ALL') return;
-  const execFilter=document.getElementById('rub-exec-filter')?.value||'ALL';
-  if(!window._rubState) return;
-  const {months, allCats, planMap, ptrbMap} = window._rubState;
+// Monta um worksheet (AOA) da pivot de um projeto. Reusado pelos dois exports.
+function buildRubWorksheet(pid, execFilter){
   const L=lang==='pt';
-
-  const wb = XLSX.utils.book_new();
-
-  // Build sheet data
-  const header = [L?'Categoria':'Category','ABA','PTR-B',L?'Plano Atual':'Curr. Plan','Total',...months];
-  const rows = [header];
-  const monthTotals = months.map(()=>0);
+  const {months, allCats, pivot, planMap, ptrbMap}=buildRubPivot(pid, execFilter||'ALL');
+  const header=[L?'Categoria':'Category','ABA','PTR-B',L?'Plano Atual':'Curr. Plan','Total',...months];
+  const rows=[header];
+  const monthTotals=months.map(()=>0);
   let gTotal=0;
-
   allCats.forEach(cat=>{
-    const aba=getCatABA(cat);
-    const ptrb=ptrbMap[cat]||0;
-    const plan=planMap[cat]||0;
+    const aba=getCatABA(cat), ptrb=ptrbMap[cat]||0, plan=planMap[cat]||0;
     let rowTotal=0;
-    const monthVals=months.map(m=>{
-      let gastos=DATA.gastos.filter(g=>{
-        if(g.Projetos!==pFilter||g.Categoria_despesa!==cat) return false;
-        const mo=MONTHS_PT[g.Mês?.toLowerCase()]||1;
-        const k=`${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
-        return k===m;
-      });
-      if(execFilter!=='ALL') gastos=gastos.filter(g=>g.Executor===execFilter);
-      return gastos.reduce((s,g)=>s+parseFloat(g.Valor||0),0);
-    });
+    const monthVals=months.map(m=>(pivot[cat]||{})[m]||0);
     monthVals.forEach((v,i)=>{rowTotal+=v;monthTotals[i]+=v;});
     gTotal+=rowTotal;
     rows.push([cat,aba,ptrb,plan,rowTotal,...monthVals]);
   });
-
   rows.push(['TOTAL','',
     Object.values(ptrbMap).reduce((s,v)=>s+v,0),
     Object.values(planMap).reduce((s,v)=>s+v,0),
     gTotal,...monthTotals]);
-
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  // Column widths
   ws['!cols']=[{wch:35},{wch:6},{wch:14},{wch:14},{wch:14},...months.map(()=>({wch:14}))];
-  // Freeze first 6 columns
   ws['!freeze']={xSplit:6,ySplit:1};
-  XLSX.utils.book_append_sheet(wb,ws,pFilter);
+  return ws;
+}
 
+// nome de aba válido p/ Excel (<=31 chars, sem caracteres proibidos)
+function safeSheetName(name){
+  return String(name).replace(/[\\/?*\[\]:]/g,'-').substring(0,31);
+}
+
+// Export do projeto atualmente selecionado
+function exportRubricasProjeto(){
+  const pFilter=document.getElementById('rub-project-filter').value;
+  if(pFilter==='ALL') return;
+  const execFilter=document.getElementById('rub-exec-filter')?.value||'ALL';
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildRubWorksheet(pFilter, execFilter), safeSheetName(pFilter));
   XLSX.writeFile(wb,`Gastos_${pFilter}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// Export de todos os projetos — uma aba por projeto
+function exportRubricasTodos(){
+  const wb=XLSX.utils.book_new();
+  let added=0;
+  DATA.projetos.forEach(p=>{
+    const {allCats}=buildRubPivot(p.Projeto,'ALL');
+    if(!allCats.length) return;
+    XLSX.utils.book_append_sheet(wb, buildRubWorksheet(p.Projeto,'ALL'), safeSheetName(p.Projeto));
+    added++;
+  });
+  if(!added){ alert(lang==='pt'?'Sem dados para exportar.':'No data to export.'); return; }
+  XLSX.writeFile(wb,`Gastos_Todos_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
 // ===================== RENDER — SMs =====================
@@ -2499,7 +2917,6 @@ function renderSMs(){
     .filter(s=>(s.Tipo||'SM')===smTypeFilter)
     .sort((a,b)=>(a.Projeto||'').localeCompare(b.Projeto||'') || (a.Data_Submissao||'').localeCompare(b.Data_Submissao||''));
 
-  const valueLabel = smTypeFilter==='SM' ? 'Total' : (L?'Valor':'Value');
   const buttons = `
     <div style="display:flex;gap:8px;margin-bottom:20px;">
       <button class="btn ${smTypeFilter==='SM'?'btn-primary':'btn-secondary'}" onclick="setSMType('SM')">SM</button>
@@ -2522,19 +2939,9 @@ function renderSMs(){
             <th>${L?'Aprovação':'Approved'}</th>
             <th>Status</th>
             <th>${L?'Observações':'Notes'}</th>
-            <th class="text-right">${valueLabel}</th>
           </tr></thead>
           <tbody>
             ${rows.map(s=>{
-              let valor = '—';
-              if(smTypeFilter==='SM'){
-                const total=(DATA.sms||[])
-                  .filter(i=>i.Projeto===s.Projeto && (i['SM#']===s['SM#'] || i['SM#']===s.Numero))
-                  .reduce((acc,i)=>acc+parseFloat(i.Valor||0),0);
-                valor = total ? FMTK(total) : '—';
-              } else {
-                valor = s.Valor ? FMTK(parseFloat(s.Valor)) : '—';
-              }
               return `<tr>
                 <td class="fs-12 color-ink3">${s.Projeto||'—'}</td>
                 <td class="fw-600">${s['SM#']||s.Numero||'—'}</td>
@@ -2542,7 +2949,6 @@ function renderSMs(){
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'—'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
                 <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'—')}</td>
-                <td class="text-right fw-600">${valor}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -2559,6 +2965,83 @@ function smTypeFilterBadgeLabel(type,L){
 }
 
 function setSMType(type){ smTypeFilter = type; renderSMs(); }
+
+// ===================== MODAL: NOVO PROJETO =====================
+function openProjectModal(){
+  ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-pmanager','pm-inicio','pm-fim','pm-fimreal','pm-duracao','pm-valor']
+    .forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  document.getElementById('project-modal').classList.add('show');
+}
+
+async function saveNewProject(){
+  const codigo=document.getElementById('pm-codigo').value.trim();
+  const titulo=document.getElementById('pm-titulo').value.trim();
+  const executor=document.getElementById('pm-executor').value.trim();
+  const anp=document.getElementById('pm-anp').value.trim();
+  const pmanager=document.getElementById('pm-pmanager').value.trim();
+  const gestor=document.getElementById('pm-gestor').value;
+  const inicio=document.getElementById('pm-inicio').value;
+  const fim=document.getElementById('pm-fim').value;
+  const fimreal=document.getElementById('pm-fimreal').value;
+  const duracao=document.getElementById('pm-duracao').value;
+  const valor=parseFloat(document.getElementById('pm-valor').value);
+  const status=document.getElementById('pm-status').value;
+  const L=lang==='pt';
+
+  // validação: obrigatórios Código, Título, Início, Fim, Valor
+  if(!codigo||!titulo||!inicio||!fim||isNaN(valor)){
+    alert(L?'Preencha os campos obrigatórios: Código, Título, Início, Fim e Valor.'
+           :'Fill in required fields: Code, Title, Start, End and Value.');
+    return;
+  }
+  // código único
+  if(DATA.projetos.some(p=>String(p.Projeto).trim().toLowerCase()===codigo.toLowerCase())){
+    alert(L?`Já existe um projeto com o código "${codigo}".`:`A project with code "${codigo}" already exists.`);
+    return;
+  }
+  if(new Date(fim)<new Date(inicio)){
+    alert(L?'A data de fim não pode ser anterior à de início.':'End date cannot be before start date.');
+    return;
+  }
+
+  // objeto em memória (mesmo shape do normalizeProjeto)
+  const novo={
+    Projeto:codigo,
+    'Título do projeto':titulo,
+    Executor:executor,
+    'Número ANP':anp, Numero_ANP:anp, 'Numero ANP raw':anp,
+    'Project Manager':pmanager, Project_Manager:pmanager,
+    Gestor:gestor,
+    'Data de início ':inicio,
+    'Data final':fim,
+    'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
+    'Duração (meses)':duracao||'', Duracao_Meses:duracao||'',
+    'Planned Value (R$)':valor, Valor_PTRB:valor,
+    Status_Projeto:status,
+  };
+
+  showLoading(L?'Salvando projeto no Excel...':'Saving project to Excel...');
+  try{
+    // append na sheet Projetos — ordem exata das colunas
+    await appendExcelRow('Projetos',[
+      codigo, titulo, executor, anp, pmanager, gestor,
+      isoToExcelSerial(inicio)||'', isoToExcelSerial(fim)||'',
+      fimreal?(isoToExcelSerial(fimreal)||''):'', duracao||'',
+      valor, status
+    ]);
+    DATA.projetos.push(novo);
+    hideLoading();
+    closeModal('project-modal');
+    populateDropdowns();
+    repopulateProjectDropdowns();
+    renderPortfolio();
+    alert(L?'Projeto criado com sucesso!':'Project created successfully!');
+  }catch(e){
+    hideLoading();
+    console.error('saveNewProject error:',e);
+    alert((L?'Erro ao salvar projeto: ':'Error saving project: ')+e.message);
+  }
+}
 
 // ===================== MODAL: GASTO =====================
 function openGastoModal(pid){
