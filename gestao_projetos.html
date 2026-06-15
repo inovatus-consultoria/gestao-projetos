@@ -272,6 +272,8 @@ tr:hover td{background:var(--surface3);}
 }
 .alert-red{background:var(--red-light);color:var(--red);border:1px solid #f0c8c8;}
 .alert-amber{background:var(--amber-light);color:#8a6c28;border:1px solid #e8d8a8;}
+.sol-menu-item{display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;font-size:13px;color:var(--ink);cursor:pointer;font-family:inherit;}
+.sol-menu-item:hover{background:var(--surface2);}
 .alert-green{background:var(--green-light);color:var(--green);border:1px solid #c0ddd5;}
 
 /* ===================== RESPONSIVE ===================== */
@@ -377,6 +379,15 @@ tr:hover td{background:var(--surface3);}
   opacity:0.65;border:1px dashed var(--red);box-sizing:border-box;}
 .gantt-axis{display:flex;flex:1;min-width:300px;justify-content:space-between;font-size:10px;color:var(--ink3);margin-left:160px;border-top:1px solid var(--border);padding-top:4px;}
 .gantt-today{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--gold);z-index:2;}
+/* C1: eixo por períodos + separadores de ano */
+.gantt-wrap{position:relative;}
+.gantt-grid-overlay{position:absolute;top:0;bottom:22px;left:160px;right:0;pointer-events:none;z-index:0;}
+.gantt-yearline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);opacity:0.7;}
+.gantt-axis-periods{position:relative;height:16px;margin-left:160px;border-top:1px solid var(--border);margin-top:2px;}
+.gantt-tick{position:absolute;top:4px;transform:translateX(-50%);font-size:10px;color:var(--ink3);white-space:nowrap;}
+.gantt-tick-year{font-weight:600;color:var(--ink2);}
+.gantt-tick-year::before{content:"";position:absolute;top:-6px;left:50%;width:1px;height:5px;background:var(--ink3);opacity:0.5;}
+.gantt-row{position:relative;z-index:1;}
 
 </style>
 </head>
@@ -620,8 +631,13 @@ tr:hover td{background:var(--surface3);}
           <h1 class="page-title" id="title-sms">SMs &amp; DVs</h1>
           <div class="page-subtitle" id="sub-sms">Change Requests, Travel Requests and Special Expenses</div>
         </div>
-        <div class="page-header-right">
-          <button class="btn btn-primary btn-sm" onclick="openSMModal()" id="btn-new-sm">+ New SM</button>
+        <div class="page-header-right" style="position:relative;">
+          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> ▾</button>
+          <div id="create-sol-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:50;min-width:200px;overflow:hidden;">
+            <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / Solicitação de mudança</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('DV')">DV / Despesa de viagem</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('DE')">DE / Despesa especial</button>
+          </div>
         </div>
       </div>
 
@@ -793,7 +809,67 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('project-modal')" id="btn-pm-cancel">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNewProject()" id="btn-pm-save">Save Project</button>
+      <button class="btn btn-primary" onclick="submitProjectModal()" id="btn-pm-save">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- D3/D4: modal genérico de solicitação (DV/DE e edição de SM/DV/DE) -->
+<div class="modal-overlay" id="sol-modal">
+  <div class="modal" style="max-width:560px;">
+    <h2 class="modal-title" id="sol-modal-title">Registro</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-projeto">Projeto *</label>
+        <select class="form-select" id="sol-projeto"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-tipo">Tipo</label>
+        <select class="form-select" id="sol-tipo">
+          <option value="SM">SM / Solicitação de mudança</option>
+          <option value="DV">DV / Despesa de viagem</option>
+          <option value="DE">DE / Despesa especial</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-numero">Número / Código *</label>
+        <input class="form-input" id="sol-numero">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-status">Status</label>
+        <select class="form-select" id="sol-status">
+          <option value="Pendente">Pendente</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Aprovada">Aprovada</option>
+          <option value="Rejeitada">Rejeitada</option>
+          <option value="Concluído">Concluído</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-sub">Data de submissão</label>
+        <input class="form-input" type="date" id="sol-data-sub">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-sol-apr">Data de aprovação</label>
+        <input class="form-input" type="date" id="sol-data-apr">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="lbl-sol-valor">Valor (R$)</label>
+      <input class="form-input" type="number" id="sol-valor" min="0" step="0.01">
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="lbl-sol-obs">Observações</label>
+      <input class="form-input" id="sol-obs">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('sol-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSolModal()" id="btn-sol-save">Salvar</button>
     </div>
   </div>
 </div>
@@ -930,8 +1006,8 @@ const T = {
     kpi_total:'Total Budget',kpi_actuals:'Total Actuals',kpi_exec:'Avg. Execution',
     kpi_overdue:'Overdue Milestones',kpi_upcoming:'Upcoming (60d)',kpi_projects:'Active Projects',
     sync:'Sync',
-    col_id:'ID',col_title:'Title',col_executor:'Executor',col_anp:'ANP #',col_pm:'Manager',
-    col_budget:'Budget',col_actuals:'Actuals',col_pct:'Exec%',col_time:'Time%',col_start:'Start',col_end:'End',col_gestor:'Gestor',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
+    col_id:'ID',col_title:'Title',tbl_projects:'Projects',col_executor:'Executor',col_anp:'ANP #',col_pm:'Manager',
+    col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'Exec%',col_time:'Time%',col_start:'Start',col_end:'End',col_gestor:'Gestor',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
     overdue:'Overdue',upcoming:'Upcoming',planned:'Planned',completed:'Completed',suspended:'Suspended',
     ms_id:'ID',ms_project:'Project',ms_desc:'Description',ms_baseline:'Baseline',ms_forecast:'Forecast',ms_status:'Status',
     btn_sync:'Sync',btn_save:'Save Changes',btn_new_sm:'+ New SM',btn_new_gasto:'+ New Expense',
@@ -947,7 +1023,7 @@ const T = {
     rub_cat:'Category',rub_ptrb:'PTR-B',rub_plan:'Current Plan',rub_actual:'Actuals',rub_balance:'Balance',rub_pct:'Exec%',
     no_milestones:'No milestones in this period.',search:'Search...',
     alert_overdue:'projects have overdue milestones',alert_fin:'projects over 100% budget execution',
-    new_project:'+ New Project',modal_new_project:'New Project',gantt:'Timeline',
+    new_project:'+ New Project',new_sol:'New record',modal_new_project:'New Project',gantt:'Timeline',
     export_proj:'Export project',export_all:'Export all projects',
     pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor',
     pm_pmanager:'Project Manager',pm_gestor:'Gestor',pm_status:'Status',
@@ -966,8 +1042,8 @@ const T = {
     kpi_total:'Orçamento Total',kpi_actuals:'Total Realizado',kpi_exec:'Exec. Média',
     kpi_overdue:'Marcos Atrasados',kpi_upcoming:'Próximos (60d)',kpi_projects:'Projetos Ativos',
     sync:'Sincronizar',
-    col_id:'ID',col_title:'Título',col_executor:'Executor',col_anp:'Nº ANP',col_pm:'Gerente',
-    col_budget:'Orçamento',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Início',col_end:'Fim',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluídos',all_managers:'Todos os gestores',
+    col_id:'ID',col_title:'Título',tbl_projects:'Projetos',col_executor:'Executor',col_anp:'Nº ANP',col_pm:'Gerente',
+    col_budget:'Orçamento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Início',col_end:'Fim',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluídos',all_managers:'Todos os gestores',
     overdue:'Atrasado',upcoming:'Próximo',planned:'Planejado',completed:'Concluído',suspended:'Suspenso',
     ms_id:'ID',ms_project:'Projeto',ms_desc:'Descrição',ms_baseline:'Baseline',ms_forecast:'Previsão',ms_status:'Status',
     btn_sync:'Sincronizar',btn_save:'Salvar Alterações',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
@@ -983,7 +1059,7 @@ const T = {
     rub_cat:'Categoria',rub_ptrb:'PTR-B',rub_plan:'Plano Atual',rub_actual:'Realizado',rub_balance:'Saldo',rub_pct:'Exec%',
     no_milestones:'Nenhum marco neste período.',search:'Buscar...',
     alert_overdue:'projetos com marcos atrasados',alert_fin:'projetos com execução acima de 100%',
-    new_project:'+ Novo Projeto',modal_new_project:'Novo Projeto',gantt:'Linha do Tempo',
+    new_project:'+ Novo Projeto',new_sol:'Novo registro',modal_new_project:'Novo Projeto',gantt:'Linha do Tempo',
     export_proj:'Exportar projeto',export_all:'Exportar todos',
     pm_codigo:'Código *',pm_anp:'Nº ANP',pm_titulo:'Título *',pm_executor:'Executor',
     pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
@@ -1020,12 +1096,12 @@ function applyTranslations(){
     ['ms-opt-overdue','overdue'],['ms-opt-upcoming','upcoming'],['ms-opt-planned','planned'],
     ['ms-opt-completed','completed'],['ms-opt-suspended','suspended'],
     ['card-next-milestones','next90'],['card-overdue-milestones','overdue_ms'],
-    ['tbl-title-projects','col_title'],
+    ['tbl-title-projects','tbl_projects'],
     ['modal-gasto-title','new_expense'],['modal-sm-title','new_sm'],
     ['lbl-gasto-project','lbl_project'],['lbl-gasto-executor','lbl_executor'],
     ['lbl-gasto-cat','lbl_cat'],['lbl-gasto-valor','lbl_amount'],
     ['lbl-gasto-date','lbl_date'],['lbl-gasto-ano','lbl_year'],
-    ['lbl-new-project','new_project'],['card-gantt','gantt'],
+    ['lbl-new-project','new_project'],['card-gantt','gantt'],['lbl-new-sol','new_sol'],
     ['lbl-export-proj','export_proj'],['lbl-export-all','export_all'],
     ['modal-project-title','modal_new_project'],
     ['lbl-pm-codigo','pm_codigo'],['lbl-pm-anp','pm_anp'],['lbl-pm-titulo','pm_titulo'],
@@ -1061,18 +1137,35 @@ function normalizeProjectId(id){
   return 'P'+s.padStart(3,'0');
 }
 
-function getMilestoneStatus(marco){
-  if(marco._userStatus && marco._userStatus!=='') return marco._userStatus;
+// A1/A2: classificação POR JANELA DE DATA — usada apenas nos painéis do Portfólio
+// (atrasados / próximos 60 dias). NÃO é o status do marco; o status real vem da planilha.
+function milestoneDateBucket(marco){
   const dp = marco['Data prevista / Data de entrega'];
-  if(!dp||String(dp).toLowerCase()==='suspended') return 'Suspended';
-  const date = new Date(dp);
-  if(isNaN(date.getTime())) return 'Suspended';
+  if(!dp || String(dp).toLowerCase()==='suspended') return 'Suspended';
+  const date = parseMilestoneDate(dp);
+  if(!date || isNaN(date.getTime())) return 'Planned';
   const today = new Date(); today.setHours(0,0,0,0);
   const d60 = new Date(today); d60.setDate(d60.getDate()+60);
-  if(marco._userStatus==='Completed') return 'Completed';
   if(date < today) return 'Overdue';
   if(date <= d60) return 'Upcoming';
   return 'Planned';
+}
+
+// Normaliza a data prevista para um Date confiável (aceita ISO 'YYYY-MM-DD' ou já-Date)
+function parseMilestoneDate(dp){
+  if(!dp) return null;
+  if(dp instanceof Date) return dp;
+  const s = String(dp).split('T')[0];
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// A2: status do marco é LIDO da planilha (coluna Status). Mantido como veio.
+// Função preservada por compatibilidade — retorna o status da planilha, sem cálculo.
+function getMilestoneStatus(marco){
+  return String(marco.Status||marco._userStatus||'').trim();
 }
 
 function statusBadge(s){
@@ -1195,18 +1288,27 @@ function statusAutoLabel(s){
   return (lang==='pt'?'Automático':'Auto')+(s?` · ${lbl}`:'');
 }
 
-// monta o <select> unificado de status do marco (badge + override num só controle)
+// A2: status canônicos de marco (rótulos como aparecem na planilha — aceita PT e EN)
+const MILESTONE_STATUSES = ['Planejado','Em andamento','Concluído','Atrasado','Suspenso','Cancelado'];
+
+function milestoneStatusBadgeClass(s){
+  const low=String(s||'').trim().toLowerCase();
+  if(['concluído','concluido','completed'].includes(low)) return 'st-green';
+  if(['atrasado','overdue'].includes(low)) return 'st-red';
+  if(['em andamento','in progress','upcoming'].includes(low)) return 'st-amber';
+  if(['planejado','planned'].includes(low)) return 'st-blue';
+  if(['suspenso','suspended','cancelado','cancelled','canceled'].includes(low)) return 'st-gray';
+  return 'st-gray';
+}
+
+// A2: monta o <select> de status do marco a partir do valor da PLANILHA.
+// Sem opção "Automático" / sem cálculo. Alterar grava de volta no Excel.
 function milestoneStatusSelect(m, origIdx){
-  const calc = m._status;                    // status calculado
-  const isOverride = !!(m._userStatus && m._userStatus!=='');
-  const current = isOverride ? m._userStatus : calc;
-  const colorCls = statusSelectClass(current);
-  const opts = ['','Overdue','Upcoming','Planned','Completed','Suspended'].map(s=>{
-    const label = s ? t(s.toLowerCase()) : statusAutoLabel(calc);
-    const sel = (m._userStatus||'')===s ? 'selected':'';
-    return `<option value="${s}" ${sel}>${label}</option>`;
-  }).join('');
-  return `<select class="status-select ${colorCls}" onchange="updateMilestoneStatus(${origIdx},this.value)">${opts}</select>`;
+  const cur = String(m.Status||m._userStatus||'').trim();
+  const cls = milestoneStatusBadgeClass(cur);
+  const opts = [...new Set([...MILESTONE_STATUSES, cur].filter(Boolean))];
+  const optHtml = opts.map(s=>`<option value="${escapeAttr(s)}" ${s===cur?'selected':''}>${escapeHtml(s)}</option>`).join('');
+  return `<select class="status-select ${cls}" onchange="updateMilestoneStatus(${origIdx},this.value)">${optHtml}</select>`;
 }
 
 function getExec(pid){
@@ -1565,6 +1667,25 @@ function applySMOverrides(){
   });
 }
 
+// B2/B3: rótulo da SM/FM mais recente (por NÚMERO) usada como base de um projeto.
+// Considera tanto itens de SM (DATA.sms) quanto solicitações (DATA.solicitacoes) tipo SM.
+// Retorna ex.: "SM3" ou '' se não houver SM/FM.
+function latestSMLabel(pid){
+  let best=null;
+  const consider=(raw)=>{
+    const label=String(raw||'').trim();
+    if(!label) return;
+    const num=parseInt(label.replace(/\D/g,''));
+    if(isNaN(num)) return;
+    if(!best||num>best.num) best={num,label};
+  };
+  (DATA.sms||[]).filter(s=>s.Projeto===pid).forEach(s=>consider(s['SM#']));
+  (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid && /sm/i.test(String(s.Tipo||'SM'))).forEach(s=>consider(s['SM#']||s.Numero_Item||s.Numero_SM));
+  if(!best) return '';
+  // normaliza para "SM<n>" se vier só número
+  return /\d/.test(best.label) && !/[a-z]/i.test(best.label) ? 'SM'+best.num : best.label;
+}
+
 // ─── Populate UI dropdowns after data load ───────────────────
 function populateDropdowns(){
   const projs=DATA.projetos;
@@ -1628,6 +1749,8 @@ async function carregarExcel(){
         continue;
       }
       const headers = rows[0];
+      DATA._headers = DATA._headers || {};
+      DATA._headers[sheet] = headers.slice();
       DATA[cfg.key] = rows.slice(1)
         .filter(row=>row.some(v=>v!==null&&v!==''))
         .map(row=>{
@@ -1755,9 +1878,9 @@ function renderPortfolio(){
   const totalActual=DATA.gastos.filter(g=>gProjIds.has(g.Projetos||g.Projeto)).reduce((s,g)=>s+parseFloat(g.Valor||0),0);
   const avgExec=totalPlan?totalActual/totalPlan:0;
 
-  const allMarcos=DATA.marcos.filter(m=>gProjIds.has(m.Projeto)).map(m=>({...m,_status:getMilestoneStatus(m)}));
-  const overdue=allMarcos.filter(m=>m._status==='Overdue');
-  const upcoming=allMarcos.filter(m=>m._status==='Upcoming');
+  const allMarcos=DATA.marcos.filter(m=>gProjIds.has(m.Projeto)).map(m=>({...m,_bucket:milestoneDateBucket(m)}));
+  const overdue=allMarcos.filter(m=>m._bucket==='Overdue');
+  const upcoming=allMarcos.filter(m=>m._bucket==='Upcoming');
 
   const kpiEl=document.getElementById('kpi-grid');
   kpiEl.innerHTML=`
@@ -1790,7 +1913,7 @@ function renderPortfolio(){
 
   const alerts=document.getElementById('alerts-container');
   alerts.innerHTML='';
-  const overdueProjs=gProjs.filter(p=>allMarcos.some(m=>m.Projeto===p.Projeto&&m._status==='Overdue'));
+  const overdueProjs=gProjs.filter(p=>allMarcos.some(m=>m.Projeto===p.Projeto&&m._bucket==='Overdue'));
   if(overdueProjs.length)
     alerts.innerHTML+=`<div class="alert-box alert-red">⚠ ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
 
@@ -1827,7 +1950,7 @@ function renderPortfolio(){
       <td class="fs-12 color-ink3">${p.Executor||'—'}</td>
       <td class="fs-12">${p['Número ANP']||'—'}</td>
       <td class="fs-12">${p.Gestor||'—'}</td>
-      <td class="text-right fw-600">${FMTK(parseFloat(p['Planned Value (R$)']||0))}</td>
+      <td class="text-right fw-600">${FMTK(fin.plan)}${(()=>{const sm=latestSMLabel(pid);return sm?` <span class="fs-12 color-ink3">(${sm})</span>`:'';})()}</td>
       <td class="text-right">${FMTK(fin.actual)}</td>
       <td><div style="display:flex;align-items:center;gap:8px;">${bar}<span class="fs-12 ${execCls}">${PCT(execPct)}</span></div></td>
       <td><div style="display:flex;align-items:center;gap:8px;">
@@ -1934,13 +2057,22 @@ function renderGantt(projs){
     </div>`;
   }).join('');
 
-  // eixo: início, meio, fim
-  const midT=minT+span/2;
-  const axis=`<div class="gantt-axis">
-    <span>${FMTD(new Date(minT))}</span>
-    <span>${FMTD(new Date(midT))}</span>
-    <span>${FMTD(new Date(maxT))}</span>
-  </div>`;
+  // C1: eixo por PERÍODOS (não datas específicas).
+  // Escolhe granularidade conforme o span total: mês → semestre → ano+semestre.
+  const axisInfo = buildGanttPeriods(minT, maxT);
+  const pos2 = t => ((t-minT)/(span))*100;
+
+  // linhas verticais leves marcando virada de ano (sobre cada track via overlay no wrap)
+  const yearLines = axisInfo.yearBoundaries
+    .filter(ts=>ts>minT && ts<maxT)
+    .map(ts=>`<div class="gantt-yearline" style="left:${pos2(ts)}%;"></div>`)
+    .join('');
+
+  const axisTicks = axisInfo.ticks.map(tk=>{
+    const cls = tk.yearStart ? 'gantt-tick gantt-tick-year' : 'gantt-tick';
+    return `<span class="${cls}" style="left:${pos2(tk.t)}%;">${tk.label}</span>`;
+  }).join('');
+  const axis=`<div class="gantt-axis-periods">${axisTicks}</div>`;
 
   const legend=`<div style="display:flex;gap:16px;align-items:center;margin-top:10px;font-size:10px;color:var(--ink3);">
     <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;background:var(--accent2);border-radius:2px;display:inline-block;"></span>${L?'Período oficial':'Official period'}</span>
@@ -1948,7 +2080,63 @@ function renderGantt(projs){
     <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:2px;height:12px;background:var(--gold);display:inline-block;"></span>${L?'Hoje':'Today'}</span>
   </div>`;
 
-  el.innerHTML=`<div class="gantt-wrap">${rowsHtml}${axis}</div>${legend}`;
+  el.innerHTML=`<div class="gantt-wrap"><div class="gantt-grid-overlay">${yearLines}</div>${rowsHtml}${axis}</div>${legend}`;
+}
+
+// C1: monta períodos do eixo do Gantt conforme o intervalo total.
+// Regras: ≤ ~18 meses → tick por mês; ≤ ~6 anos → por semestre; acima → ano+semestre.
+function buildGanttPeriods(minT, maxT){
+  const L = lang==='pt';
+  const start=new Date(minT), end=new Date(maxT);
+  const totalMonths=(end.getFullYear()-start.getFullYear())*12 + (end.getMonth()-start.getMonth()) + 1;
+  const MES_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const MES_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mesArr = L?MES_PT:MES_EN;
+
+  const ticks=[];
+  const yearBoundaries=[];
+  // virada de ano: 1º de janeiro de cada ano dentro do intervalo
+  for(let y=start.getFullYear()+1; y<=end.getFullYear(); y++){
+    yearBoundaries.push(new Date(y,0,1).getTime());
+  }
+
+  if(totalMonths<=18){
+    // por mês — mostra o ano só na 1ª ocorrência e em cada janeiro
+    let cur=new Date(start.getFullYear(), start.getMonth(), 1);
+    let firstOfYearSeen={};
+    while(cur.getTime()<=maxT){
+      const y=cur.getFullYear();
+      const isYearStart = cur.getMonth()===0 || !firstOfYearSeen[y];
+      const label = isYearStart ? `${mesArr[cur.getMonth()]} ${String(y).slice(2)}` : mesArr[cur.getMonth()];
+      firstOfYearSeen[y]=true;
+      ticks.push({t:cur.getTime(), label, yearStart: cur.getMonth()===0});
+      cur=new Date(y, cur.getMonth()+1, 1);
+    }
+  } else if(totalMonths<=72){
+    // por semestre (S1 jan–jun, S2 jul–dez)
+    let y=start.getFullYear();
+    let sem = start.getMonth()<6?1:2;
+    while(true){
+      const m = sem===1?0:6;
+      const t = new Date(y,m,1).getTime();
+      if(t>maxT) break;
+      ticks.push({t, label:`S${sem} ${String(y).slice(2)}`, yearStart: sem===1});
+      if(sem===1){ sem=2; } else { sem=1; y++; }
+    }
+  } else {
+    // ano + semestre (rótulo mais enxuto): mostra ano em S1, só "S2" no meio
+    let y=start.getFullYear();
+    let sem = start.getMonth()<6?1:2;
+    while(true){
+      const m = sem===1?0:6;
+      const t = new Date(y,m,1).getTime();
+      if(t>maxT) break;
+      const label = sem===1 ? `${y}` : `S2`;
+      ticks.push({t, label, yearStart: sem===1});
+      if(sem===1){ sem=2; } else { sem=1; y++; }
+    }
+  }
+  return {ticks, yearBoundaries};
 }
 
 function openProject(pid){
@@ -1956,9 +2144,69 @@ function openProject(pid){
   navigate('project');
 }
 
+// D1: uma solicitação (SM/DV/DE) é "ativa" se não está em estado terminal
+function isSolicitacaoAtiva(s){
+  const st=String(s.Status||'').trim().toLowerCase();
+  const terminais=['rejeitada','rejeitado','cancelada','cancelado','concluído','concluido','concluída','concluida'];
+  return !terminais.includes(st);
+}
+
+// D1: monta a lista de avisos automáticos para um projeto
+function buildProjectAlerts(pid){
+  const L=lang==='pt';
+  const alerts=[];
+
+  // (a) categorias/rubricas com percentual executado > 100% (custos por categoria NP)
+  const catPlan={}, catAct={};
+  DATA.plano.filter(r=>r.Projeto===pid).forEach(r=>{
+    const c=r.Categoria_despesa;
+    catPlan[c]=(catPlan[c]||0)+parseFloat(r.Plano_Atual||0);
+  });
+  DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>{
+    const c=g.Categoria_despesa;
+    catAct[c]=(catAct[c]||0)+parseFloat(g.Valor||0);
+  });
+  Object.keys(catAct).forEach(c=>{
+    const plan=catPlan[c]||0, act=catAct[c]||0;
+    if(plan>0 && act/plan>1.0001){
+      const pct=PCT(act/plan);
+      alerts.push({
+        cls:'alert-red', icon:'⚠',
+        msg: L
+          ? `A categoria ${c} ultrapassou o percentual de gasto permitido (${pct} executado).`
+          : `Category ${c} exceeded the allowed spending percentage (${pct} executed).`
+      });
+    }
+  });
+
+  // (b/c/d) solicitações ativas por tipo
+  const sols=(DATA.solicitacoes||[]).filter(s=>s.Projeto===pid);
+  const tipoAtivo=(re)=>sols.filter(s=>re.test(String(s.Tipo||'SM')) && isSolicitacaoAtiva(s));
+  const smAtivas=tipoAtivo(/^sm$|^fm$/i);
+  const dvAtivas=tipoAtivo(/^dv$/i);
+  const deAtivas=tipoAtivo(/^de$/i);
+
+  if(smAtivas.length){
+    const nums=smAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
+    alerts.push({cls:'alert-amber', icon:'•',
+      msg:(L?`Projeto possui SM/FM ativa: ${nums||smAtivas.length}.`:`Project has active SM/FM: ${nums||smAtivas.length}.`)});
+  }
+  if(dvAtivas.length){
+    const nums=dvAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
+    alerts.push({cls:'alert-amber', icon:'•',
+      msg:(L?`Há despesa de viagem (DV) ativa: ${nums||dvAtivas.length}.`:`There is an active travel expense (DV): ${nums||dvAtivas.length}.`)});
+  }
+  if(deAtivas.length){
+    const nums=deAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
+    alerts.push({cls:'alert-amber', icon:'•',
+      msg:(L?`Há despesa especial (DE) ativa: ${nums||deAtivas.length}.`:`There is an active special expense (DE): ${nums||deAtivas.length}.`)});
+  }
+
+  return alerts;
+}
+
 // ===================== RENDER — PROJECT DETAIL =====================
 function selectProject(pid){ renderProjectDetail(pid); }
-
 function renderProjectDetail(pid){
   if(!pid) pid = document.getElementById('project-selector').value;
   if(!pid && DATA.projetos.length) pid = DATA.projetos[0].Projeto;
@@ -1973,11 +2221,15 @@ function renderProjectDetail(pid){
   const execPct = fin.pct;
 
   // ---- Marcos ----
-  const projMarcos = DATA.marcos.filter(m=>m.Projeto===pid).map(m=>({...m,_status:getMilestoneStatus(m)}));
-  const msOverdue   = projMarcos.filter(m=>m._status==='Overdue');
-  const msUpcoming  = projMarcos.filter(m=>m._status==='Upcoming');
-  const msCompleted = projMarcos.filter(m=>m._status==='Completed');
-  const msPlanned   = projMarcos.filter(m=>m._status==='Planned'||m._status==='Suspended');
+  const projMarcos = DATA.marcos.filter(m=>m.Projeto===pid).map(m=>({...m,_bucket:milestoneDateBucket(m)}));
+  const msOverdue   = projMarcos.filter(m=>m._bucket==='Overdue');
+  const msUpcoming  = projMarcos.filter(m=>m._bucket==='Upcoming');
+  const isCompletedStatus = s=>['concluído','concluido','completed'].includes(String(s||'').trim().toLowerCase());
+  const msCompleted = projMarcos.filter(m=>isCompletedStatus(m.Status));
+  const msPlanned   = projMarcos.filter(m=>!isCompletedStatus(m.Status) && m._bucket!=='Overdue' && m._bucket!=='Upcoming');
+
+  // D1: avisos automáticos do projeto
+  const projAlerts = buildProjectAlerts(pid);
 
   // ---- Financial / categories ----
   const catPtrbMap={}, catPlanMap={}, catActualMap={};
@@ -1990,7 +2242,7 @@ function renderProjectDetail(pid){
     const c=g.Categoria_despesa;
     catActualMap[c]=(catActualMap[c]||0)+parseFloat(g.Valor||0);
   });
-  const cats = Array.from(new Set([...Object.keys(catPtrbMap),...Object.keys(catPlanMap),...Object.keys(catActualMap)])).filter(Boolean).sort();
+  const cats = Array.from(new Set([...Object.keys(catPtrbMap),...Object.keys(catPlanMap),...Object.keys(catActualMap)])).filter(Boolean).sort(catCompare);
 
   // ---- Monthly gastos ----
   const monthlyMap={};
@@ -2063,7 +2315,10 @@ function renderProjectDetail(pid){
   <!-- ── SECTION: General Info + Milestone summary ── -->
   <div class="section-grid cols-2" style="margin-bottom:20px;">
     <div class="card">
-      <div class="card-title">${L?'Informações Gerais':'General Info'}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="card-title" style="margin-bottom:0;">${L?'Informações Gerais':'General Info'}</div>
+        <button class="btn btn-secondary btn-sm" onclick="openProjectEditModal('${pid}')">${L?'Editar':'Edit'}</button>
+      </div>
       <table style="width:100%;font-size:13px;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:var(--ink3);width:130px;">Executor</td><td class="fw-600">${proj.Executor||'—'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Nº ANP</td><td class="fw-600">${proj['Número ANP']||'—'}</td></tr>
@@ -2095,6 +2350,12 @@ function renderProjectDetail(pid){
           <div style="font-size:22px;font-weight:600;color:var(--green);">${msCompleted.length}</div>
           <div style="font-size:10px;color:var(--green);margin-top:2px;">${L?'Concluídos':'Completed'}</div>
         </div>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px;">${L?'Avisos':'Alerts'} ${projAlerts.length?`(${projAlerts.length})`:''}</div>
+        ${projAlerts.length
+          ? projAlerts.map(a=>`<div class="alert-box ${a.cls}" style="margin-bottom:6px;font-size:12px;">${a.icon} ${escapeHtml(a.msg)}</div>`).join('')
+          : `<div class="empty-state fs-12" style="padding:8px;">${L?'Nenhum aviso no momento.':'No alerts at the moment.'}</div>`}
       </div>
     </div>
   </div>
@@ -2154,7 +2415,7 @@ function renderProjectDetail(pid){
         <thead><tr>
           <th>${L?'Categoria':'Category'}</th>
           <th class="text-right">PTR-B</th>
-          <th class="text-right">${L?'Plano Atual':'Current Plan'}</th>
+          <th class="text-right">${L?'Plano Atual':'Current Plan'}${(()=>{const sm=latestSMLabel(pid);return sm?` (${sm})`:'';})()}</th>
           <th class="text-right">${L?'Realizado':'Actuals'}</th>
           <th class="text-right">${L?'Saldo':'Balance'}</th>
           <th class="text-right">${L?'Exec%':'Exec%'}</th>
@@ -2212,10 +2473,10 @@ function renderProjectDetail(pid){
             </thead>
             <tbody>
               ${(()=>{
-                const catsSM = [...new Set(projSMs.map(s=>s.Categoria_despesa))].sort();
+                const catsSM = [...new Set(projSMs.map(s=>s.Categoria_despesa))].sort(catCompare);
                 return catsSM.map(cat=>{
                   const ptrbRow = catPtrbMap[cat]||0;
-                  const aba = (projSMs.find(s=>s.Categoria_despesa===cat)||{}).Código_Aba||'—';
+                  const aba = getCatABA(cat) || '—';
                   const cells = smNums.map((sn,si)=>{
                     const match = projSMs.find(s=>s.Categoria_despesa===cat&&s['SM#']===sn);
                     const v = match?parseFloat(match.Valor||0):null;
@@ -2376,10 +2637,20 @@ function renderMilestones(){
   const sFilter=document.getElementById('ms-status-filter').value;
   const search=(document.getElementById('ms-search').value||'').toLowerCase();
 
-  let marcos=DATA.marcos.map(m=>({...m,_status:getMilestoneStatus(m)}));
+  let marcos=DATA.marcos.slice();
   if(pFilter!=='ALL') marcos=marcos.filter(m=>m.Projeto===pFilter);
-  if(sFilter!=='ALL') marcos=marcos.filter(m=>m._status===sFilter);
+  if(sFilter!=='ALL') marcos=marcos.filter(m=>String(m.Status||'').trim()===sFilter);
   if(search) marcos=marcos.filter(m=>(m['Descrição']||'').toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
+
+  // popula o filtro de status com os valores reais da planilha (uma vez)
+  const sf=document.getElementById('ms-status-filter');
+  if(sf && !sf.dataset.populated){
+    const statuses=[...new Set(DATA.marcos.map(m=>String(m.Status||'').trim()).filter(Boolean))].sort();
+    const allLabel=lang==='pt'?'Todos os status':'All Statuses';
+    sf.innerHTML=`<option value="ALL">${allLabel}</option>`+statuses.map(s=>`<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
+    sf.dataset.populated='1';
+    sf.value=sFilter;
+  }
 
   const thead=document.getElementById('milestones-thead');
   thead.innerHTML=`<tr>
@@ -2420,32 +2691,47 @@ function updateMilestoneDate(idx,val){
   DATA.marcos[idx]['Data prevista / Data de entrega']=val;
   milestonesChanged=true;
 }
-function updateMilestoneStatus(idx,val){
+// A2: alterar status grava imediatamente na planilha (sem cálculo automático)
+async function updateMilestoneStatus(idx,val){
   if(idx<0||idx>=DATA.marcos.length)return;
-  DATA.marcos[idx]._userStatus=val;
-  DATA.marcos[idx].Status=val;
-  milestonesChanged=true;
+  const m=DATA.marcos[idx];
+  const old=m.Status, oldU=m._userStatus;
+  m.Status=val; m._userStatus=val;
+  showLoading(lang==='pt'?'Salvando status do marco...':'Saving milestone status...');
+  try{
+    await rewriteMarcosSheet();
+    hideLoading();
+    renderCurrentPage();
+  }catch(e){
+    m.Status=old; m._userStatus=oldU; // rollback
+    hideLoading();
+    console.error('updateMilestoneStatus error:',e);
+    alert((lang==='pt'?'Erro ao salvar status do marco: ':'Error saving milestone status: ')+e.message);
+    renderCurrentPage();
+  }
+}
+
+// reescreve a sheet Marcos a partir de DATA.marcos (reuso por saveMilestones e updateMilestoneStatus)
+async function rewriteMarcosSheet(){
+  const headers=['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Status'];
+  const dataRows = DATA.marcos.map(m=>[
+    m.Projeto||'',
+    m.ID||'',
+    m['Descrição']||'',
+    isoToExcelSerial(m['Data Base'])||'',
+    String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended'
+      ? 'Suspended'
+      : isoToExcelSerial(m['Data prevista / Data de entrega'])||'',
+    m.Status||m._userStatus||'',
+  ]);
+  await rewriteExcelSheet('Marcos', headers, dataRows);
 }
 
 async function saveMilestones(){
   if(!milestonesChanged){alert(lang==='pt'?'Nenhuma alteração para salvar.':'No changes to save.');return;}
   showLoading(lang==='pt'?'Salvando marcos no Excel...':'Saving milestones to Excel...');
   try{
-    // Reescreve a sheet Marcos completa com os dados atuais (DATA.marcos)
-    // Cabeçalho: mesma ordem das colunas do Excel original
-    const headers=['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Status'];
-    const dataRows = DATA.marcos.map(m=>[
-      m.Projeto||'',
-      m.ID||'',
-      m['Descrição']||'',
-      isoToExcelSerial(m['Data Base'])||'',
-      // Preserva string "Suspended" se for o caso
-      String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended'
-        ? 'Suspended'
-        : isoToExcelSerial(m['Data prevista / Data de entrega'])||'',
-      m._userStatus||m.Status||'',
-    ]);
-    await rewriteExcelSheet('Marcos', headers, dataRows);
+    await rewriteMarcosSheet();
     milestonesChanged=false;
     hideLoading();
     alert(lang==='pt'?'Marcos salvos com sucesso!':'Milestones saved successfully!');
@@ -2460,6 +2746,27 @@ async function saveMilestones(){
 function getCatABA(cat){
   const c = DATA.categorias.find(x => x['Categoria_despesa_PT'] === cat || x['Categoria_despesa_ENG'] === cat);
   return c ? c.ABA || '' : '';
+}
+
+// A4: chave de ordenação seguindo a sequência das abas da planilha (F,G,H,I,J,K...),
+// e não ordem alfabética da categoria. Usa o índice da categoria em DATA.categorias
+// (que reflete a ordem das abas no Excel) e, como desempate, o código de aba.
+function catTabOrder(cat){
+  const idx = DATA.categorias.findIndex(x => x['Categoria_despesa_PT'] === cat || x['Categoria_despesa_ENG'] === cat);
+  return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
+}
+function catAbaKey(cat){
+  // ordena pelo código de aba alfabético (A<B<...<F<G<H...); aba ausente vai para o fim
+  const aba = String(getCatABA(cat)||'').trim().toUpperCase();
+  return aba || '\uFFFF';
+}
+// comparador único: prioriza a ordem das abas (DATA.categorias); fallback no código de aba; depois nome
+function catCompare(a,b){
+  const ia=catTabOrder(a), ib=catTabOrder(b);
+  if(ia!==ib) return ia-ib;
+  const ka=catAbaKey(a), kb=catAbaKey(b);
+  if(ka!==kb) return ka<kb?-1:1;
+  return String(a).localeCompare(String(b));
 }
 
 let rubPendingChanges = 0;
@@ -2488,7 +2795,7 @@ function buildRubPivot(pid, execFilter){
     planMap[cc]=(planMap[cc]||0)+parseFloat(r.Plano_Atual||0);
     ptrbMap[cc]=(ptrbMap[cc]||0)+parseFloat(r['Plano_PTR-B']||0);
   });
-  const allCats=[...new Set([...Object.keys(pivot),...Object.keys(planMap)])].filter(Boolean).sort();
+  const allCats=[...new Set([...Object.keys(pivot),...Object.keys(planMap)])].filter(Boolean).sort(catCompare);
   return {months, allCats, pivot, planMap, ptrbMap};
 }
 
@@ -2611,7 +2918,7 @@ function renderRubricas(){
     ptrbMap[c]=(ptrbMap[c]||0)+parseFloat(r['Plano_PTR-B']||0);
   });
 
-  const allCats = [...new Set([...Object.keys(pivot),...Object.keys(planMap)])].filter(Boolean).sort();
+  const allCats = [...new Set([...Object.keys(pivot),...Object.keys(planMap)])].filter(Boolean).sort(catCompare);
 
   // Build totals per month
   const monthTotals = {};
@@ -2938,16 +3245,19 @@ function renderSMs(){
             <th>${L?'Submissão':'Submitted'}</th>
             <th>${L?'Aprovação':'Approved'}</th>
             <th>Status</th>
+            <th class="text-right">${L?'Valor':'Value'}</th>
             <th>${L?'Observações':'Notes'}</th>
           </tr></thead>
           <tbody>
             ${rows.map(s=>{
-              return `<tr>
+              const origIdx=DATA.solicitacoes.indexOf(s);
+              return `<tr class="tr-clickable" onclick="openSolEditModal(${origIdx})" title="${L?'Clique para editar':'Click to edit'}">
                 <td class="fs-12 color-ink3">${s.Projeto||'—'}</td>
                 <td class="fw-600">${s['SM#']||s.Numero||'—'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'—'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'—'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
+                <td class="text-right fs-12">${parseFloat(s.Valor||0)?FMT.format(parseFloat(s.Valor)):'—'}</td>
                 <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'—')}</td>
               </tr>`;
             }).join('')}
@@ -2966,11 +3276,248 @@ function smTypeFilterBadgeLabel(type,L){
 
 function setSMType(type){ smTypeFilter = type; renderSMs(); }
 
+// D4: reescreve a sheet Solicitacoes preservando a ordem/colunas reais do Excel.
+// Mapeia cada coluna do header para o valor correspondente do objeto em memória.
+function solicitacaoCellFor(header, s){
+  const h=String(header||'').trim().toLowerCase();
+  if(h==='projeto') return s.Projeto||'';
+  if(h==='numero_item'||h==='número_item'||h==='numero'||h==='número') return s.Numero||s['SM#']||'';
+  if(h==='tipo') return s.Tipo||'SM';
+  if(h==='data_submissao'||h==='data submissão'||h==='data_submissão') return s.Data_Submissao?(isoToExcelSerial(s.Data_Submissao)||''):'';
+  if(h==='data_aprovacao'||h==='data aprovação'||h==='data_aprovação') return s.Data_Aprovacao?(isoToExcelSerial(s.Data_Aprovacao)||''):'';
+  if(h==='status') return s.Status||'';
+  if(h==='observacoes'||h==='observações'||h==='obs') return s.Observacoes||'';
+  if(h==='valor') return parseFloat(s.Valor||0)||0;
+  return ''; // coluna desconhecida: vazio para não corromper
+}
+async function rewriteSolicitacoesSheet(){
+  const headers=(DATA._headers&&DATA._headers['Solicitacoes'])
+    ? DATA._headers['Solicitacoes']
+    : ['Projeto','Numero_Item','Tipo','Data_Submissao','Data_Aprovacao','Status','Valor'];
+  const dataRows=(DATA.solicitacoes||[]).map(s=>headers.map(h=>solicitacaoCellFor(h,s)));
+  await rewriteExcelSheet('Solicitacoes', headers, dataRows);
+}
+
+// D3: menu de criação de registro (SM/DV/DE)
+function toggleCreateSolMenu(ev){
+  if(ev) ev.stopPropagation();
+  const m=document.getElementById('create-sol-menu');
+  if(!m) return;
+  const open = m.style.display!=='none' && m.style.display!=='';
+  m.style.display = open ? 'none' : 'block';
+  if(!open){
+    setTimeout(()=>document.addEventListener('click', closeCreateSolMenuOnce, {once:true}),0);
+  }
+}
+function closeCreateSolMenuOnce(){
+  const m=document.getElementById('create-sol-menu');
+  if(m) m.style.display='none';
+}
+function createSolicitacao(type){
+  closeCreateSolMenuOnce();
+  if(type==='SM'){ openSMModal(); return; }   // SM usa o modal rico (com categorias)
+  openSolModal(type);                          // DV / DE usam o modal genérico
+}
+
+// índice da solicitação em edição (null = criação)
+let editingSolIdx=null;
+
+function populateSolProjects(){
+  const sel=document.getElementById('sol-projeto');
+  if(!sel) return;
+  sel.innerHTML=DATA.projetos.map(p=>`<option value="${escapeAttr(p.Projeto)}">${escapeHtml(p.Projeto)} — ${escapeHtml((p['Título do projeto']||'').split(':')[0])}</option>`).join('');
+}
+
+// D3: criar DV/DE (ou SM via genérico, se chamado)
+function openSolModal(type){
+  editingSolIdx=null;
+  populateSolProjects();
+  const L=lang==='pt';
+  document.getElementById('sol-modal-title').textContent =
+    (L?'Novo ':'New ')+(type==='DV'?'DV (Despesa de viagem)':type==='DE'?'DE (Despesa especial)':'SM');
+  const pf=document.getElementById('sm-project-filter');
+  if(pf && pf.value && pf.value!=='ALL') document.getElementById('sol-projeto').value=pf.value;
+  document.getElementById('sol-tipo').value=type;
+  document.getElementById('sol-numero').value='';
+  document.getElementById('sol-status').value='Pendente';
+  document.getElementById('sol-data-sub').value='';
+  document.getElementById('sol-data-apr').value='';
+  document.getElementById('sol-valor').value='';
+  document.getElementById('sol-obs').value='';
+  document.getElementById('sol-modal').classList.add('show');
+}
+
+// D4: editar uma solicitação existente (qualquer tipo)
+function openSolEditModal(idx){
+  const s=DATA.solicitacoes[idx];
+  if(!s) return;
+  editingSolIdx=idx;
+  populateSolProjects();
+  const L=lang==='pt';
+  document.getElementById('sol-modal-title').textContent=(L?'Editar ':'Edit ')+(s.Tipo||'SM');
+  document.getElementById('sol-projeto').value=s.Projeto||'';
+  document.getElementById('sol-tipo').value=s.Tipo||'SM';
+  document.getElementById('sol-numero').value=s.Numero||s['SM#']||'';
+  const st=document.getElementById('sol-status');
+  // garante que o status atual exista na lista
+  if(s.Status && ![...st.options].some(o=>o.value===s.Status)){
+    st.add(new Option(s.Status, s.Status));
+  }
+  st.value=s.Status||'Pendente';
+  document.getElementById('sol-data-sub').value=(String(s.Data_Submissao||'').split('T')[0]);
+  document.getElementById('sol-data-apr').value=(String(s.Data_Aprovacao||'').split('T')[0]);
+  document.getElementById('sol-valor').value=s.Valor||'';
+  document.getElementById('sol-obs').value=s.Observacoes||'';
+  document.getElementById('sol-modal').classList.add('show');
+}
+
+// D3/D4: salvar criação/edição → persiste reescrevendo a sheet Solicitacoes
+async function saveSolModal(){
+  const L=lang==='pt';
+  const pid=document.getElementById('sol-projeto').value;
+  const tipo=document.getElementById('sol-tipo').value;
+  const numero=document.getElementById('sol-numero').value.trim();
+  const status=document.getElementById('sol-status').value;
+  const dataSub=document.getElementById('sol-data-sub').value;
+  const dataApr=document.getElementById('sol-data-apr').value;
+  const valor=parseFloat(document.getElementById('sol-valor').value)||0;
+  const obs=document.getElementById('sol-obs').value.trim();
+
+  if(!pid||!numero){ alert(L?'Preencha Projeto e Número/Código.':'Fill in Project and Number/Code.'); return; }
+
+  const novo={
+    Projeto:pid, 'SM#':numero, Numero:numero, Numero_Item:numero, Tipo:tipo,
+    Data_Submissao:dataSub||'', Data_Aprovacao:dataApr||'', Status:status, Observacoes:obs, Valor:valor
+  };
+
+  // aplica em memória (snapshot para rollback)
+  const snapshot=JSON.parse(JSON.stringify(DATA.solicitacoes||[]));
+  if(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]){
+    DATA.solicitacoes[editingSolIdx]=novo;
+  } else {
+    DATA.solicitacoes.push(novo);
+  }
+
+  showLoading(L?'Salvando registro no Excel...':'Saving record to Excel...');
+  try{
+    await rewriteSolicitacoesSheet();
+    hideLoading();
+    closeModal('sol-modal');
+    editingSolIdx=null;
+    renderCurrentPage();
+    alert(L?'Registro salvo com sucesso!':'Record saved successfully!');
+  }catch(e){
+    DATA.solicitacoes=snapshot; // rollback
+    hideLoading();
+    console.error('saveSolModal error:',e);
+    alert((L?'Erro ao salvar registro: ':'Error saving record: ')+e.message);
+  }
+}
+
 // ===================== MODAL: NOVO PROJETO =====================
+let editingProjectId=null;
+
 function openProjectModal(){
+  editingProjectId=null;
   ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-pmanager','pm-inicio','pm-fim','pm-fimreal','pm-duracao','pm-valor']
     .forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=false;
+  const title=document.getElementById('modal-project-title');
+  if(title) title.textContent = lang==='pt'?'Novo Projeto':'New Project';
   document.getElementById('project-modal').classList.add('show');
+}
+
+// D2: abrir modal preenchido para editar um projeto existente
+function openProjectEditModal(pid){
+  const p=DATA.projetos.find(x=>x.Projeto===pid);
+  if(!p) return;
+  editingProjectId=pid;
+  const setV=(id,v)=>{const el=document.getElementById(id); if(el) el.value=v??'';};
+  setV('pm-codigo', p.Projeto);
+  setV('pm-anp', p['Número ANP']||p.Numero_ANP||'');
+  setV('pm-titulo', p['Título do projeto']||'');
+  setV('pm-executor', p.Executor||'');
+  setV('pm-pmanager', p['Project Manager']||p.Project_Manager||'');
+  setV('pm-gestor', p.Gestor||'Yiannis');
+  setV('pm-status', p.Status_Projeto||'Em andamento');
+  setV('pm-inicio', (String(p['Data de início ']||p['Data de início']||'').split('T')[0]));
+  setV('pm-fim', (String(p['Data final']||'').split('T')[0]));
+  setV('pm-fimreal', (String(p['Data final real']||'').split('T')[0]));
+  setV('pm-duracao', p['Duração (meses)']||p.Duracao_Meses||'');
+  setV('pm-valor', p['Planned Value (R$)']||p.Valor_PTRB||'');
+  const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=true; // código é chave: não editável
+  const title=document.getElementById('modal-project-title');
+  if(title) title.textContent = lang==='pt'?'Editar Projeto':'Edit Project';
+  document.getElementById('project-modal').classList.add('show');
+}
+
+// D2: despachante do botão salvar do modal de projeto
+function submitProjectModal(){
+  if(editingProjectId) return saveProjectEdits();
+  return saveNewProject();
+}
+
+// D2: salvar edição das informações gerais do projeto → persiste na sheet Projetos
+async function saveProjectEdits(){
+  const L=lang==='pt';
+  const pid=editingProjectId;
+  const p=DATA.projetos.find(x=>x.Projeto===pid);
+  if(!p){ closeModal('project-modal'); return; }
+
+  const titulo=document.getElementById('pm-titulo').value.trim();
+  const executor=document.getElementById('pm-executor').value.trim();
+  const anp=document.getElementById('pm-anp').value.trim();
+  const pmanager=document.getElementById('pm-pmanager').value.trim();
+  const gestor=document.getElementById('pm-gestor').value;
+  const inicio=document.getElementById('pm-inicio').value;
+  const fim=document.getElementById('pm-fim').value;
+  const fimreal=document.getElementById('pm-fimreal').value;
+  const duracao=document.getElementById('pm-duracao').value;
+  const valor=parseFloat(document.getElementById('pm-valor').value);
+  const status=document.getElementById('pm-status').value;
+
+  if(!titulo||!inicio||!fim||isNaN(valor)){
+    alert(L?'Preencha os campos obrigatórios: Título, Início, Fim e Valor.'
+           :'Fill in required fields: Title, Start, End and Value.');
+    return;
+  }
+  if(new Date(fim)<new Date(inicio)){
+    alert(L?'A data de fim não pode ser anterior à de início.':'End date cannot be before start date.');
+    return;
+  }
+
+  // snapshot para rollback
+  const snap=JSON.parse(JSON.stringify(p));
+  Object.assign(p,{
+    'Título do projeto':titulo,
+    Executor:executor,
+    'Número ANP':anp, Numero_ANP:anp,
+    'Project Manager':pmanager, Project_Manager:pmanager,
+    Gestor:gestor,
+    'Data de início ':inicio,
+    'Data final':fim,
+    'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
+    'Duração (meses)':duracao||'', Duracao_Meses:duracao||'',
+    'Planned Value (R$)':valor, Valor_PTRB:valor,
+    Status_Projeto:status,
+  });
+
+  showLoading(L?'Salvando alterações do projeto...':'Saving project changes...');
+  try{
+    await rewriteProjetosSheet();
+    hideLoading();
+    closeModal('project-modal');
+    editingProjectId=null;
+    populateDropdowns();
+    repopulateProjectDropdowns();
+    renderProjectDetail(pid);
+    alert(L?'Projeto atualizado com sucesso!':'Project updated successfully!');
+  }catch(e){
+    Object.assign(p,snap); // rollback
+    hideLoading();
+    console.error('saveProjectEdits error:',e);
+    alert((L?'Erro ao salvar alterações: ':'Error saving changes: ')+e.message);
+  }
 }
 
 async function saveNewProject(){
@@ -3112,7 +3659,7 @@ function onSMProjectChange(){
   const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid);
   let cats=[...new Set(planoRows.map(r=>r.Categoria_despesa).filter(Boolean))];
   if(!cats.length) cats=(DATA.categorias||[]).map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG).filter(Boolean);
-  cats.sort((a,b)=>a.localeCompare(b));
+  cats.sort(catCompare);
 
   if(!cats.length){
     table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponível.':'No categories available.'}</div>`;
