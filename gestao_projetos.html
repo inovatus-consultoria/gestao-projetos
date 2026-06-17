@@ -311,16 +311,19 @@ tr:hover td{background:var(--surface3);}
 .pivot-table tbody tr:hover td.col-frozen{background:var(--surface3);}
 .pivot-table tr.row-total td{background:var(--ink);color:#fff;font-weight:600;position:sticky;bottom:0;z-index:2;}
 .pivot-table tr.row-total td.col-frozen{z-index:4;}
+.pivot-table tr.row-income td{background:var(--green-light);color:var(--green);font-weight:600;}
+.pivot-table tr.row-income td.col-frozen{background:var(--green-light);}
 
 /* Frozen left columns */
 .col-frozen{position:sticky;z-index:2;background:var(--surface);}
 .pivot-table thead th.col-frozen{z-index:5;background:var(--surface2);}
-.col-cat{left:0;min-width:200px;max-width:200px;border-right:none!important;}
-.col-aba{left:200px;min-width:52px;width:52px;text-align:center!important;border-right:none!important;}
-.col-ptrb{left:252px;min-width:140px;text-align:right!important;border-right:none!important;}
-.col-plan{left:392px;min-width:148px;text-align:right!important;border-right:none!important;}
-.col-total{left:540px;min-width:148px;text-align:right!important;border-right:none!important;}
-.col-pct{left:688px;min-width:82px;text-align:right!important;border-right:2px solid var(--border)!important;}
+.col-cat{left:0;min-width:300px;max-width:300px;border-right:none!important;}
+.pivot-table td.col-cat{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.col-aba{left:300px;min-width:52px;width:52px;text-align:center!important;border-right:none!important;}
+.col-ptrb{left:352px;min-width:140px;text-align:right!important;border-right:none!important;}
+.col-plan{left:492px;min-width:148px;text-align:right!important;border-right:none!important;}
+.col-total{left:640px;min-width:148px;text-align:right!important;border-right:none!important;}
+.col-pct{left:788px;min-width:82px;text-align:right!important;border-right:2px solid var(--border)!important;}
 
 /* Month columns */
 .col-month{min-width:136px;text-align:right!important;}
@@ -1059,6 +1062,17 @@ function gestorProjects(){
   return DATA.projetos.filter(p=>(p.Gestor||'')===gestorFilter);
 }
 
+function projectShortTitle(p){
+  return String((p&&p['TÃ­tulo do projeto'])||p?.Titulo||'').split(':')[0].trim();
+}
+
+function projectOptionHtml(p){
+  const pid=String(p?.Projeto||'');
+  const title=projectShortTitle(p);
+  const label=title ? `${pid} - ${title}` : pid;
+  return `<option value="${escapeAttr(pid)}">${escapeHtml(label)}</option>`;
+}
+
 function repopulateProjectDropdowns(){
   const projs = DATA.projetos;
   const allLabel = lang==='pt'?'Todos os Projetos':'All Projects';
@@ -1067,10 +1081,7 @@ function repopulateProjectDropdowns(){
     if(!el) return;
     const prev=el.value;
     el.innerHTML=`<option value="ALL">${allLabel}</option>`;
-    projs.forEach(p=>{
-      const label=p.Projeto+' â€” '+(p['TÃ­tulo do projeto']||p.Titulo||'').split(':')[0].trim();
-      el.innerHTML+=`<option value="${p.Projeto}">${label}</option>`;
-    });
+    projs.forEach(p=>{ el.innerHTML+=projectOptionHtml(p); });
     // Restore selection if still valid
     if([...el.options].some(o=>o.value===prev)) el.value=prev;
     else el.value='ALL';
@@ -1080,9 +1091,7 @@ function repopulateProjectDropdowns(){
   if(ps){
     const prev=ps.value;
     ps.innerHTML='';
-    projs.forEach(p=>{
-      ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||p.Titulo||'').split(':')[0]}</option>`;
-    });
+    projs.forEach(p=>{ ps.innerHTML+=projectOptionHtml(p); });
     if([...ps.options].some(o=>o.value===prev)) ps.value=prev;
     else if(ps.options.length) ps.value=ps.options[0].value;
   }
@@ -1450,8 +1459,8 @@ function milestoneStatusSelect(m, origIdx){
 }
 
 function getExec(pid){
-  const plan=DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
-  const actual=DATA.gastos.filter(r=>r.Projetos===pid).reduce((s,r)=>s+parseFloat(r.Valor||0),0);
+  const plan=currentPlanTotal(pid);
+  const actual=DATA.gastos.filter(r=>(r.Projetos||r.Projeto)===pid).reduce((s,r)=>s+parseFloat(r.Valor||0),0);
   return {plan,actual,pct:plan?actual/plan:0};
 }
 
@@ -1790,18 +1799,70 @@ async function rewriteExcelSheet(sheet, headers, dataRows){
 
 // loadAllListItems removido â€” versÃ£o Excel usa excelApiBase() diretamente
 
-// â”€â”€â”€ SM override: Plano_Atual = value from latest SM â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function applySMOverrides(){
-  if(!DATA.sms||!DATA.sms.length) return;
-  const latest={};
-  DATA.sms.forEach(s=>{
-    const num=parseInt((s['SM#']||'').replace(/\D/g,''))||0;
-    const k=s.Projeto+'|'+s.Categoria_despesa;
-    if(!latest[k]||num>latest[k].num) latest[k]={num,valor:s.Valor};
+function smNumber(raw){
+  const num=parseInt(String(raw||'').replace(/\D/g,''),10);
+  return Number.isFinite(num) ? num : NaN;
+}
+
+function latestSMInfo(pid){
+  let best=null;
+  const consider=(raw)=>{
+    const label=String(raw||'').trim();
+    if(!label) return;
+    const num=smNumber(label);
+    if(isNaN(num)) return;
+    if(!best||num>best.num) best={num,label};
+  };
+  (DATA.sms||[]).filter(s=>s.Projeto===pid).forEach(s=>consider(s['SM#']||s.Numero_SM||s.Numero));
+  (DATA.solicitacoes||[])
+    .filter(s=>s.Projeto===pid && /^sm$/i.test(String(s.Tipo||'SM')))
+    .forEach(s=>consider(s['SM#']||s.Numero_Item||s.Numero_SM||s.Numero));
+  if(!best) return null;
+  return {
+    num:best.num,
+    label:/\d/.test(best.label) && !/[a-z]/i.test(best.label) ? 'SM'+best.num : best.label
+  };
+}
+
+function currentPlanMap(pid){
+  const base={};
+  DATA.plano.filter(r=>r.Projeto===pid).forEach(r=>{
+    const cat=r.Categoria_despesa;
+    if(cat) base[cat]=(base[cat]||0)+parseFloat(r['Plano_PTR-B']||0);
   });
+  const latest=latestSMInfo(pid);
+  if(!latest) return base;
+
+  const smCats={};
+  (DATA.sms||[]).filter(s=>s.Projeto===pid && smNumber(s['SM#']||s.Numero_SM||s.Numero)===latest.num).forEach(s=>{
+    const cat=s.Categoria_despesa;
+    if(cat) smCats[cat]=(smCats[cat]||0)+parseFloat(s.Valor||0);
+  });
+
+  const out={};
+  [...new Set([...Object.keys(base),...Object.keys(smCats)])].forEach(cat=>{
+    out[cat]=Object.prototype.hasOwnProperty.call(smCats,cat) ? smCats[cat] : 0;
+  });
+  return out;
+}
+
+function currentPlanTotal(pid){
+  return Object.values(currentPlanMap(pid)).reduce((s,v)=>s+parseFloat(v||0),0);
+}
+
+function currentPlanHeader(pid,L){
+  const sm=latestSMLabel(pid);
+  return `${L?'Plano Atual':'Curr. Plan'}${sm?` (${sm})`:''}`;
+}
+
+// â”€â”€â”€ SM override: Plano_Atual mirrors the latest SM snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function applySMOverrides(){
+  DATA.plano.forEach(r=>{ r.Plano_Atual=parseFloat(r['Plano_PTR-B']||0)||0; });
+  const pids=[...new Set([...(DATA.plano||[]).map(r=>r.Projeto),...(DATA.sms||[]).map(s=>s.Projeto)])].filter(Boolean);
+  const maps=Object.fromEntries(pids.map(pid=>[pid,currentPlanMap(pid)]));
   DATA.plano.forEach(r=>{
-    const k=r.Projeto+'|'+r.Categoria_despesa;
-    if(latest[k]) r.Plano_Atual=latest[k].valor;
+    const latest=latestSMInfo(r.Projeto);
+    if(latest) r.Plano_Atual=maps[r.Projeto]?.[r.Categoria_despesa]||0;
   });
 }
 
@@ -1809,19 +1870,7 @@ function applySMOverrides(){
 // Considera tanto itens de SM (DATA.sms) quanto solicitaÃ§Ãµes (DATA.solicitacoes) tipo SM.
 // Retorna ex.: "SM3" ou '' se nÃ£o houver SM.
 function latestSMLabel(pid){
-  let best=null;
-  const consider=(raw)=>{
-    const label=String(raw||'').trim();
-    if(!label) return;
-    const num=parseInt(label.replace(/\D/g,''));
-    if(isNaN(num)) return;
-    if(!best||num>best.num) best={num,label};
-  };
-  (DATA.sms||[]).filter(s=>s.Projeto===pid).forEach(s=>consider(s['SM#']));
-  (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid && /sm/i.test(String(s.Tipo||'SM'))).forEach(s=>consider(s['SM#']||s.Numero_Item||s.Numero_SM));
-  if(!best) return '';
-  // normaliza para "SM<n>" se vier sÃ³ nÃºmero
-  return /\d/.test(best.label) && !/[a-z]/i.test(best.label) ? 'SM'+best.num : best.label;
+  return latestSMInfo(pid)?.label || '';
 }
 
 // â”€â”€â”€ Populate UI dropdowns after data load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1832,17 +1881,12 @@ function populateDropdowns(){
     const el=document.getElementById(id);
     if(!el)return;
     el.innerHTML=`<option value="ALL">${allLbl}</option>`;
-    projs.forEach(p=>{
-      const lbl=p.Projeto+' â€” '+(p['TÃ­tulo do projeto']||'').split(':')[0].trim();
-      el.innerHTML+=`<option value="${p.Projeto}">${lbl}</option>`;
-    });
+    projs.forEach(p=>{ el.innerHTML+=projectOptionHtml(p); });
   });
   const gp=document.getElementById('gasto-project');
   if(gp){
     gp.innerHTML='';
-    projs.forEach(p=>{
-      gp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`;
-    });
+    projs.forEach(p=>{ gp.innerHTML+=projectOptionHtml(p); });
     gp.dispatchEvent(new Event('change'));
   }
   const gc=document.getElementById('gasto-cat');
@@ -1853,12 +1897,12 @@ function populateDropdowns(){
   const sp=document.getElementById('sm-project');
   if(sp){
     sp.innerHTML='';
-    projs.forEach(p=>{ sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`; });
+    projs.forEach(p=>{ sp.innerHTML+=projectOptionHtml(p); });
   }
   const ps=document.getElementById('project-selector');
   if(ps){
     ps.innerHTML='';
-    projs.forEach(p=>{ ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`; });
+    projs.forEach(p=>{ ps.innerHTML+=projectOptionHtml(p); });
   }
 }
 
@@ -2012,7 +2056,7 @@ function renderPortfolio(){
   if(!showCompleted) gProjs = gProjs.filter(p=>!isProjectCompleted(p));
   const gProjIds = new Set(gProjs.map(p=>p.Projeto));
 
-  const totalPlan=gProjs.reduce((s,p)=>s+parseFloat(p['Planned Value (R$)']||p.Valor_PTRB||0),0);
+  const totalPlan=gProjs.reduce((s,p)=>s+currentPlanTotal(p.Projeto),0);
   const totalActual=DATA.gastos.filter(g=>gProjIds.has(g.Projetos||g.Projeto)).reduce((s,g)=>s+parseFloat(g.Valor||0),0);
   const avgExec=totalPlan?totalActual/totalPlan:0;
 
@@ -2296,10 +2340,7 @@ function buildProjectAlerts(pid){
 
   // (a) categorias/rubricas com percentual executado > 100% (custos por categoria NP)
   const catPlan={}, catAct={};
-  DATA.plano.filter(r=>r.Projeto===pid).forEach(r=>{
-    const c=r.Categoria_despesa;
-    catPlan[c]=(catPlan[c]||0)+parseFloat(r.Plano_Atual||0);
-  });
+  Object.assign(catPlan,currentPlanMap(pid));
   DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>{
     const c=g.Categoria_despesa;
     catAct[c]=(catAct[c]||0)+parseFloat(g.Valor||0);
@@ -2373,8 +2414,8 @@ function renderProjectDetail(pid){
   DATA.plano.filter(r=>r.Projeto===pid).forEach(r=>{
     const c=r.Categoria_despesa;
     catPtrbMap[c]=(catPtrbMap[c]||0)+parseFloat(r['Plano_PTR-B']||0);
-    catPlanMap[c]=(catPlanMap[c]||0)+parseFloat(r.Plano_Atual||0);
   });
+  Object.assign(catPlanMap,currentPlanMap(pid));
   DATA.gastos.filter(g=>g.Projetos===pid).forEach(g=>{
     const c=g.Categoria_despesa;
     catActualMap[c]=(catActualMap[c]||0)+parseFloat(g.Valor||0);
@@ -2977,6 +3018,7 @@ function rubSelectedGastoMonth(){
 function rubProjectMonthKeys(pid){
   const keys=new Set();
   DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>keys.add(rubMonthKey(g)));
+  (DATA.rendimento||[]).filter(r=>r.Projeto===pid).forEach(r=>keys.add(rendimentoMonthKey(r)));
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
   const startKey=rubDateMonthKey(proj?.['Data de inÃ­cio ']||proj?.['Data de inÃ­cio']);
   const todayKey=rubDateMonthKey(new Date());
@@ -3001,14 +3043,7 @@ function rubProjectExecutors(pid){
   return [...new Set(vals.map(v=>String(v||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
 }
 function rubLatestSMPlanMap(pid){
-  const latest={};
-  (DATA.sms||[]).filter(s=>s.Projeto===pid).forEach(s=>{
-    const num=parseInt(String(s['SM#']||'').replace(/\D/g,''))||0;
-    const cat=s.Categoria_despesa;
-    if(!cat) return;
-    if(!latest[cat]||num>latest[cat].num) latest[cat]={num,valor:parseFloat(s.Valor)||0};
-  });
-  return Object.fromEntries(Object.entries(latest).map(([cat,item])=>[cat,item.valor]));
+  return currentPlanMap(pid);
 }
 function rubResolveExecutor(pid, exec){
   if(exec && exec!=='ALL') return exec;
@@ -3074,7 +3109,7 @@ function renderRubReadonlyTable(pid){
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-aba">ABA</th>
     <th class="col-frozen col-ptrb">PTR-B</th>
-    <th class="col-frozen col-plan">${L?'Plano Atual':'Curr. Plan'}</th>
+    <th class="col-frozen col-plan">${currentPlanHeader(pid,L)}</th>
     <th class="col-frozen col-total">Total</th>
     <th class="col-frozen col-pct">%</th>`;
   const monthHeaders=months.map(m=>`<th class="col-month">${m}</th>`).join('');
@@ -3087,7 +3122,7 @@ function renderRubReadonlyTable(pid){
     gT+=rowTotal;gP+=ptrb;gPl+=plan;
     const pct=plan?rowTotal/plan:0;
     const fc=`
-      <td class="col-frozen col-cat fs-12">${cat}</td>
+      <td class="col-frozen col-cat" title="${escapeAttr(cat)}">${escapeHtml(cat)}</td>
       <td class="col-frozen col-aba fw-600 fs-12 color-ink3">${aba}</td>
       <td class="col-frozen col-ptrb color-ink3">${rubFmt(ptrb)}</td>
       <td class="col-frozen col-plan fw-600">${rubFmt(plan)}</td>
@@ -3097,6 +3132,8 @@ function renderRubReadonlyTable(pid){
     return `<tr>${fc}${mc}</tr>`;
   }).join('');
   const gPct=gPl?gT/gPl:0;
+  const rendTotals=rubRendimentoMonthTotals(pid,'ALL');
+  const rendTotal=months.reduce((s,m)=>s+(rendTotals[m]||0),0);
   const totalRow=`<tr class="row-total">
     <td class="col-frozen col-cat">TOTAL</td>
     <td class="col-frozen col-aba"></td>
@@ -3106,12 +3143,21 @@ function renderRubReadonlyTable(pid){
     <td class="col-frozen col-pct">${PCT(gPct)}</td>
     ${months.map(m=>`<td class="col-month" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
+  const incomeRow=`<tr class="row-income">
+    <td class="col-frozen col-cat">${L?'Rendimento':'Income'}</td>
+    <td class="col-frozen col-aba"></td>
+    <td class="col-frozen col-ptrb"></td>
+    <td class="col-frozen col-plan"></td>
+    <td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td>
+    <td class="col-frozen col-pct"></td>
+    ${months.map(m=>`<td class="col-month" data-value="${rendTotals[m]||0}">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}
+  </tr>`;
   return `
     <div style="font-family:'DM Serif Display',serif;font-size:16px;margin:18px 0 8px;">${title}</div>
     <div class="pivot-outer" style="margin-bottom:8px;">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
-        <tbody>${rows}${totalRow}</tbody>
+        <tbody>${rows}${totalRow}${incomeRow}</tbody>
       </table>
     </div>`;
 }
@@ -3209,7 +3255,7 @@ function renderRubricas(){
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-aba">ABA</th>
     <th class="col-frozen col-ptrb">PTR-B</th>
-    <th class="col-frozen col-plan">${L?'Plano Atual':'Curr. Plan'}</th>
+    <th class="col-frozen col-plan">${currentPlanHeader(pFilter,L)}</th>
     <th class="col-frozen col-total">Total</th>
     <th class="col-frozen col-pct">%</th>`;
   const monthHeaders = months.map(m=>`<th class="col-month">${m}</th>`).join('');
@@ -3224,7 +3270,7 @@ function renderRubricas(){
     grandTotal+=rowTotal; grandPtrb+=ptrb; grandPlan+=plan;
     const pct = showCurrentPlan && plan ? rowTotal/plan : NaN;
     const frozenCells = `
-      <td class="col-frozen col-cat fs-12">${cat}</td>
+      <td class="col-frozen col-cat" title="${escapeAttr(cat)}">${escapeHtml(cat)}</td>
       <td class="col-frozen col-aba fw-600 fs-12 color-ink3">${aba}</td>
       <td class="col-frozen col-ptrb color-ink3" id="rub-ptrb-${ci}">${rubFmt(ptrb)}</td>
       <td class="col-frozen col-plan fw-600" id="rub-plan-${ci}" data-value="${plan}">${showCurrentPlan?rubFmt(plan):'â€”'}</td>
@@ -3244,6 +3290,8 @@ function renderRubricas(){
 
   // Total row
   const grandPct = showCurrentPlan && grandPlan ? grandTotal/grandPlan : NaN;
+  const rendTotals = rubRendimentoMonthTotals(pFilter, execFilter);
+  const rendTotal = months.reduce((s,m)=>s+(rendTotals[m]||0),0);
   const totalRow = `<tr class="row-total">
     <td class="col-frozen col-cat">TOTAL</td>
     <td class="col-frozen col-aba"></td>
@@ -3252,6 +3300,15 @@ function renderRubricas(){
     <td class="col-frozen col-total" id="rub-grand-total" data-value="${grandTotal}">${rubFmt(grandTotal)}</td>
     <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
+  </tr>`;
+  const incomeRow = `<tr class="row-income">
+    <td class="col-frozen col-cat">${L?'Rendimento':'Income'}</td>
+    <td class="col-frozen col-aba"></td>
+    <td class="col-frozen col-ptrb"></td>
+    <td class="col-frozen col-plan"></td>
+    <td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td>
+    <td class="col-frozen col-pct"></td>
+    ${months.map(m=>`<td class="col-month" data-value="${rendTotals[m]||0}">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const readOnlyNote = hasMultiExec && execFilter==='ALL'
     ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visÃ£o consolidada Ã© somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
@@ -3262,7 +3319,7 @@ function renderRubricas(){
     <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
-        <tbody>${rows.join('')}${totalRow}</tbody>
+        <tbody>${rows.join('')}${totalRow}${incomeRow}</tbody>
       </table>
     </div>
     <div id="rub-save-bar" style="display:none;" class="rub-save-bar">
@@ -3513,6 +3570,19 @@ function rubRendimentoValue(pid, exec, month){
   }).reduce((s,r)=>s+parseFloat(r.Valor_Rendido||0),0);
 }
 
+function rubRendimentoMonthTotals(pid, execFilter){
+  const totals={};
+  (DATA.rendimento||[]).filter(r=>{
+    if(r.Projeto!==pid) return false;
+    if(execFilter && execFilter!=='ALL' && r.Executor!==execFilter) return false;
+    return true;
+  }).forEach(r=>{
+    const key=rendimentoMonthKey(r);
+    if(key) totals[key]=(totals[key]||0)+parseFloat(r.Valor_Rendido||0);
+  });
+  return totals;
+}
+
 function rubApplyRendimentoChange(proj, month, exec, newVal){
   const [year, mo] = month.split('-');
   const monthName = Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo,10))?.[0]||'janeiro';
@@ -3553,7 +3623,7 @@ function openRubRendimentoModal(){
     return;
   }
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const title=(proj?.['TÃƒÂ­tulo do projeto']||'').split(':')[0].trim();
+  const title=projectShortTitle(proj);
   const currentKey=rubDateMonthKey(new Date());
   const [currentYear,currentMonth]=currentKey.split('-');
   const yearOptions=rubProjectYearOptions(pid);
@@ -3566,7 +3636,7 @@ function openRubRendimentoModal(){
   document.getElementById('btn-rub-rend-cancel').textContent=L?'Cancelar':'Cancel';
   document.getElementById('btn-rub-rend-save').textContent=L?'Salvar rendimento do mÃƒÂªs':'Save monthly income';
   document.getElementById('rub-rend-project').value=pid;
-  document.getElementById('rub-rend-project-label').value=`${pid}${title?' Ã¢â‚¬â€ '+title:''}`;
+  document.getElementById('rub-rend-project-label').value=`${pid}${title?' - '+title:''}`;
   document.getElementById('rub-rend-executor').value=executor;
   const monthEl=document.getElementById('rub-rend-month-num');
   monthEl.innerHTML=Array.from({length:12},(_,i)=>{
@@ -3642,7 +3712,7 @@ function openRubGastoModal(){
     return;
   }
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const title=(proj?.['TÃ­tulo do projeto']||'').split(':')[0].trim();
+  const title=projectShortTitle(proj);
   const currentKey=rubDateMonthKey(new Date());
   const [currentYear,currentMonth]=currentKey.split('-');
   const yearOptions=rubProjectYearOptions(pid);
@@ -3656,7 +3726,7 @@ function openRubGastoModal(){
   document.getElementById('btn-rub-gasto-cancel').textContent=L?'Cancelar':'Cancel';
   document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mÃªs':'Save monthly expenses';
   document.getElementById('rub-gasto-project').value=pid;
-  document.getElementById('rub-gasto-project-label').value=`${pid}${title?' â€” '+title:''}`;
+  document.getElementById('rub-gasto-project-label').value=`${pid}${title?' - '+title:''}`;
   document.getElementById('rub-gasto-executor').value=executor;
   const monthEl=document.getElementById('rub-gasto-month-num');
   monthEl.innerHTML=Array.from({length:12},(_,i)=>{
@@ -3729,7 +3799,7 @@ async function saveRubGastoModal(){
 function buildRubWorksheet(pid, execFilter){
   const L=lang==='pt';
   const {months, allCats, pivot, planMap, ptrbMap, showCurrentPlan}=buildRubPivot(pid, execFilter||'ALL');
-  const header=[L?'Categoria':'Category','ABA','PTR-B',L?'Plano Atual':'Curr. Plan','Total','%',...months];
+  const header=[L?'Categoria':'Category','ABA','PTR-B',currentPlanHeader(pid,L),'Total','%',...months];
   const rows=[header];
   const monthTotals=months.map(()=>0);
   allCats.forEach(cat=>{
@@ -3758,8 +3828,13 @@ function buildRubWorksheet(pid, execFilter){
     ...monthTotals.map((_,i)=>({f:lastDataRow>=2?`SUM(${colLetter(7+i)}2:${colLetter(7+i)}${lastDataRow})`:'0'}))
   ];
   rows.push(totalRowValues);
+  const incomeTotals=rubRendimentoMonthTotals(pid,execFilter||'ALL');
+  const incomeMonthVals=months.map(m=>incomeTotals[m]||0);
+  const incomeTotal=incomeMonthVals.reduce((s,v)=>s+v,0);
+  const incomeRowIndex=rows.length+1;
+  rows.push([L?'Rendimento':'Income','','','',incomeTotal,'',...incomeMonthVals]);
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:35},{wch:8},{wch:16},{wch:16},{wch:16},{wch:10},...months.map(()=>({wch:16}))];
+  ws['!cols']=[{wch:42},{wch:8},{wch:16},{wch:18},{wch:16},{wch:10},...months.map(()=>({wch:16}))];
   ws['!freeze']={xSplit:6,ySplit:1};
   ws['!autofilter']={ref:`A1:${colLetter(header.length)}${rows.length}`};
   const moneyFmt='"R$" #,##0.00';
@@ -3774,8 +3849,10 @@ function buildRubWorksheet(pid, execFilter){
   for(let c=1;c<=header.length;c++){
     const cell=ws[`${colLetter(c)}1`];
     if(cell) cell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'2D5C4E'}}};
-    const totalCell=ws[`${colLetter(c)}${rows.length}`];
+    const totalCell=ws[`${colLetter(c)}${totalRow}`];
     if(totalCell) totalCell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1A2420'}}};
+    const incomeCell=ws[`${colLetter(c)}${incomeRowIndex}`];
+    if(incomeCell) incomeCell.s={font:{bold:true,color:{rgb:'256C4A'}},fill:{fgColor:{rgb:'E8F5EE'}}};
   }
   return ws;
 }
@@ -3935,7 +4012,7 @@ let editingSolIdx=null;
 function populateSolProjects(){
   const sel=document.getElementById('sol-projeto');
   if(!sel) return;
-  sel.innerHTML=DATA.projetos.map(p=>`<option value="${escapeAttr(p.Projeto)}">${escapeHtml(p.Projeto)} â€” ${escapeHtml((p['TÃ­tulo do projeto']||'').split(':')[0])}</option>`).join('');
+  sel.innerHTML=DATA.projetos.map(p=>projectOptionHtml(p)).join('');
 }
 
 // D3: criar DV/DE (ou SM via genÃ©rico, se chamado)
