@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inovatus Â· RD&I Projects â€” Excel</title>
+<title>Inovatus - RD&I Projects - Excel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -400,13 +400,13 @@ tr:hover td{background:var(--surface3);}
 <div id="login-screen">
   <div class="login-box">
     <div class="login-title" style="font-family:'DM Serif Display',serif;">Inovatus</div>
-    <div class="login-sub">RD&amp;I Project Management Â· Petrobras ANP</div>
+    <div class="login-sub">RD&amp;I Project Management - Petrobras ANP</div>
     <button class="btn-login" onclick="fazerLogin()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Entrar com Microsoft
     </button>
   </div>
-  <div class="login-version">Inovatus RD&amp;I Â· vB-XL Â· 28/05/2026</div>
+  <div class="login-version">Inovatus RD&amp;I - vB-XL - 28/05/2026</div>
 </div>
 
 <!-- ===================== LOADING OVERLAY ===================== -->
@@ -459,7 +459,7 @@ tr:hover td{background:var(--surface3);}
         </div>
       </div>
       <button class="btn-logout" onclick="fazerLogout()">Logout (Excel)</button>
-      <div class="sidebar-version">vB-XL Â· 28/05/2026</div>
+      <div class="sidebar-version">vB-XL - 28/05/2026</div>
     </div>
   </aside>
 
@@ -471,7 +471,7 @@ tr:hover td{background:var(--surface3);}
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title" id="title-portfolio">Portfolio Overview</h1>
-          <div class="page-subtitle" id="sub-portfolio">All 10 RD&I projects Â· Petrobras ANP Clause</div>
+          <div class="page-subtitle" id="sub-portfolio">All 10 RD&I projects - Petrobras ANP Clause</div>
         </div>
         <div class="page-header-right">
           <div class="lang-toggle">
@@ -603,7 +603,7 @@ tr:hover td{background:var(--surface3);}
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title" id="title-rubricas">Budget Lines</h1>
-          <div class="page-subtitle" id="sub-rubricas">ANP categories â€” PTR-B vs Current vs Actuals</div>
+          <div class="page-subtitle" id="sub-rubricas">ANP categories - PTR-B vs Current vs Actuals</div>
         </div>
       </div>
 
@@ -643,7 +643,7 @@ tr:hover td{background:var(--surface3);}
           <div class="page-subtitle" id="sub-sms">Change Requests, Travel Requests and Special Expenses</div>
         </div>
         <div class="page-header-right" style="position:relative;">
-          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> â–¾</button>
+          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> v</button>
           <div id="create-sol-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:50;min-width:200px;overflow:hidden;">
             <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / SolicitaÃ§Ã£o de mudanÃ§a</button>
             <button class="sol-menu-item" onclick="createSolicitacao('DV')">DV / Despesa de viagem</button>
@@ -1066,11 +1066,15 @@ function projectShortTitle(p){
   return String((p&&p['TÃ­tulo do projeto'])||p?.Titulo||'').split(':')[0].trim();
 }
 
-function projectOptionHtml(p){
+function projectOptionLabel(p){
   const pid=String(p?.Projeto||'');
   const title=projectShortTitle(p);
-  const label=title ? `${pid} - ${title}` : pid;
-  return `<option value="${escapeAttr(pid)}">${escapeHtml(label)}</option>`;
+  return title ? `${pid}${SEP}${title}` : pid;
+}
+
+function projectOptionHtml(p){
+  const pid=String(p?.Projeto||'');
+  return `<option value="${escapeAttr(pid)}">${escapeHtml(projectOptionLabel(p))}</option>`;
 }
 
 function repopulateProjectDropdowns(){
@@ -1187,7 +1191,7 @@ const T = {
     pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',
   }
 };
-function t(k){return (T[lang]||T.en)[k]||k;}
+function t(k){return cleanMojibakeText((T[lang]||T.en)[k]||k);}
 
 // ===================== LANG =====================
 function setLang(l){
@@ -1233,6 +1237,7 @@ function applyTranslations(){
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
   const msSearch=document.getElementById('ms-search');
   if(msSearch)msSearch.placeholder=t('search');
+  sanitizeVisibleMojibake();
 }
 
 // ===================== UTILS =====================
@@ -1243,8 +1248,10 @@ const FMTK = v => {
   return FMT.format(v);
 };
 const FMTFULL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
-const FMTD = d => d ? new Date(d).toLocaleDateString('pt-BR') : 'â€”';
-const PCT  = v => (isNaN(v)||!isFinite(v)) ? 'â€”' : (v*100).toFixed(1)+'%';
+const EMPTY = '-';
+const SEP = ' - ';
+const FMTD = d => d ? new Date(d).toLocaleDateString('pt-BR') : EMPTY;
+const PCT  = v => (isNaN(v)||!isFinite(v)) ? EMPTY : (v*100).toFixed(1)+'%';
 
 const MONTHS_PT = {
   'janeiro':1,'fevereiro':2,'marÃ§o':3,'abril':4,'maio':5,'junho':6,
@@ -1409,8 +1416,57 @@ async function rewritePlanoSheetFromMemory(){
   await rewriteExcelSheet('Plano_Orcamentario', headers, dataRows);
 }
 
+function cleanMojibakeText(v){
+  return String(v??'')
+    .replace(/Ã¢â‚¬â€/g,'-')
+    .replace(/â€“|â€”|â€˜|â€™|â€œ|â€/g,'-')
+    .replace(/â†’|â†’/g,'-')
+    .replace(/Â·/g,'-')
+    .replace(/â€¢/g,'-')
+    .replace(/âš /g,'!')
+    .replace(/âœ“/g,'OK')
+    .replace(/âœ—/g,'X')
+    .replace(/â–¾/g,'v')
+    .replace(/â€¦/g,'...')
+    .replace(/ÃƒÂ§/g,'c').replace(/ÃƒÂ£/g,'a').replace(/ÃƒÂµ/g,'o')
+    .replace(/ÃƒÂ¡/g,'a').replace(/ÃƒÂ©/g,'e').replace(/ÃƒÂª/g,'e')
+    .replace(/ÃƒÂ­/g,'i').replace(/ÃƒÂ³/g,'o').replace(/ÃƒÂº/g,'u')
+    .replace(/ÃƒÂ‡/g,'C').replace(/ÃƒÂ£o/g,'ao')
+    .replace(/Ã§/g,'c').replace(/Ã£/g,'a').replace(/Ãµ/g,'o')
+    .replace(/Ã¡/g,'a').replace(/Ã©/g,'e').replace(/Ãª/g,'e')
+    .replace(/Ã­/g,'i').replace(/Ã³/g,'o').replace(/Ãº/g,'u')
+    .replace(/Ã‡/g,'C').replace(/Ã‰/g,'E')
+    .replace(/Âº/g,'o').replace(/Âª/g,'a').replace(/Â/g,'')
+    .replace(/â/g,'');
+}
+
+function sanitizeVisibleMojibake(root=document.body){
+  if(!root) return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+    acceptNode(node){
+      const tag=node.parentElement?.tagName;
+      return ['SCRIPT','STYLE','TEXTAREA'].includes(tag) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes=[];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node=>{
+    const cleaned=cleanMojibakeText(node.nodeValue);
+    if(cleaned!==node.nodeValue) node.nodeValue=cleaned;
+  });
+  root.querySelectorAll?.('[title],[placeholder],[aria-label]').forEach(el=>{
+    ['title','placeholder','aria-label'].forEach(attr=>{
+      if(el.hasAttribute(attr)){
+        const old=el.getAttribute(attr);
+        const cleaned=cleanMojibakeText(old);
+        if(cleaned!==old) el.setAttribute(attr,cleaned);
+      }
+    });
+  });
+}
+
 function escapeHtml(v){
-  return String(v??'').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  return cleanMojibakeText(v).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
 }
 function escapeAttr(v){ return escapeHtml(v); }
 
@@ -1980,7 +2036,7 @@ async function syncData(){
 // ===================== LOADING =====================
 // ===================== LOADING =====================
 function showLoading(msg){
-  document.getElementById('loading-text').textContent=msg||'Loading...';
+  document.getElementById('loading-text').textContent=cleanMojibakeText(msg||'Loading...');
   document.getElementById('loading-overlay').classList.add('show');
 }
 function hideLoading(){document.getElementById('loading-overlay').classList.remove('show');}
@@ -2006,6 +2062,7 @@ function renderCurrentPage(){
   else if(currentPage==='milestones') renderMilestones();
   else if(currentPage==='rubricas') renderRubricas();
   else if(currentPage==='sms') renderSMs();
+  sanitizeVisibleMojibake(document.getElementById('page-'+currentPage)||document.body);
 }
 
 function destroyChart(id){
@@ -2031,7 +2088,7 @@ async function inicializarApp(){
   }catch(e){
     console.error('Excel load error:',e);
     const banner=document.getElementById('sp-error-banner');
-    if(banner){banner.textContent='âš  Erro ao carregar Excel: '+e.message;banner.style.display='block';}
+    if(banner){banner.textContent='! Erro ao carregar Excel: '+e.message;banner.style.display='block';}
   }
 
   document.getElementById('login-screen').classList.add('hidden');
@@ -2097,7 +2154,7 @@ function renderPortfolio(){
   alerts.innerHTML='';
   const overdueProjs=gProjs.filter(p=>allMarcos.some(m=>m.Projeto===p.Projeto&&m._bucket==='Overdue'));
   if(overdueProjs.length)
-    alerts.innerHTML+=`<div class="alert-box alert-red">âš  ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
+    alerts.innerHTML+=`<div class="alert-box alert-red">! ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
 
   const thead=document.getElementById('projects-thead');
   thead.innerHTML=`<tr>
@@ -2124,10 +2181,10 @@ function renderPortfolio(){
     const execPct=fin.pct;
     const execCls=execPct>=1?'color-red':execPct>=0.85?'color-amber':'color-green';
     const bar=`<div class="progress-bar"><div class="progress-fill ${execPct>=1?'red':execPct>=0.85?'amber':''}" style="width:${Math.min(100,execPct*100).toFixed(0)}%"></div></div>`;
-    const title=(p['TÃ­tulo do projeto']||'').split(':')[0].trim();
+    const title=projectShortTitle(p);
     tbody.innerHTML+=`<tr class="tr-clickable" onclick="openProject('${pid}')">
       <td><span class="fw-600">${pid}</span></td>
-      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(p['TÃ­tulo do projeto']||'')}">${escapeHtml(title)}</div></td>
+      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(title)}">${escapeHtml(title)}</div></td>
       <td>${projectStatusBadge(p.Status_Projeto)}</td>
       <td class="fs-12 color-ink3">${p.Executor||'â€”'}</td>
       <td class="fs-12">${p['NÃºmero ANP']||'â€”'}</td>
@@ -2156,7 +2213,7 @@ function renderPortfolio(){
       <div class="milestone-dot" style="background:var(--amber)"></div>
       <div style="flex:1;min-width:0;">
         <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['DescriÃ§Ã£o']||'â€”')}</div>
-        <div class="fs-12 color-ink3">${item.Projeto} Â· ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
+        <div class="fs-12 color-ink3">${escapeHtml(item.Projeto)}${SEP}${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
       ${typeChip()}
     </div>`;
@@ -2170,7 +2227,7 @@ function renderPortfolio(){
       <div class="milestone-dot" style="background:var(--red)"></div>
       <div style="flex:1;min-width:0;">
         <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['DescriÃ§Ã£o']||'â€”')}</div>
-        <div class="fs-12 color-ink3">${item.Projeto} Â· ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
+        <div class="fs-12 color-ink3">${escapeHtml(item.Projeto)}${SEP}${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
       ${typeChip()}
     </div>`;
@@ -2222,13 +2279,13 @@ function renderGantt(projs){
     if(it.real && it.real.getTime()>officialEnd){
       const overRight=pos(it.real.getTime());
       const overW=Math.max(0.5, overRight-officialRight);
-      overHtml=`<div class="gantt-bar-over" style="left:${officialRight}%;width:${overW}%;" title="${L?'Prolongamento':'Extension'}: ${FMTD(it.p['Data final'])} â†’ ${FMTD(it.p['Data final real'])}"></div>`;
+      overHtml=`<div class="gantt-bar-over" style="left:${officialRight}%;width:${overW}%;" title="${L?'Prolongamento':'Extension'}: ${FMTD(it.p['Data final'])}${SEP}${FMTD(it.p['Data final real'])}"></div>`;
     }
     const dur=it.p['DuraÃ§Ã£o (meses)']||'';
     const endLabel = it.real && it.real.getTime()!==officialEnd
-      ? `${FMTD(it.p['Data final'])} â†’ ${FMTD(it.p['Data final real'])}`
+      ? `${FMTD(it.p['Data final'])}${SEP}${FMTD(it.p['Data final real'])}`
       : FMTD(it.p['Data final']);
-    const tip=`${it.p.Projeto} Â· ${FMTD(it.p['Data de inÃ­cio ']||it.p['Data de inÃ­cio'])} â†’ ${endLabel}${dur?` Â· ${dur} ${L?'meses':'mo'}`:''}`;
+    const tip=`${it.p.Projeto}${SEP}${FMTD(it.p['Data de inÃ­cio ']||it.p['Data de inÃ­cio'])}${SEP}${endLabel}${dur?`${SEP}${dur} ${L?'meses':'mo'}`:''}`;
     return `<div class="gantt-row" title="${escapeAttr(tip)}">
       <div class="gantt-label">${it.p.Projeto}</div>
       <div class="gantt-track">
@@ -2350,7 +2407,7 @@ function buildProjectAlerts(pid){
     if(plan>0 && act/plan>1.0001){
       const pct=PCT(act/plan);
       alerts.push({
-        cls:'alert-red', icon:'âš ',
+        cls:'alert-red', icon:'!',
         msg: L
           ? `A categoria ${c} ultrapassou o percentual de gasto permitido (${pct} executado).`
           : `Category ${c} exceeded the allowed spending percentage (${pct} executed).`
@@ -2367,18 +2424,18 @@ function buildProjectAlerts(pid){
 
   if(smAtivas.length){
     const nums=smAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'â€¢',
+    alerts.push({cls:'alert-amber', icon:'-',
       msg:(L?`Projeto possui SM ativa: ${nums||smAtivas.length}.`:`Project has active SM: ${nums||smAtivas.length}.`)});
   }
   if(dvAtivas.length){
     const nums=dvAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'â€¢',
-      msg:(L?`HÃ¡ despesa de viagem (DV) ativa: ${nums||dvAtivas.length}.`:`There is an active travel expense (DV): ${nums||dvAtivas.length}.`)});
+    alerts.push({cls:'alert-amber', icon:'-',
+      msg:(L?`Ha despesa de viagem (DV) ativa: ${nums||dvAtivas.length}.`:`There is an active travel expense (DV): ${nums||dvAtivas.length}.`)});
   }
   if(deAtivas.length){
     const nums=deAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'â€¢',
-      msg:(L?`HÃ¡ despesa especial (DE) ativa: ${nums||deAtivas.length}.`:`There is an active special expense (DE): ${nums||deAtivas.length}.`)});
+    alerts.push({cls:'alert-amber', icon:'-',
+      msg:(L?`Ha despesa especial (DE) ativa: ${nums||deAtivas.length}.`:`There is an active special expense (DE): ${nums||deAtivas.length}.`)});
   }
 
   return alerts;
@@ -2392,7 +2449,7 @@ function renderProjectDetail(pid){
   const proj = DATA.projetos.find(p => p.Projeto === pid);
   if(!proj){ document.getElementById('project-detail-content').innerHTML=''; return; }
 
-  document.getElementById('title-project').textContent = proj.Projeto + ' â€” ' + (proj['TÃ­tulo do projeto']||'').split(':')[0].trim();
+  document.getElementById('title-project').textContent = projectOptionLabel(proj);
 
   const fin     = getExec(pid);
   const ptrb    = DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
@@ -3104,7 +3161,7 @@ function renderRubReadonlyTable(pid){
   const {months, allCats, pivot, planMap, ptrbMap}=buildRubPivot(pid,'ALL');
   if(!allCats.length) return '';
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const title=pid+' â€” '+((proj&&(proj['TÃ­tulo do projeto']||''))||'').split(':')[0].trim();
+  const title=projectOptionLabel(proj||{Projeto:pid});
   const frozenHeaders=`
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-aba">ABA</th>
@@ -3392,7 +3449,7 @@ function rubRefreshSaveBar(){
   const bar=document.getElementById('rub-save-bar');
   if(bar) bar.style.display = rubPendingChanges>0 ? 'flex' : 'none';
   const badge=document.getElementById('rub-change-count');
-  if(badge) badge.textContent=`${rubPendingChanges} ${L?'alteraÃ§Ãµes pendentes':'pending changes'}`;
+  if(badge) badge.textContent=`${rubPendingChanges} ${L?'alteracoes pendentes':'pending changes'}`;
 }
 
 // Aplica UMA alteraÃ§Ã£o pendente a DATA.gastos (chamada sÃ³ no save, por chave Ãºnica).
@@ -3467,7 +3524,7 @@ function rubUpdateTotals(ci, mi){
   const rowTEl=document.getElementById(`rub-rowt-${ci}`);
   const pctEl=document.getElementById(`rub-pct-${ci}`);
   if(rowTEl){ rowTEl.dataset.value=String(rowTotal); rowTEl.textContent=rubFmt(rowTotal); }
-  if(pctEl) pctEl.innerHTML=showCurrentPlan ? `<span class="${pctColor(pct)}">${PCT(pct)}</span>` : 'â€”';
+  if(pctEl) pctEl.innerHTML=showCurrentPlan ? `<span class="${pctColor(pct)}">${PCT(pct)}</span>` : EMPTY;
 
   // Recalculate column total
   let colTotal=0;
@@ -3490,7 +3547,7 @@ function rubUpdateTotals(ci, mi){
   const grandEl=document.getElementById('rub-grand-total');
   const grandPctEl=document.getElementById('rub-grand-pct');
   if(grandEl){ grandEl.dataset.value=String(grand); grandEl.textContent=rubFmt(grand); }
-  if(grandPctEl) grandPctEl.textContent=showCurrentPlan ? PCT(gPct) : 'â€”';
+  if(grandPctEl) grandPctEl.textContent=showCurrentPlan ? PCT(gPct) : EMPTY;
 }
 
 function cancelRubEdits(){
@@ -3631,10 +3688,10 @@ function openRubRendimentoModal(){
   document.getElementById('lbl-rub-rend-project').textContent=L?'Projeto':'Project';
   document.getElementById('lbl-rub-rend-executor').textContent='Executor';
   document.getElementById('lbl-rub-rend-year').textContent=L?'Ano':'Year';
-  document.getElementById('lbl-rub-rend-month').textContent=L?'MÃƒÂªs':'Month';
+  document.getElementById('lbl-rub-rend-month').textContent=L?'Mes':'Month';
   document.getElementById('lbl-rub-rend-value').textContent=L?'Valor do rendimento (R$)':'Income amount (R$)';
   document.getElementById('btn-rub-rend-cancel').textContent=L?'Cancelar':'Cancel';
-  document.getElementById('btn-rub-rend-save').textContent=L?'Salvar rendimento do mÃƒÂªs':'Save monthly income';
+  document.getElementById('btn-rub-rend-save').textContent=L?'Salvar rendimento do mes':'Save monthly income';
   document.getElementById('rub-rend-project').value=pid;
   document.getElementById('rub-rend-project-label').value=`${pid}${title?' - '+title:''}`;
   document.getElementById('rub-rend-executor').value=executor;
@@ -3648,6 +3705,7 @@ function openRubRendimentoModal(){
   yearEl.innerHTML=yearOptions.map(y=>`<option value="${y}" ${String(y)===currentYear?'selected':''}>${y}</option>`).join('');
   populateRubRendimentoValue();
   document.getElementById('rub-rend-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('rub-rend-modal'));
 }
 
 function populateRubRendimentoValue(){
@@ -3720,11 +3778,11 @@ function openRubGastoModal(){
   document.getElementById('lbl-rub-gasto-project').textContent=L?'Projeto':'Project';
   document.getElementById('lbl-rub-gasto-executor').textContent='Executor';
   document.getElementById('lbl-rub-gasto-year').textContent=L?'Ano':'Year';
-  document.getElementById('lbl-rub-gasto-month').textContent=L?'MÃªs':'Month';
+  document.getElementById('lbl-rub-gasto-month').textContent=L?'Mes':'Month';
   document.getElementById('rub-gasto-th-cat').textContent=L?'Rubrica':'Category';
   document.getElementById('rub-gasto-th-value').textContent=L?'Valor (R$)':'Amount (R$)';
   document.getElementById('btn-rub-gasto-cancel').textContent=L?'Cancelar':'Cancel';
-  document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mÃªs':'Save monthly expenses';
+  document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mes':'Save monthly expenses';
   document.getElementById('rub-gasto-project').value=pid;
   document.getElementById('rub-gasto-project-label').value=`${pid}${title?' - '+title:''}`;
   document.getElementById('rub-gasto-executor').value=executor;
@@ -3738,6 +3796,7 @@ function openRubGastoModal(){
   yearEl.innerHTML=yearOptions.map(y=>`<option value="${y}" ${String(y)===currentYear?'selected':''}>${y}</option>`).join('');
   populateRubGastoValues();
   document.getElementById('rub-gasto-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('rub-gasto-modal'));
 }
 
 function populateRubGastoValues(){
@@ -3945,7 +4004,7 @@ function renderSMs(){
                 <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'â€”'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'â€”'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
-                <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'â€”')}</td>
+                <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||EMPTY)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -4032,6 +4091,7 @@ function openSolModal(type){
   document.getElementById('sol-valor').value='';
   document.getElementById('sol-obs').value='';
   document.getElementById('sol-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
 
 // D4: editar uma solicitaÃ§Ã£o existente (qualquer tipo)
@@ -4056,6 +4116,7 @@ function openSolEditModal(idx){
   document.getElementById('sol-valor').value=s.Valor||'';
   document.getElementById('sol-obs').value=s.Observacoes||'';
   document.getElementById('sol-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
 
 // D3/D4: salvar criaÃ§Ã£o/ediÃ§Ã£o â†’ persiste reescrevendo a sheet Solicitacoes
@@ -4188,6 +4249,7 @@ function openProjectModal(){
   if(title) title.textContent = lang==='pt'?'Novo Projeto':'New Project';
   populateProjectPtrbTable();
   document.getElementById('project-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('project-modal'));
 }
 
 // D2: abrir modal preenchido para editar um projeto existente
@@ -4213,6 +4275,7 @@ function openProjectEditModal(pid){
   if(title) title.textContent = lang==='pt'?'Editar Projeto':'Edit Project';
   populateProjectPtrbTable();
   document.getElementById('project-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('project-modal'));
 }
 
 // D2: despachante do botÃ£o salvar do modal de projeto
@@ -4380,6 +4443,7 @@ function openGastoModal(pid){
     if(proj)document.getElementById('gasto-executor').value=proj.Executor||'';
   }
   document.getElementById('gasto-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('gasto-modal'));
 }
 
 function closeModal(id){document.getElementById(id).classList.remove('show');}
@@ -4430,6 +4494,7 @@ function openSMModal(pid){
   onSMProjectChange();
   updateSMTotal();
   document.getElementById('sm-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('sm-modal'));
 }
 
 function onSMProjectChange(){
@@ -4443,7 +4508,7 @@ function onSMProjectChange(){
   cats.sort(catCompare);
 
   if(!cats.length){
-    table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponÃ­vel.':'No categories available.'}</div>`;
+    table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponivel.':'No categories available.'}</div>`;
     return;
   }
 
@@ -4467,7 +4532,7 @@ function onSMProjectChange(){
           <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
           <td class="text-right">${FMTK(ptrb)}</td>
           <td class="text-right fw-600">${FMTK(plan)}</td>
-          <td><input type="number" class="form-input" step="0.01" placeholder="â€”" data-cat="${escapeAttr(cat)}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
+          <td><input type="number" class="form-input" step="0.01" placeholder="${EMPTY}" data-cat="${escapeAttr(cat)}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
         </tr>`;
       }).join('')}
     </tbody>
@@ -4492,7 +4557,7 @@ function smCategoryRowHtml(pid, cat, isNew=false){
     <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
     <td class="text-right">${FMTK(ptrb)}</td>
     <td class="text-right fw-600">${FMTK(plan)}</td>
-    <td><input type="number" class="form-input" step="0.01" placeholder="Ã¢â‚¬â€" data-cat="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
+    <td><input type="number" class="form-input" step="0.01" placeholder="${EMPTY}" data-cat="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
   </tr>`;
 }
 
