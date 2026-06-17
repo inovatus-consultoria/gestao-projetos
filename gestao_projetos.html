@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inovatus · RD&I Projects — Excel</title>
+<title>Inovatus Â· RD&I Projects â€” Excel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -343,14 +343,14 @@ tr:hover td{background:var(--surface3);}
 }
 
 
-/* ── Type badges for SM/DV/DE ── */
+/* â”€â”€ Type badges for SM/DV/DE â”€â”€ */
 .badge-purple{background:#EEE8FF;color:#5B3DBE;}
 .badge-teal{background:#E4F7F5;color:#1A7A6E;}
 
-/* ── SM: célula alterada vs SM anterior ── */
+/* â”€â”€ SM: cÃ©lula alterada vs SM anterior â”€â”€ */
 .cell-sm-changed{background:var(--amber-light)!important;color:var(--amber);font-weight:600;}
 
-/* ── Status select unificado (marcos) ── */
+/* â”€â”€ Status select unificado (marcos) â”€â”€ */
 .status-select{padding:3px 10px;font-size:11px;font-weight:600;border-radius:20px;border:1px solid var(--border);
   background:var(--surface);cursor:pointer;outline:none;max-width:150px;}
 .status-select:focus{border-color:var(--accent);}
@@ -360,7 +360,7 @@ tr:hover td{background:var(--surface3);}
 .status-select.st-green{background:var(--green-light);color:var(--green);border-color:#c0ddd5;}
 .status-select.st-gray{background:var(--surface2);color:var(--ink3);}
 
-/* ── Status select do projeto ── */
+/* â”€â”€ Status select do projeto â”€â”€ */
 .proj-status-select{padding:5px 12px;font-size:13px;font-weight:600;border-radius:20px;border:1px solid var(--border);
   background:var(--surface);cursor:pointer;outline:none;}
 .proj-status-select.st-green{background:var(--green-light);color:var(--green);border-color:#c0ddd5;}
@@ -368,7 +368,7 @@ tr:hover td{background:var(--surface3);}
 .proj-status-select.st-amber{background:var(--amber-light);color:var(--amber);border-color:#e8d8a8;}
 .proj-status-select.st-red{background:var(--red-light);color:var(--red);border-color:#f0c8c8;}
 
-/* ── Gantt chart ── */
+/* â”€â”€ Gantt chart â”€â”€ */
 .gantt-wrap{overflow-x:auto;padding:4px 0;}
 .gantt-row{display:flex;align-items:center;height:30px;font-size:11px;}
 .gantt-label{flex:0 0 150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2);padding-right:10px;font-weight:500;}
@@ -379,7 +379,7 @@ tr:hover td{background:var(--surface3);}
   opacity:0.65;border:1px dashed var(--red);box-sizing:border-box;}
 .gantt-axis{display:flex;flex:1;min-width:300px;justify-content:space-between;font-size:10px;color:var(--ink3);margin-left:160px;border-top:1px solid var(--border);padding-top:4px;}
 .gantt-today{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--gold);z-index:2;}
-/* C1: eixo por períodos + separadores de ano */
+/* C1: eixo por perÃ­odos + separadores de ano */
 .gantt-wrap{position:relative;}
 .gantt-grid-overlay{position:absolute;top:0;bottom:22px;left:160px;right:0;pointer-events:none;z-index:0;}
 .gantt-yearline{position:absolute;top:0;bottom:0;width:1px;background:var(--border);opacity:0.7;}
@@ -397,13 +397,13 @@ tr:hover td{background:var(--surface3);}
 <div id="login-screen">
   <div class="login-box">
     <div class="login-title" style="font-family:'DM Serif Display',serif;">Inovatus</div>
-    <div class="login-sub">RD&amp;I Project Management · Petrobras ANP</div>
+    <div class="login-sub">RD&amp;I Project Management Â· Petrobras ANP</div>
     <button class="btn-login" onclick="fazerLogin()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       Entrar com Microsoft
     </button>
   </div>
-  <div class="login-version">Inovatus RD&amp;I · vB-XL · 28/05/2026</div>
+  <div class="login-version">Inovatus RD&amp;I Â· vB-XL Â· 28/05/2026</div>
 </div>
 
 <!-- ===================== LOADING OVERLAY ===================== -->
@@ -456,7 +456,7 @@ tr:hover td{background:var(--surface3);}
         </div>
       </div>
       <button class="btn-logout" onclick="fazerLogout()">Logout (Excel)</button>
-      <div class="sidebar-version">vB-XL · 28/05/2026</div>
+      <div class="sidebar-version">vB-XL Â· 28/05/2026</div>
     </div>
   </aside>
 
@@ -468,7 +468,7 @@ tr:hover td{background:var(--surface3);}
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title" id="title-portfolio">Portfolio Overview</h1>
-          <div class="page-subtitle" id="sub-portfolio">All 10 RD&I projects · Petrobras ANP Clause</div>
+          <div class="page-subtitle" id="sub-portfolio">All 10 RD&I projects Â· Petrobras ANP Clause</div>
         </div>
         <div class="page-header-right">
           <div class="lang-toggle">
@@ -600,7 +600,7 @@ tr:hover td{background:var(--surface3);}
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title" id="title-rubricas">Budget Lines</h1>
-          <div class="page-subtitle" id="sub-rubricas">ANP categories — PTR-B vs Current vs Actuals</div>
+          <div class="page-subtitle" id="sub-rubricas">ANP categories â€” PTR-B vs Current vs Actuals</div>
         </div>
       </div>
 
@@ -614,6 +614,10 @@ tr:hover td{background:var(--surface3);}
         <button class="btn btn-primary btn-sm" onclick="openRubGastoModal()" id="btn-rub-add" style="display:none;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span id="lbl-rub-add">Add expenses</span>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openRubRendimentoModal()" id="btn-rub-rend" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          <span id="lbl-rub-rend">Add income</span>
         </button>
         <button class="btn btn-secondary btn-sm" onclick="exportRubricasProjeto()" id="btn-export-rub-proj" style="display:none;margin-left:auto;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -636,9 +640,9 @@ tr:hover td{background:var(--surface3);}
           <div class="page-subtitle" id="sub-sms">Change Requests, Travel Requests and Special Expenses</div>
         </div>
         <div class="page-header-right" style="position:relative;">
-          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> ▾</button>
+          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> â–¾</button>
           <div id="create-sol-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:50;min-width:200px;overflow:hidden;">
-            <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / Solicitação de mudança</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / SolicitaÃ§Ã£o de mudanÃ§a</button>
             <button class="sol-menu-item" onclick="createSolicitacao('DV')">DV / Despesa de viagem</button>
             <button class="sol-menu-item" onclick="createSolicitacao('DE')">DE / Despesa especial</button>
           </div>
@@ -697,6 +701,42 @@ tr:hover td{background:var(--surface3);}
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('rub-gasto-modal')" id="btn-rub-gasto-cancel">Cancel</button>
       <button class="btn btn-primary" onclick="saveRubGastoModal()" id="btn-rub-gasto-save">Save monthly expenses</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: ADD MONTHLY RENDIMENTO ===================== -->
+<div class="modal-overlay" id="rub-rend-modal">
+  <div class="modal" style="max-width:560px;">
+    <h2 class="modal-title" id="modal-rub-rend-title">Add Monthly Income</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-rend-project">Project</label>
+        <input class="form-input" id="rub-rend-project-label" readonly style="background:var(--surface2);">
+        <input type="hidden" id="rub-rend-project">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-rend-executor">Executor</label>
+        <input class="form-input" id="rub-rend-executor" readonly style="background:var(--surface2);">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-rend-month">Month</label>
+        <select class="form-select" id="rub-rend-month-num" onchange="populateRubRendimentoValue()"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-rend-year">Year</label>
+        <select class="form-select" id="rub-rend-year" onchange="populateRubRendimentoValue()"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="lbl-rub-rend-value">Income amount (R$)</label>
+      <input class="form-input" type="number" min="0" step="0.01" id="rub-rend-value" style="text-align:right;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('rub-rend-modal')" id="btn-rub-rend-cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRubRendimentoModal()" id="btn-rub-rend-save">Save monthly income</button>
     </div>
   </div>
 </div>
@@ -765,7 +805,7 @@ tr:hover td{background:var(--surface3);}
         <label class="form-label">Status</label>
         <select class="form-select" id="sm-status">
           <option value="Pendente">Pendente</option>
-          <option value="Em análise">Em análise</option>
+          <option value="Em anÃ¡lise">Em anÃ¡lise</option>
           <option value="Aprovada">Aprovada</option>
           <option value="Rejeitada">Rejeitada</option>
         </select>
@@ -787,7 +827,7 @@ tr:hover td{background:var(--surface3);}
 
 <!-- ===================== MODAL: ADD PROJECT ===================== -->
 <div class="modal-overlay" id="project-modal">
-  <div class="modal" style="max-width:680px;">
+  <div class="modal" style="max-width:760px;">
     <h2 class="modal-title" id="modal-project-title">New Project</h2>
     <div class="form-grid">
       <div class="form-group">
@@ -825,7 +865,7 @@ tr:hover td{background:var(--surface3);}
         <label class="form-label" id="lbl-pm-status">Status</label>
         <select class="form-select" id="pm-status">
           <option value="Em andamento">Em andamento</option>
-          <option value="Concluído">Concluído</option>
+          <option value="ConcluÃ­do">ConcluÃ­do</option>
           <option value="Suspenso">Suspenso</option>
           <option value="Cancelado">Cancelado</option>
         </select>
@@ -853,7 +893,30 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-group">
       <label class="form-label" id="lbl-pm-valor">PTR-B Value (R$) *</label>
-      <input class="form-input" type="number" id="pm-valor" min="0" step="0.01">
+      <input class="form-input" type="number" id="pm-valor" min="0" step="0.01" oninput="updateProjectPtrbTotal()">
+    </div>
+    <div id="pm-ptrb-section" style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;">
+        <label class="form-label" id="lbl-pm-ptrb-lines" style="margin-bottom:0;">PTR-B by Category</label>
+        <div style="font-size:12px;color:var(--ink3);">
+          <span id="pm-ptrb-total-label">Lines total</span>: <strong id="pm-ptrb-lines-total">R$ 0</strong>
+          <span style="margin-left:10px;" id="pm-ptrb-diff-label">Difference</span>: <strong id="pm-ptrb-diff">R$ 0</strong>
+        </div>
+      </div>
+      <div class="table-card" style="box-shadow:none;">
+        <div class="table-scroll" style="max-height:260px;">
+          <table style="font-size:12px;">
+            <thead>
+              <tr>
+                <th id="pm-ptrb-th-cat">Category</th>
+                <th style="width:80px;">ABA</th>
+                <th class="text-right" style="width:180px;" id="pm-ptrb-th-value">PTR-B (R$)</th>
+              </tr>
+            </thead>
+            <tbody id="pm-ptrb-tbody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('project-modal')" id="btn-pm-cancel">Cancel</button>
@@ -862,7 +925,7 @@ tr:hover td{background:var(--surface3);}
   </div>
 </div>
 
-<!-- D3/D4: modal genérico de solicitação (DV/DE e edição de SM/DV/DE) -->
+<!-- D3/D4: modal genÃ©rico de solicitaÃ§Ã£o (DV/DE e ediÃ§Ã£o de SM/DV/DE) -->
 <div class="modal-overlay" id="sol-modal">
   <div class="modal" style="max-width:560px;">
     <h2 class="modal-title" id="sol-modal-title">Registro</h2>
@@ -874,7 +937,7 @@ tr:hover td{background:var(--surface3);}
       <div class="form-group">
         <label class="form-label" id="lbl-sol-tipo">Tipo</label>
         <select class="form-select" id="sol-tipo">
-          <option value="SM">SM / Solicitação de mudança</option>
+          <option value="SM">SM / SolicitaÃ§Ã£o de mudanÃ§a</option>
           <option value="DV">DV / Despesa de viagem</option>
           <option value="DE">DE / Despesa especial</option>
         </select>
@@ -882,28 +945,28 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-numero">Número / Código *</label>
+        <label class="form-label" id="lbl-sol-numero">NÃºmero / CÃ³digo *</label>
         <input class="form-input" id="sol-numero">
       </div>
       <div class="form-group">
         <label class="form-label" id="lbl-sol-status">Status</label>
         <select class="form-select" id="sol-status">
           <option value="Pendente">Pendente</option>
-          <option value="Em análise">Em análise</option>
+          <option value="Em anÃ¡lise">Em anÃ¡lise</option>
           <option value="Aprovada">Aprovada</option>
           <option value="Rejeitada">Rejeitada</option>
-          <option value="Concluído">Concluído</option>
+          <option value="ConcluÃ­do">ConcluÃ­do</option>
           <option value="Cancelado">Cancelado</option>
         </select>
       </div>
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-sub">Data de submissão</label>
+        <label class="form-label" id="lbl-sol-sub">Data de submissÃ£o</label>
         <input class="form-input" type="date" id="sol-data-sub">
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-apr">Data de aprovação</label>
+        <label class="form-label" id="lbl-sol-apr">Data de aprovaÃ§Ã£o</label>
         <input class="form-input" type="date" id="sol-data-apr">
       </div>
     </div>
@@ -912,7 +975,7 @@ tr:hover td{background:var(--surface3);}
       <input class="form-input" type="number" id="sol-valor" min="0" step="0.01">
     </div>
     <div class="form-group">
-      <label class="form-label" id="lbl-sol-obs">Observações</label>
+      <label class="form-label" id="lbl-sol-obs">ObservaÃ§Ãµes</label>
       <input class="form-input" id="sol-obs">
     </div>
     <div class="modal-footer">
@@ -923,50 +986,50 @@ tr:hover td{background:var(--surface3);}
 </div>
 
 <script>
-// ===================== CONFIGURAÇÃO =====================
+// ===================== CONFIGURAÃ‡ÃƒO =====================
 const CLIENT_ID    = 'd86f175d-2548-4d9f-b33a-57cda630412a';
 const TENANT_ID    = '254da802-695f-450f-bace-5187b3ed5459';
-// Excel version: Files.ReadWrite.All é suficiente; Sites não é mais necessário
+// Excel version: Files.ReadWrite.All Ã© suficiente; Sites nÃ£o Ã© mais necessÃ¡rio
 const SCOPES       = ['Files.ReadWrite.All','User.Read'];
 const REDIRECT_URI = 'https://inovatus-consultoria.github.io/gestao-projetos/gestao_projetos.html';
 
-// ── CONFIGURAÇÃO DO EXCEL ─────────────────────────────────────────────────
+// â”€â”€ CONFIGURAÃ‡ÃƒO DO EXCEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Link de compartilhamento do arquivo no OneDrive da empresa.
-// Para atualizar: abra o arquivo no browser → Compartilhar → Copiar link.
+// Para atualizar: abra o arquivo no browser â†’ Compartilhar â†’ Copiar link.
 const EXCEL_SHARE_URL = 'https://inovatusconsultoria-my.sharepoint.com/:x:/g/personal/inovatus_inovatusconsultoria_onmicrosoft_com/IQCfjU4um7RrQo9XthbN25a3AXxMNVgAvN9UWwGpPDya0ec?e=kyZh58';
 
-// IDs resolvidos em runtime por resolveExcelItem() — não editar
+// IDs resolvidos em runtime por resolveExcelItem() â€” nÃ£o editar
 let _excelDriveId = null;
 let _excelItemId  = null;
 
 // Retorna a base da workbook API depois de resolveExcelItem() ter rodado
 function excelApiBase(){
   if(!_excelDriveId || !_excelItemId)
-    throw new Error('excelApiBase: item não resolvido — chame resolveExcelItem() primeiro');
+    throw new Error('excelApiBase: item nÃ£o resolvido â€” chame resolveExcelItem() primeiro');
   return `/drives/${_excelDriveId}/items/${_excelItemId}/workbook`;
 }
 
 // Converte URL de compartilhamento para o formato aceito pelo endpoint /shares/
 function encodeShareUrl(url){
-  // Codificação: "u!" + base64url(url)
+  // CodificaÃ§Ã£o: "u!" + base64url(url)
   const b64 = btoa(unescape(encodeURIComponent(url)));
   return 'u!' + b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 }
 
-// Resolve o link de compartilhamento → obtém driveId + itemId reais
+// Resolve o link de compartilhamento â†’ obtÃ©m driveId + itemId reais
 async function resolveExcelItem(){
   const encoded = encodeShareUrl(EXCEL_SHARE_URL);
   const resp = await graphFetch(`/shares/${encoded}/driveItem?$select=id,name,parentReference`);
   if(!resp.ok){
     const e = await resp.json().catch(()=>({}));
-    throw new Error(`Não foi possível acessar o Excel compartilhado: ${e.error?.message||resp.status}`);
+    throw new Error(`NÃ£o foi possÃ­vel acessar o Excel compartilhado: ${e.error?.message||resp.status}`);
   }
   const item = await resp.json();
   _excelDriveId = item.parentReference?.driveId;
   _excelItemId  = item.id;
   if(!_excelDriveId || !_excelItemId)
-    throw new Error('resolveExcelItem: driveId ou itemId não encontrado na resposta');
-  console.log('✓ Excel resolvido:', item.name, '| driveId:', _excelDriveId, '| itemId:', _excelItemId);
+    throw new Error('resolveExcelItem: driveId ou itemId nÃ£o encontrado na resposta');
+  console.log('âœ“ Excel resolvido:', item.name, '| driveId:', _excelDriveId, '| itemId:', _excelItemId);
 }
 
 let accessToken  = null;
@@ -988,7 +1051,7 @@ function setShowCompleted(val){
 
 function isProjectCompleted(p){
   const st = String(p.Status_Projeto||'').trim().toLowerCase();
-  return st === 'concluído' || st === 'concluido';
+  return st === 'concluÃ­do' || st === 'concluido';
 }
 
 function gestorProjects(){
@@ -1005,7 +1068,7 @@ function repopulateProjectDropdowns(){
     const prev=el.value;
     el.innerHTML=`<option value="ALL">${allLabel}</option>`;
     projs.forEach(p=>{
-      const label=p.Projeto+' — '+(p['Título do projeto']||p.Titulo||'').split(':')[0].trim();
+      const label=p.Projeto+' â€” '+(p['TÃ­tulo do projeto']||p.Titulo||'').split(':')[0].trim();
       el.innerHTML+=`<option value="${p.Projeto}">${label}</option>`;
     });
     // Restore selection if still valid
@@ -1018,7 +1081,7 @@ function repopulateProjectDropdowns(){
     const prev=ps.value;
     ps.innerHTML='';
     projs.forEach(p=>{
-      ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||p.Titulo||'').split(':')[0]}</option>`;
+      ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||p.Titulo||'').split(':')[0]}</option>`;
     });
     if([...ps.options].some(o=>o.value===prev)) ps.value=prev;
     else if(ps.options.length) ps.value=ps.options[0].value;
@@ -1043,10 +1106,10 @@ let milestonesChanged = false;
 // ===================== I18N =====================
 const T = {
   en:{
-    portfolio:'Portfolio Overview',sub_portfolio:'All 10 RD&I projects · Petrobras ANP Clause',
+    portfolio:'Portfolio Overview',sub_portfolio:'All 10 RD&I projects Â· Petrobras ANP Clause',
     project:'Project Detail',financial:'Financial Overview',sub_financial:'PTR-B vs Current Plan vs Actuals',
     milestones:'Milestones',sub_milestones:'All 127 deliverables and milestones',
-    rubricas:'Budget Lines',sub_rubricas:'ANP categories — PTR-B vs Current vs Actuals',
+    rubricas:'Budget Lines',sub_rubricas:'ANP categories â€” PTR-B vs Current vs Actuals',
     sms:'SMs & DVs',sub_sms:'Change Requests, Travel Requests and Special Expenses',
     nav_portfolio:'Portfolio',nav_project:'Project',nav_financial:'Financial',
     nav_milestones:'Milestones',nav_rubricas:'Budget Lines',nav_sms:'SMs & DVs',
@@ -1066,7 +1129,7 @@ const T = {
     next90:'Next 60 days',overdue_ms:'Overdue',
     cancel:'Cancel',save_gasto:'Save Expense',save_sm:'Save SM',
     lbl_project:'Project',lbl_executor:'Executor',lbl_cat:'Category',lbl_amount:'Amount (R$)',
-    lbl_date:'Date',lbl_year:'Year',lbl_sm:'SM #',lbl_codigo:'Código Aba',
+    lbl_date:'Date',lbl_year:'Year',lbl_sm:'SM #',lbl_codigo:'CÃ³digo Aba',
     new_expense:'New Expense',new_sm:'New Change Request (SM)',
     rub_cat:'Category',rub_ptrb:'PTR-B',rub_plan:'Current Plan',rub_actual:'Actuals',rub_balance:'Balance',rub_pct:'Exec%',
     no_milestones:'No milestones in this period.',search:'Search...',
@@ -1079,39 +1142,39 @@ const T = {
     pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',
   },
   pt:{
-    portfolio:'Visão Geral do Portfólio',sub_portfolio:'10 projetos RD&I · Cláusula ANP Petrobras',
-    project:'Detalhes do Projeto',financial:'Visão Financeira',sub_financial:'PTR-B vs Plano Atual vs Realizado',
-    milestones:'Marcos',sub_milestones:'127 entregáveis e marcos',
-    rubricas:'Rubricas',sub_rubricas:'Categorias ANP — PTR-B vs Plano vs Realizado',
-    sms:'SMs & DVs',sub_sms:'Solicitações de Mudança, Viagens e Despesas Especiais',
-    nav_portfolio:'Portfólio',nav_project:'Projeto',nav_financial:'Financeiro',
+    portfolio:'VisÃ£o Geral do PortfÃ³lio',sub_portfolio:'10 projetos RD&I Â· ClÃ¡usula ANP Petrobras',
+    project:'Detalhes do Projeto',financial:'VisÃ£o Financeira',sub_financial:'PTR-B vs Plano Atual vs Realizado',
+    milestones:'Marcos',sub_milestones:'127 entregÃ¡veis e marcos',
+    rubricas:'Rubricas',sub_rubricas:'Categorias ANP â€” PTR-B vs Plano vs Realizado',
+    sms:'SMs & DVs',sub_sms:'SolicitaÃ§Ãµes de MudanÃ§a, Viagens e Despesas Especiais',
+    nav_portfolio:'PortfÃ³lio',nav_project:'Projeto',nav_financial:'Financeiro',
     nav_milestones:'Marcos',nav_rubricas:'Rubricas',nav_sms:'SMs & DVs',
-    nav_section:'Navegação',
-    kpi_total:'Orçamento Total',kpi_actuals:'Total Realizado',kpi_exec:'Exec. Média',
-    kpi_overdue:'Marcos Atrasados',kpi_upcoming:'Próximos (60d)',kpi_projects:'Projetos Ativos',
+    nav_section:'NavegaÃ§Ã£o',
+    kpi_total:'OrÃ§amento Total',kpi_actuals:'Total Realizado',kpi_exec:'Exec. MÃ©dia',
+    kpi_overdue:'Marcos Atrasados',kpi_upcoming:'PrÃ³ximos (60d)',kpi_projects:'Projetos Ativos',
     sync:'Sincronizar',
-    col_id:'ID',col_title:'Título',tbl_projects:'Projetos',col_executor:'Executor',col_anp:'Nº ANP',col_pm:'Gerente',
-    col_budget:'Orçamento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Início',col_end:'Fim',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluídos',all_managers:'Todos os gestores',
-    overdue:'Atrasado',upcoming:'Próximo',planned:'Planejado',completed:'Concluído',suspended:'Suspenso',
-    ms_id:'ID',ms_project:'Projeto',ms_desc:'Descrição',ms_baseline:'Baseline',ms_forecast:'Previsão',ms_status:'Status',
-    btn_sync:'Sincronizar',btn_save:'Salvar Alterações',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
+    col_id:'ID',col_title:'TÃ­tulo',tbl_projects:'Projetos',col_executor:'Executor',col_anp:'NÂº ANP',col_pm:'Gerente',
+    col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'InÃ­cio',col_end:'Fim',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluÃ­dos',all_managers:'Todos os gestores',
+    overdue:'Atrasado',upcoming:'PrÃ³ximo',planned:'Planejado',completed:'ConcluÃ­do',suspended:'Suspenso',
+    ms_id:'ID',ms_project:'Projeto',ms_desc:'DescriÃ§Ã£o',ms_baseline:'Baseline',ms_forecast:'PrevisÃ£o',ms_status:'Status',
+    btn_sync:'Sincronizar',btn_save:'Salvar AlteraÃ§Ãµes',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
     gasto_saved:'Gasto salvo!',error_save:'Erro ao salvar.',
     all_projects:'Todos os Projetos',
-    fin_summary:'Resumo',fin_monthly:'Por Mês',fin_category:'Por Rubrica',
+    fin_summary:'Resumo',fin_monthly:'Por MÃªs',fin_category:'Por Rubrica',
     fin_ptrb:'PTR-B',fin_plan:'Plano Atual',fin_actuals:'Realizado',fin_balance:'Saldo',fin_pct:'Exec%',
-    next90:'Próximos 60 dias',overdue_ms:'Atrasados',
+    next90:'PrÃ³ximos 60 dias',overdue_ms:'Atrasados',
     cancel:'Cancelar',save_gasto:'Salvar Gasto',save_sm:'Salvar SM',
     lbl_project:'Projeto',lbl_executor:'Executor',lbl_cat:'Categoria',lbl_amount:'Valor (R$)',
-    lbl_date:'Data',lbl_year:'Ano',lbl_sm:'SM #',lbl_codigo:'Código Aba',
-    new_expense:'Novo Gasto',new_sm:'Nova Solicitação de Mudança (SM)',
+    lbl_date:'Data',lbl_year:'Ano',lbl_sm:'SM #',lbl_codigo:'CÃ³digo Aba',
+    new_expense:'Novo Gasto',new_sm:'Nova SolicitaÃ§Ã£o de MudanÃ§a (SM)',
     rub_cat:'Categoria',rub_ptrb:'PTR-B',rub_plan:'Plano Atual',rub_actual:'Realizado',rub_balance:'Saldo',rub_pct:'Exec%',
-    no_milestones:'Nenhum marco neste período.',search:'Buscar...',
-    alert_overdue:'projetos com marcos atrasados',alert_fin:'projetos com execução acima de 100%',
+    no_milestones:'Nenhum marco neste perÃ­odo.',search:'Buscar...',
+    alert_overdue:'projetos com marcos atrasados',alert_fin:'projetos com execuÃ§Ã£o acima de 100%',
     new_project:'+ Novo Projeto',new_sol:'Novo registro',modal_new_project:'Novo Projeto',gantt:'Linha do Tempo',
     export_proj:'Exportar projeto',export_all:'Exportar todos',
-    pm_codigo:'Código *',pm_anp:'Nº ANP',pm_titulo:'Título *',pm_executor:'Executor',
+    pm_codigo:'CÃ³digo *',pm_anp:'NÂº ANP',pm_titulo:'TÃ­tulo *',pm_executor:'Executor',
     pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
-    pm_inicio:'Início *',pm_fim:'Fim *',pm_fimreal:'Fim real',pm_duracao:'Duração (meses)',
+    pm_inicio:'InÃ­cio *',pm_fim:'Fim *',pm_fimreal:'Fim real',pm_duracao:'DuraÃ§Ã£o (meses)',
     pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',
   }
 };
@@ -1171,11 +1234,11 @@ const FMTK = v => {
   return FMT.format(v);
 };
 const FMTFULL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
-const FMTD = d => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
-const PCT  = v => (isNaN(v)||!isFinite(v)) ? '—' : (v*100).toFixed(1)+'%';
+const FMTD = d => d ? new Date(d).toLocaleDateString('pt-BR') : 'â€”';
+const PCT  = v => (isNaN(v)||!isFinite(v)) ? 'â€”' : (v*100).toFixed(1)+'%';
 
 const MONTHS_PT = {
-  'janeiro':1,'fevereiro':2,'março':3,'abril':4,'maio':5,'junho':6,
+  'janeiro':1,'fevereiro':2,'marÃ§o':3,'abril':4,'maio':5,'junho':6,
   'julho':7,'agosto':8,'setembro':9,'outubro':10,'novembro':11,'dezembro':12
 };
 
@@ -1186,16 +1249,16 @@ function normalizeProjectId(id){
   return 'P'+s.padStart(3,'0');
 }
 
-// Reconhece um marco concluído. A planilha pode gravar "Completo", "Concluído",
-// "Concluido", "Completed" (com/sem acento) — todos contam como concluído.
+// Reconhece um marco concluÃ­do. A planilha pode gravar "Completo", "ConcluÃ­do",
+// "Concluido", "Completed" (com/sem acento) â€” todos contam como concluÃ­do.
 function isMilestoneCompleted(status){
   const s=String(status||'').trim().toLowerCase();
-  return ['completo','concluído','concluido','concluída','concluida','completed','complete'].includes(s);
+  return ['completo','concluÃ­do','concluido','concluÃ­da','concluida','completed','complete'].includes(s);
 }
 
-// A1/A2: classificação POR JANELA DE DATA — usada apenas nos painéis do Portfólio
-// (atrasados / próximos 60 dias). NÃO é o status do marco; o status real vem da planilha.
-// Marco concluído NUNCA é atrasado/próximo: tem prioridade sobre a janela de data.
+// A1/A2: classificaÃ§Ã£o POR JANELA DE DATA â€” usada apenas nos painÃ©is do PortfÃ³lio
+// (atrasados / prÃ³ximos 60 dias). NÃƒO Ã© o status do marco; o status real vem da planilha.
+// Marco concluÃ­do NUNCA Ã© atrasado/prÃ³ximo: tem prioridade sobre a janela de data.
 function milestoneDateBucket(marco){
   if(isMilestoneCompleted(marco.Status)) return 'Completed';
   const dp = marco['Data prevista / Data de entrega'];
@@ -1209,7 +1272,7 @@ function milestoneDateBucket(marco){
   return 'Planned';
 }
 
-// Normaliza a data prevista para um Date confiável (aceita ISO 'YYYY-MM-DD' ou já-Date)
+// Normaliza a data prevista para um Date confiÃ¡vel (aceita ISO 'YYYY-MM-DD' ou jÃ¡-Date)
 function parseMilestoneDate(dp){
   if(!dp) return null;
   if(dp instanceof Date) return dp;
@@ -1220,8 +1283,8 @@ function parseMilestoneDate(dp){
   return isNaN(d.getTime()) ? null : d;
 }
 
-// A2: status do marco é LIDO da planilha (coluna Status). Mantido como veio.
-// Função preservada por compatibilidade — retorna o status da planilha, sem cálculo.
+// A2: status do marco Ã© LIDO da planilha (coluna Status). Mantido como veio.
+// FunÃ§Ã£o preservada por compatibilidade â€” retorna o status da planilha, sem cÃ¡lculo.
 function getMilestoneStatus(marco){
   return String(marco.Status||marco._userStatus||'').trim();
 }
@@ -1229,9 +1292,9 @@ function getMilestoneStatus(marco){
 function statusBadge(s){
   const map={
     'Overdue':'badge-red','Atrasado':'badge-red',
-    'Upcoming':'badge-amber','Próximo':'badge-amber',
+    'Upcoming':'badge-amber','PrÃ³ximo':'badge-amber',
     'Planned':'badge-blue','Planejado':'badge-blue',
-    'Completed':'badge-green','Concluído':'badge-green',
+    'Completed':'badge-green','ConcluÃ­do':'badge-green',
     'Suspended':'badge-gray','Suspenso':'badge-gray',
   };
   const cls=map[s]||'badge-gray';
@@ -1248,35 +1311,35 @@ function projectStatusBadge(status){
   const low = s.toLowerCase();
   let cls = 'badge-gray';
   if(low === 'em andamento') cls = 'badge-green';
-  else if(low === 'concluído' || low === 'concluido') cls = 'badge-gray';
+  else if(low === 'concluÃ­do' || low === 'concluido') cls = 'badge-gray';
   else if(low === 'suspenso') cls = 'badge-amber';
   else if(low === 'cancelado') cls = 'badge-red';
-  return `<span class="badge ${cls}">${s||'—'}</span>`;
+  return `<span class="badge ${cls}">${s||'â€”'}</span>`;
 }
 
-// opções de status do projeto (rótulos vindos do Excel — PT)
-const PROJECT_STATUSES = ['Em andamento','Concluído','Suspenso','Cancelado'];
+// opÃ§Ãµes de status do projeto (rÃ³tulos vindos do Excel â€” PT)
+const PROJECT_STATUSES = ['Em andamento','ConcluÃ­do','Suspenso','Cancelado'];
 
 function projectStatusSelectClass(status){
   const low=String(status||'').trim().toLowerCase();
   if(low==='em andamento') return 'st-green';
-  if(low==='concluído'||low==='concluido') return 'st-gray';
+  if(low==='concluÃ­do'||low==='concluido') return 'st-gray';
   if(low==='suspenso') return 'st-amber';
   if(low==='cancelado') return 'st-red';
   return 'st-gray';
 }
 
-// select editável de status do projeto (aba Projeto)
+// select editÃ¡vel de status do projeto (aba Projeto)
 function projectStatusSelect(proj){
   const cur=String(proj.Status_Projeto||'').trim();
   const cls=projectStatusSelectClass(cur);
-  // garante que o valor atual apareça mesmo se fora da lista padrão
+  // garante que o valor atual apareÃ§a mesmo se fora da lista padrÃ£o
   const opts=[...new Set([...PROJECT_STATUSES, cur].filter(Boolean))];
   const optHtml=opts.map(s=>`<option value="${escapeAttr(s)}" ${s===cur?'selected':''}>${escapeHtml(s)}</option>`).join('');
   return `<select class="proj-status-select ${cls}" onchange="updateProjectStatus('${escapeAttr(proj.Projeto)}',this.value)">${optHtml}</select>`;
 }
 
-// altera status em memória e persiste na sheet Projetos
+// altera status em memÃ³ria e persiste na sheet Projetos
 async function updateProjectStatus(pid, newStatus){
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
   if(!proj) return;
@@ -1286,10 +1349,10 @@ async function updateProjectStatus(pid, newStatus){
   try{
     await rewriteProjetosSheet();
     hideLoading();
-    // re-render para refletir cor do select e badge no portfólio
+    // re-render para refletir cor do select e badge no portfÃ³lio
     if(currentPage==='project') renderProjectDetail(pid);
   }catch(e){
-    proj.Status_Projeto=old; // rollback em memória
+    proj.Status_Projeto=old; // rollback em memÃ³ria
     hideLoading();
     console.error('updateProjectStatus error:',e);
     alert((lang==='pt'?'Erro ao salvar status: ':'Error saving status: ')+e.message);
@@ -1305,19 +1368,36 @@ async function rewriteProjetosSheet(){
     'Data_Inicio','Data_Fim','Data_Fim_Real','Duracao_Meses','Valor_PTRB','Status_Projeto'];
   const dataRows=DATA.projetos.map(p=>[
     p.Projeto||'',
-    p['Título do projeto']||'',
+    p['TÃ­tulo do projeto']||'',
     p.Executor||'',
-    p.Numero_ANP||p['Número ANP']||'',
+    p.Numero_ANP||p['NÃºmero ANP']||'',
     p.Project_Manager||p['Project Manager']||'',
     p.Gestor||'',
-    isoToExcelSerial(p['Data de início ']||p['Data de início'])||'',
+    isoToExcelSerial(p['Data de inÃ­cio ']||p['Data de inÃ­cio'])||'',
     isoToExcelSerial(p['Data final'])||'',
     p['Data final real'] ? (isoToExcelSerial(p['Data final real'])||'') : '',
-    p.Duracao_Meses||p['Duração (meses)']||'',
+    p.Duracao_Meses||p['DuraÃ§Ã£o (meses)']||'',
     parseFloat(p.Valor_PTRB||p['Planned Value (R$)']||0)||0,
     p.Status_Projeto||'',
   ]);
   await rewriteExcelSheet('Projetos', headers, dataRows);
+}
+
+function planoCellFor(header, r){
+  const h=String(header||'').trim().toLowerCase();
+  if(h==='projeto') return r.Projeto||'';
+  if(h==='executor') return r.Executor||'';
+  if(h==='categoria') return r.Categoria_despesa||r.Categoria||'';
+  if(h==='codigo_aba') return r.Codigo_ABA||getCatABA(r.Categoria_despesa||r.Categoria)||'';
+  if(h==='valor_ptrb') return parseFloat(r['Plano_PTR-B']||r.Valor_PTRB||0)||0;
+  return r[header]||'';
+}
+async function rewritePlanoSheetFromMemory(){
+  const headers=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
+    ? DATA._headers.Plano_Orcamentario
+    : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
+  const dataRows=(DATA.plano||[]).map(r=>headers.map(h=>planoCellFor(h,r)));
+  await rewriteExcelSheet('Plano_Orcamentario', headers, dataRows);
 }
 
 function escapeHtml(v){
@@ -1339,19 +1419,19 @@ function statusSelectClass(s){
   }[s]||'st-gray';
 }
 
-// rótulo do status calculado, traduzido — usado como texto da opção (Auto)
+// rÃ³tulo do status calculado, traduzido â€” usado como texto da opÃ§Ã£o (Auto)
 function statusAutoLabel(s){
   const lbl={'Overdue':t('overdue'),'Upcoming':t('upcoming'),'Planned':t('planned'),
     'Completed':t('completed'),'Suspended':t('suspended')}[s]||s;
-  return (lang==='pt'?'Automático':'Auto')+(s?` · ${lbl}`:'');
+  return (lang==='pt'?'AutomÃ¡tico':'Auto')+(s?` Â· ${lbl}`:'');
 }
 
-// A2: status canônicos de marco (rótulos como aparecem na planilha — aceita PT e EN)
-const MILESTONE_STATUSES = ['Planejado','Em andamento','Concluído','Atrasado','Suspenso','Cancelado'];
+// A2: status canÃ´nicos de marco (rÃ³tulos como aparecem na planilha â€” aceita PT e EN)
+const MILESTONE_STATUSES = ['Planejado','Em andamento','ConcluÃ­do','Atrasado','Suspenso','Cancelado'];
 
 function milestoneStatusBadgeClass(s){
   const low=String(s||'').trim().toLowerCase();
-  if(['concluído','concluido','completed'].includes(low)) return 'st-green';
+  if(['concluÃ­do','concluido','completed'].includes(low)) return 'st-green';
   if(['atrasado','overdue'].includes(low)) return 'st-red';
   if(['em andamento','in progress','upcoming'].includes(low)) return 'st-amber';
   if(['planejado','planned'].includes(low)) return 'st-blue';
@@ -1360,7 +1440,7 @@ function milestoneStatusBadgeClass(s){
 }
 
 // A2: monta o <select> de status do marco a partir do valor da PLANILHA.
-// Sem opção "Automático" / sem cálculo. Alterar grava de volta no Excel.
+// Sem opÃ§Ã£o "AutomÃ¡tico" / sem cÃ¡lculo. Alterar grava de volta no Excel.
 function milestoneStatusSelect(m, origIdx){
   const cur = String(m.Status||m._userStatus||'').trim();
   const cls = milestoneStatusBadgeClass(cur);
@@ -1376,14 +1456,14 @@ function getExec(pid){
 }
 
 function getTimePct(proj){
-  const start=new Date(proj['Data de início ']||proj['Data de início']);
+  const start=new Date(proj['Data de inÃ­cio ']||proj['Data de inÃ­cio']);
   const end=new Date(proj['Data final']);
   const today=new Date();
   if(isNaN(start)||isNaN(end))return 0;
   return Math.max(0,Math.min(1,(today-start)/(end-start)));
 }
 
-// ===================== AUTH — PKCE =====================
+// ===================== AUTH â€” PKCE =====================
 function generateRandom(len){
   const arr=new Uint8Array(len);
   crypto.getRandomValues(arr);
@@ -1491,12 +1571,12 @@ async function graphGet(path){
 }
 
 // ===================== EXCEL / ONEDRIVE =====================
-// ═══════════════════════════════════════════════════════════════
-// EXCEL — lê sheets do OneDrive via Graph API
-// Colunas com nomes reais (Codigo, Titulo, etc.) — sem field_N
-// Datas armazenadas como seriais do Excel (ex: 45747) → excelDate()
-// Valores monetários como float real — sem divisão necessária
-// ═══════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// EXCEL â€” lÃª sheets do OneDrive via Graph API
+// Colunas com nomes reais (Codigo, Titulo, etc.) â€” sem field_N
+// Datas armazenadas como seriais do Excel (ex: 45747) â†’ excelDate()
+// Valores monetÃ¡rios como float real â€” sem divisÃ£o necessÃ¡ria
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const EXCEL_SHEETS = {
   'Projetos'           : { key:'projetos',      norm: normalizeProjeto       },
   'Plano_Orcamentario' : { key:'plano',          norm: normalizePlano         },
@@ -1538,26 +1618,26 @@ function isoToExcelSerial(iso){
 function mesFromDate(iso){
   if(!iso) return '';
   const m=parseInt(iso.substring(5,7),10);
-  return ['janeiro','fevereiro','março','abril','maio','junho',
+  return ['janeiro','fevereiro','marÃ§o','abril','maio','junho',
           'julho','agosto','setembro','outubro','novembro','dezembro'][m-1]||'';
 }
 
-// ── Normalizers — mapeiam colunas do Excel para o modelo interno ──────────────
-// r = objeto com chaves = headers da planilha (nomes reais, não field_N)
+// â”€â”€ Normalizers â€” mapeiam colunas do Excel para o modelo interno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// r = objeto com chaves = headers da planilha (nomes reais, nÃ£o field_N)
 
 function normalizeProjeto(r){
   return {
     Projeto             : r.Codigo||'',
-    'Título do projeto' : r.Titulo||'',
+    'TÃ­tulo do projeto' : r.Titulo||'',
     Executor            : r.Executor||'',
-    'Número ANP'        : r.Numero_ANP||'',
+    'NÃºmero ANP'        : r.Numero_ANP||'',
     'Project Manager'   : r.Project_Manager||'',
     Gestor              : r.Gestor||'',
-    'Data de início '   : excelDate(r.Data_Inicio),
+    'Data de inÃ­cio '   : excelDate(r.Data_Inicio),
     'Data final'        : excelDate(r.Data_Fim),
     'Data final real'   : excelDate(r.Data_Fim_Real),
     Data_Fim_Real       : excelDate(r.Data_Fim_Real),
-    'Duração (meses)'   : r.Duracao_Meses||'',
+    'DuraÃ§Ã£o (meses)'   : r.Duracao_Meses||'',
     Duracao_Meses       : r.Duracao_Meses||'',
     'Numero ANP raw'    : r.Numero_ANP||'',
     Numero_ANP          : r.Numero_ANP||'',
@@ -1586,7 +1666,7 @@ function normalizeGasto(r){
     Executor          : r.Executor||'',
     Data              : data,
     Ano               : data?data.substring(0,4):'',
-    Mês               : mesFromDate(data),
+    MÃªs               : mesFromDate(data),
     Categoria_despesa : r.Categoria||'',
     Valor             : parseFloat(r.Valor)||0,
   };
@@ -1596,7 +1676,7 @@ function normalizeMarco(r){
   return {
     Projeto                           : r.Projeto||'',
     ID                                : r.Codigo||'',
-    'Descrição'                       : r.Descricao||'',
+    'DescriÃ§Ã£o'                       : r.Descricao||'',
     'Data Base'                       : excelDate(r.Data_Baseline),
     'Data prevista / Data de entrega' : excelDate(r.Data_Prevista),
     Status                            : status,
@@ -1631,7 +1711,7 @@ function normalizeRendimento(r){
     Executor     : r.Executor||'',
     Data         : data,
     Ano          : data ? data.substring(0,4) : '',
-    Mês          : mesFromDate(data),
+    MÃªs          : mesFromDate(data),
     Valor_Rendido: parseFloat(r.Valor_Rendido)||0,
   };
 }
@@ -1651,7 +1731,7 @@ function normalizeCategoria(r){
   };
 }
 
-// ─── Graph helper ────────────────────────────────────────────
+// â”€â”€â”€ Graph helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function graphFetch(pathOrUrl, method='GET', body=null){
   const url = pathOrUrl.startsWith('http')
     ? pathOrUrl
@@ -1664,7 +1744,7 @@ async function graphFetch(pathOrUrl, method='GET', body=null){
   return fetch(url, opts);
 }
 
-// ─── Excel write helpers ─────────────────────────────────────
+// â”€â”€â”€ Excel write helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function colLetter(n){
   // 1=A, 2=B, ..., 26=Z, 27=AA ...
   let s='';
@@ -1691,7 +1771,7 @@ async function excelGetUsedRowCount(sheet){
 }
 
 async function appendExcelRow(sheet, values){
-  // Descobre a próxima linha vazia e faz PATCH
+  // Descobre a prÃ³xima linha vazia e faz PATCH
   const rowCount = await excelGetUsedRowCount(sheet);
   const nextRow  = rowCount + 1;
   const addr     = `A${nextRow}:${colLetter(values.length)}${nextRow}`;
@@ -1700,7 +1780,7 @@ async function appendExcelRow(sheet, values){
 
 async function rewriteExcelSheet(sheet, headers, dataRows){
   // Reescreve toda a sheet: header na linha 1, dados a partir da linha 2
-  // Usado quando a edição pode mudar/remover linhas existentes
+  // Usado quando a ediÃ§Ã£o pode mudar/remover linhas existentes
   const allRows = [headers, ...dataRows];
   const nCols   = headers.length;
   const nRows   = allRows.length;
@@ -1708,9 +1788,9 @@ async function rewriteExcelSheet(sheet, headers, dataRows){
   await excelPatchRange(sheet, addr, allRows);
 }
 
-// loadAllListItems removido — versão Excel usa excelApiBase() diretamente
+// loadAllListItems removido â€” versÃ£o Excel usa excelApiBase() diretamente
 
-// ─── SM override: Plano_Atual = value from latest SM ─────────
+// â”€â”€â”€ SM override: Plano_Atual = value from latest SM â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function applySMOverrides(){
   if(!DATA.sms||!DATA.sms.length) return;
   const latest={};
@@ -1725,9 +1805,9 @@ function applySMOverrides(){
   });
 }
 
-// B2/B3: rótulo da SM mais recente (por NÚMERO) usada como base de um projeto.
-// Considera tanto itens de SM (DATA.sms) quanto solicitações (DATA.solicitacoes) tipo SM.
-// Retorna ex.: "SM3" ou '' se não houver SM.
+// B2/B3: rÃ³tulo da SM mais recente (por NÃšMERO) usada como base de um projeto.
+// Considera tanto itens de SM (DATA.sms) quanto solicitaÃ§Ãµes (DATA.solicitacoes) tipo SM.
+// Retorna ex.: "SM3" ou '' se nÃ£o houver SM.
 function latestSMLabel(pid){
   let best=null;
   const consider=(raw)=>{
@@ -1740,11 +1820,11 @@ function latestSMLabel(pid){
   (DATA.sms||[]).filter(s=>s.Projeto===pid).forEach(s=>consider(s['SM#']));
   (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid && /sm/i.test(String(s.Tipo||'SM'))).forEach(s=>consider(s['SM#']||s.Numero_Item||s.Numero_SM));
   if(!best) return '';
-  // normaliza para "SM<n>" se vier só número
+  // normaliza para "SM<n>" se vier sÃ³ nÃºmero
   return /\d/.test(best.label) && !/[a-z]/i.test(best.label) ? 'SM'+best.num : best.label;
 }
 
-// ─── Populate UI dropdowns after data load ───────────────────
+// â”€â”€â”€ Populate UI dropdowns after data load â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function populateDropdowns(){
   const projs=DATA.projetos;
   const allLbl=lang==='pt'?'Todos os Projetos':'All Projects';
@@ -1753,7 +1833,7 @@ function populateDropdowns(){
     if(!el)return;
     el.innerHTML=`<option value="ALL">${allLbl}</option>`;
     projs.forEach(p=>{
-      const lbl=p.Projeto+' — '+(p['Título do projeto']||'').split(':')[0].trim();
+      const lbl=p.Projeto+' â€” '+(p['TÃ­tulo do projeto']||'').split(':')[0].trim();
       el.innerHTML+=`<option value="${p.Projeto}">${lbl}</option>`;
     });
   });
@@ -1761,7 +1841,7 @@ function populateDropdowns(){
   if(gp){
     gp.innerHTML='';
     projs.forEach(p=>{
-      gp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`;
+      gp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`;
     });
     gp.dispatchEvent(new Event('change'));
   }
@@ -1773,22 +1853,22 @@ function populateDropdowns(){
   const sp=document.getElementById('sm-project');
   if(sp){
     sp.innerHTML='';
-    projs.forEach(p=>{ sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`; });
+    projs.forEach(p=>{ sp.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`; });
   }
   const ps=document.getElementById('project-selector');
   if(ps){
     ps.innerHTML='';
-    projs.forEach(p=>{ ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} — ${(p['Título do projeto']||'').split(':')[0]}</option>`; });
+    projs.forEach(p=>{ ps.innerHTML+=`<option value="${p.Projeto}">${p.Projeto} â€” ${(p['TÃ­tulo do projeto']||'').split(':')[0]}</option>`; });
   }
 }
 
-// ─── MAIN Excel loader (called after auth) ───────────────────
+// â”€â”€â”€ MAIN Excel loader (called after auth) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 window.EXCEL_LOAD_REPORT={};
 
 async function carregarExcel(){
   showLoading(lang==='pt'?'Conectando ao OneDrive...':'Connecting to OneDrive...');
 
-  // Passo 1: resolve o link de compartilhamento → obtém driveId + itemId
+  // Passo 1: resolve o link de compartilhamento â†’ obtÃ©m driveId + itemId
   await resolveExcelItem();
 
   for(const [sheet, cfg] of Object.entries(EXCEL_SHEETS)){
@@ -1803,7 +1883,7 @@ async function carregarExcel(){
       if(rows.length < 2){
         DATA[cfg.key]=[];
         window.EXCEL_LOAD_REPORT[sheet]={status:'EMPTY',count:0};
-        console.warn(`⚠ ${sheet}: vazio ou só cabeçalho`);
+        console.warn(`âš  ${sheet}: vazio ou sÃ³ cabeÃ§alho`);
         continue;
       }
       const headers = rows[0];
@@ -1817,9 +1897,9 @@ async function carregarExcel(){
           return cfg.norm(obj);
         });
       window.EXCEL_LOAD_REPORT[sheet]={status:'OK',count:DATA[cfg.key].length};
-      console.log(`✓ ${sheet}:`,DATA[cfg.key].length,'linhas');
+      console.log(`âœ“ ${sheet}:`,DATA[cfg.key].length,'linhas');
     }catch(e){
-      console.warn(`✗ ${sheet}:`,e.message);
+      console.warn(`âœ— ${sheet}:`,e.message);
       window.EXCEL_LOAD_REPORT[sheet]={status:'ERROR',error:e.message,count:0};
     }
   }
@@ -1907,7 +1987,7 @@ async function inicializarApp(){
   }catch(e){
     console.error('Excel load error:',e);
     const banner=document.getElementById('sp-error-banner');
-    if(banner){banner.textContent='⚠ Erro ao carregar Excel: '+e.message;banner.style.display='block';}
+    if(banner){banner.textContent='âš  Erro ao carregar Excel: '+e.message;banner.style.display='block';}
   }
 
   document.getElementById('login-screen').classList.add('hidden');
@@ -1973,7 +2053,7 @@ function renderPortfolio(){
   alerts.innerHTML='';
   const overdueProjs=gProjs.filter(p=>allMarcos.some(m=>m.Projeto===p.Projeto&&m._bucket==='Overdue'));
   if(overdueProjs.length)
-    alerts.innerHTML+=`<div class="alert-box alert-red">⚠ ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
+    alerts.innerHTML+=`<div class="alert-box alert-red">âš  ${overdueProjs.length} ${t('alert_overdue')}: ${overdueProjs.map(p=>p.Projeto).join(', ')}</div>`;
 
   const thead=document.getElementById('projects-thead');
   thead.innerHTML=`<tr>
@@ -2000,14 +2080,14 @@ function renderPortfolio(){
     const execPct=fin.pct;
     const execCls=execPct>=1?'color-red':execPct>=0.85?'color-amber':'color-green';
     const bar=`<div class="progress-bar"><div class="progress-fill ${execPct>=1?'red':execPct>=0.85?'amber':''}" style="width:${Math.min(100,execPct*100).toFixed(0)}%"></div></div>`;
-    const title=(p['Título do projeto']||'').split(':')[0].trim();
+    const title=(p['TÃ­tulo do projeto']||'').split(':')[0].trim();
     tbody.innerHTML+=`<tr class="tr-clickable" onclick="openProject('${pid}')">
       <td><span class="fw-600">${pid}</span></td>
-      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(p['Título do projeto']||'')}">${escapeHtml(title)}</div></td>
+      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(p['TÃ­tulo do projeto']||'')}">${escapeHtml(title)}</div></td>
       <td>${projectStatusBadge(p.Status_Projeto)}</td>
-      <td class="fs-12 color-ink3">${p.Executor||'—'}</td>
-      <td class="fs-12">${p['Número ANP']||'—'}</td>
-      <td class="fs-12">${p.Gestor||'—'}</td>
+      <td class="fs-12 color-ink3">${p.Executor||'â€”'}</td>
+      <td class="fs-12">${p['NÃºmero ANP']||'â€”'}</td>
+      <td class="fs-12">${p.Gestor||'â€”'}</td>
       <td class="text-right fw-600">${FMTK(fin.plan)}${(()=>{const sm=latestSMLabel(pid);return sm?` <span class="fs-12 color-ink3">(${sm})</span>`:'';})()}</td>
       <td class="text-right">${FMTK(fin.actual)}</td>
       <td><div style="display:flex;align-items:center;gap:8px;">${bar}<span class="fs-12 ${execCls}">${PCT(execPct)}</span></div></td>
@@ -2015,7 +2095,7 @@ function renderPortfolio(){
         <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,timePct*100).toFixed(0)}%;background:var(--ink3)"></div></div>
         <span class="fs-12 color-ink3">${PCT(timePct)}</span>
       </div></td>
-      <td class="fs-12 color-ink3">${FMTD(p['Data de início ']||p['Data de início'])}</td>
+      <td class="fs-12 color-ink3">${FMTD(p['Data de inÃ­cio ']||p['Data de inÃ­cio'])}</td>
       <td class="fs-12 color-ink3">${FMTD(p['Data final'])}</td>
     </tr>`;
   });
@@ -2031,8 +2111,8 @@ function renderPortfolio(){
     nextEl.innerHTML+=`<div class="milestone-item">
       <div class="milestone-dot" style="background:var(--amber)"></div>
       <div style="flex:1;min-width:0;">
-        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['Descrição']||'—')}</div>
-        <div class="fs-12 color-ink3">${item.Projeto} · ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
+        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['DescriÃ§Ã£o']||'â€”')}</div>
+        <div class="fs-12 color-ink3">${item.Projeto} Â· ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
       ${typeChip()}
     </div>`;
@@ -2045,8 +2125,8 @@ function renderPortfolio(){
     overdueEl.innerHTML+=`<div class="milestone-item">
       <div class="milestone-dot" style="background:var(--red)"></div>
       <div style="flex:1;min-width:0;">
-        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['Descrição']||'—')}</div>
-        <div class="fs-12 color-ink3">${item.Projeto} · ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
+        <div class="fs-12 fw-600" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item['DescriÃ§Ã£o']||'â€”')}</div>
+        <div class="fs-12 color-ink3">${item.Projeto} Â· ${FMTD(item['Data prevista / Data de entrega']||'')}</div>
       </div>
       ${typeChip()}
     </div>`;
@@ -2061,9 +2141,9 @@ function renderGantt(projs){
   if(!el) return;
   const L=lang==='pt';
 
-  // coleta projetos com datas válidas
+  // coleta projetos com datas vÃ¡lidas
   const items=projs.map(p=>{
-    const start=new Date(p['Data de início ']||p['Data de início']);
+    const start=new Date(p['Data de inÃ­cio ']||p['Data de inÃ­cio']);
     const end=new Date(p['Data final']);
     const realRaw=p['Data final real'];
     const real=realRaw?new Date(realRaw):null;
@@ -2075,7 +2155,7 @@ function renderGantt(projs){
     return;
   }
 
-  // escala temporal: menor início → maior fim (considerando fim real)
+  // escala temporal: menor inÃ­cio â†’ maior fim (considerando fim real)
   let minT=Infinity, maxT=-Infinity;
   items.forEach(it=>{
     minT=Math.min(minT, it.start.getTime());
@@ -2098,13 +2178,13 @@ function renderGantt(projs){
     if(it.real && it.real.getTime()>officialEnd){
       const overRight=pos(it.real.getTime());
       const overW=Math.max(0.5, overRight-officialRight);
-      overHtml=`<div class="gantt-bar-over" style="left:${officialRight}%;width:${overW}%;" title="${L?'Prolongamento':'Extension'}: ${FMTD(it.p['Data final'])} → ${FMTD(it.p['Data final real'])}"></div>`;
+      overHtml=`<div class="gantt-bar-over" style="left:${officialRight}%;width:${overW}%;" title="${L?'Prolongamento':'Extension'}: ${FMTD(it.p['Data final'])} â†’ ${FMTD(it.p['Data final real'])}"></div>`;
     }
-    const dur=it.p['Duração (meses)']||'';
+    const dur=it.p['DuraÃ§Ã£o (meses)']||'';
     const endLabel = it.real && it.real.getTime()!==officialEnd
-      ? `${FMTD(it.p['Data final'])} → ${FMTD(it.p['Data final real'])}`
+      ? `${FMTD(it.p['Data final'])} â†’ ${FMTD(it.p['Data final real'])}`
       : FMTD(it.p['Data final']);
-    const tip=`${it.p.Projeto} · ${FMTD(it.p['Data de início ']||it.p['Data de início'])} → ${endLabel}${dur?` · ${dur} ${L?'meses':'mo'}`:''}`;
+    const tip=`${it.p.Projeto} Â· ${FMTD(it.p['Data de inÃ­cio ']||it.p['Data de inÃ­cio'])} â†’ ${endLabel}${dur?` Â· ${dur} ${L?'meses':'mo'}`:''}`;
     return `<div class="gantt-row" title="${escapeAttr(tip)}">
       <div class="gantt-label">${it.p.Projeto}</div>
       <div class="gantt-track">
@@ -2115,8 +2195,8 @@ function renderGantt(projs){
     </div>`;
   }).join('');
 
-  // C1: eixo por PERÍODOS (não datas específicas).
-  // Escolhe granularidade conforme o span total: mês → semestre → ano+semestre.
+  // C1: eixo por PERÃODOS (nÃ£o datas especÃ­ficas).
+  // Escolhe granularidade conforme o span total: mÃªs â†’ semestre â†’ ano+semestre.
   const axisInfo = buildGanttPeriods(minT, maxT);
   const pos2 = t => ((t-minT)/(span))*100;
 
@@ -2133,7 +2213,7 @@ function renderGantt(projs){
   const axis=`<div class="gantt-axis-periods">${axisTicks}</div>`;
 
   const legend=`<div style="display:flex;gap:16px;align-items:center;margin-top:10px;font-size:10px;color:var(--ink3);">
-    <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;background:var(--accent2);border-radius:2px;display:inline-block;"></span>${L?'Período oficial':'Official period'}</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;background:var(--accent2);border-radius:2px;display:inline-block;"></span>${L?'PerÃ­odo oficial':'Official period'}</span>
     <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:18px;height:10px;border:1px dashed var(--red);background:repeating-linear-gradient(45deg,var(--red) 0,var(--red) 3px,transparent 3px,transparent 6px);opacity:0.65;border-radius:2px;display:inline-block;"></span>${L?'Prolongamento (fim real)':'Extension (actual end)'}</span>
     <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:2px;height:12px;background:var(--gold);display:inline-block;"></span>${L?'Hoje':'Today'}</span>
   </div>`;
@@ -2141,8 +2221,8 @@ function renderGantt(projs){
   el.innerHTML=`<div class="gantt-wrap"><div class="gantt-grid-overlay">${yearLines}</div>${rowsHtml}${axis}</div>${legend}`;
 }
 
-// C1: monta períodos do eixo do Gantt conforme o intervalo total.
-// Regras: ≤ ~18 meses → tick por mês; ≤ ~6 anos → por semestre; acima → ano+semestre.
+// C1: monta perÃ­odos do eixo do Gantt conforme o intervalo total.
+// Regras: â‰¤ ~18 meses â†’ tick por mÃªs; â‰¤ ~6 anos â†’ por semestre; acima â†’ ano+semestre.
 function buildGanttPeriods(minT, maxT){
   const L = lang==='pt';
   const start=new Date(minT), end=new Date(maxT);
@@ -2153,13 +2233,13 @@ function buildGanttPeriods(minT, maxT){
 
   const ticks=[];
   const yearBoundaries=[];
-  // virada de ano: 1º de janeiro de cada ano dentro do intervalo
+  // virada de ano: 1Âº de janeiro de cada ano dentro do intervalo
   for(let y=start.getFullYear()+1; y<=end.getFullYear(); y++){
     yearBoundaries.push(new Date(y,0,1).getTime());
   }
 
   if(totalMonths<=18){
-    // por mês — mostra o ano só na 1ª ocorrência e em cada janeiro
+    // por mÃªs â€” mostra o ano sÃ³ na 1Âª ocorrÃªncia e em cada janeiro
     let cur=new Date(start.getFullYear(), start.getMonth(), 1);
     let firstOfYearSeen={};
     while(cur.getTime()<=maxT){
@@ -2171,7 +2251,7 @@ function buildGanttPeriods(minT, maxT){
       cur=new Date(y, cur.getMonth()+1, 1);
     }
   } else if(totalMonths<=72){
-    // por semestre (S1 jan–jun, S2 jul–dez)
+    // por semestre (S1 janâ€“jun, S2 julâ€“dez)
     let y=start.getFullYear();
     let sem = start.getMonth()<6?1:2;
     while(true){
@@ -2182,7 +2262,7 @@ function buildGanttPeriods(minT, maxT){
       if(sem===1){ sem=2; } else { sem=1; y++; }
     }
   } else {
-    // ano + semestre (rótulo mais enxuto): mostra ano em S1, só "S2" no meio
+    // ano + semestre (rÃ³tulo mais enxuto): mostra ano em S1, sÃ³ "S2" no meio
     let y=start.getFullYear();
     let sem = start.getMonth()<6?1:2;
     while(true){
@@ -2202,14 +2282,14 @@ function openProject(pid){
   navigate('project');
 }
 
-// D1: uma solicitação (SM/DV/DE) é "ativa" se não está em estado terminal
+// D1: uma solicitaÃ§Ã£o (SM/DV/DE) Ã© "ativa" se nÃ£o estÃ¡ em estado terminal
 function isSolicitacaoAtiva(s){
   const st=String(s.Status||'').trim().toLowerCase();
-  const terminais=['rejeitada','rejeitado','cancelada','cancelado','concluído','concluido','concluída','concluida'];
+  const terminais=['rejeitada','rejeitado','cancelada','cancelado','concluÃ­do','concluido','concluÃ­da','concluida'];
   return !terminais.includes(st);
 }
 
-// D1: monta a lista de avisos automáticos para um projeto
+// D1: monta a lista de avisos automÃ¡ticos para um projeto
 function buildProjectAlerts(pid){
   const L=lang==='pt';
   const alerts=[];
@@ -2229,7 +2309,7 @@ function buildProjectAlerts(pid){
     if(plan>0 && act/plan>1.0001){
       const pct=PCT(act/plan);
       alerts.push({
-        cls:'alert-red', icon:'⚠',
+        cls:'alert-red', icon:'âš ',
         msg: L
           ? `A categoria ${c} ultrapassou o percentual de gasto permitido (${pct} executado).`
           : `Category ${c} exceeded the allowed spending percentage (${pct} executed).`
@@ -2237,7 +2317,7 @@ function buildProjectAlerts(pid){
     }
   });
 
-  // (b/c/d) solicitações ativas por tipo
+  // (b/c/d) solicitaÃ§Ãµes ativas por tipo
   const sols=(DATA.solicitacoes||[]).filter(s=>s.Projeto===pid);
   const tipoAtivo=(re)=>sols.filter(s=>re.test(String(s.Tipo||'SM')) && isSolicitacaoAtiva(s));
   const smAtivas=tipoAtivo(/^sm$/i);
@@ -2246,24 +2326,24 @@ function buildProjectAlerts(pid){
 
   if(smAtivas.length){
     const nums=smAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'•',
+    alerts.push({cls:'alert-amber', icon:'â€¢',
       msg:(L?`Projeto possui SM ativa: ${nums||smAtivas.length}.`:`Project has active SM: ${nums||smAtivas.length}.`)});
   }
   if(dvAtivas.length){
     const nums=dvAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'•',
-      msg:(L?`Há despesa de viagem (DV) ativa: ${nums||dvAtivas.length}.`:`There is an active travel expense (DV): ${nums||dvAtivas.length}.`)});
+    alerts.push({cls:'alert-amber', icon:'â€¢',
+      msg:(L?`HÃ¡ despesa de viagem (DV) ativa: ${nums||dvAtivas.length}.`:`There is an active travel expense (DV): ${nums||dvAtivas.length}.`)});
   }
   if(deAtivas.length){
     const nums=deAtivas.map(s=>s.Numero||s['SM#']).filter(Boolean).join(', ');
-    alerts.push({cls:'alert-amber', icon:'•',
-      msg:(L?`Há despesa especial (DE) ativa: ${nums||deAtivas.length}.`:`There is an active special expense (DE): ${nums||deAtivas.length}.`)});
+    alerts.push({cls:'alert-amber', icon:'â€¢',
+      msg:(L?`HÃ¡ despesa especial (DE) ativa: ${nums||deAtivas.length}.`:`There is an active special expense (DE): ${nums||deAtivas.length}.`)});
   }
 
   return alerts;
 }
 
-// ===================== RENDER — PROJECT DETAIL =====================
+// ===================== RENDER â€” PROJECT DETAIL =====================
 function selectProject(pid){ renderProjectDetail(pid); }
 function renderProjectDetail(pid){
   if(!pid) pid = document.getElementById('project-selector').value;
@@ -2271,7 +2351,7 @@ function renderProjectDetail(pid){
   const proj = DATA.projetos.find(p => p.Projeto === pid);
   if(!proj){ document.getElementById('project-detail-content').innerHTML=''; return; }
 
-  document.getElementById('title-project').textContent = proj.Projeto + ' — ' + (proj['Título do projeto']||'').split(':')[0].trim();
+  document.getElementById('title-project').textContent = proj.Projeto + ' â€” ' + (proj['TÃ­tulo do projeto']||'').split(':')[0].trim();
 
   const fin     = getExec(pid);
   const ptrb    = DATA.plano.filter(r=>r.Projeto===pid).reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
@@ -2285,7 +2365,7 @@ function renderProjectDetail(pid){
   const msCompleted = projMarcos.filter(m=>isMilestoneCompleted(m.Status));
   const msPlanned   = projMarcos.filter(m=>!isMilestoneCompleted(m.Status) && m._bucket!=='Overdue' && m._bucket!=='Upcoming');
 
-  // D1: avisos automáticos do projeto
+  // D1: avisos automÃ¡ticos do projeto
   const projAlerts = buildProjectAlerts(pid);
 
   // ---- Financial / categories ----
@@ -2304,7 +2384,7 @@ function renderProjectDetail(pid){
   // ---- Monthly gastos ----
   const monthlyMap={};
   DATA.gastos.filter(g=>g.Projetos===pid).forEach(g=>{
-    const mo=MONTHS_PT[g.Mês?.toLowerCase()]||1;
+    const mo=MONTHS_PT[g.MÃªs?.toLowerCase()]||1;
     const key=`${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
     monthlyMap[key]=(monthlyMap[key]||0)+parseFloat(g.Valor||0);
   });
@@ -2320,7 +2400,7 @@ function renderProjectDetail(pid){
   const projRend = DATA.rendimento.filter(r=>r.Projeto===pid);
   const rendMonthlyMap={};
   projRend.forEach(r=>{
-    const mo=MONTHS_PT[r.Mês?.toLowerCase()]||1;
+    const mo=MONTHS_PT[r.MÃªs?.toLowerCase()]||1;
     const key=`${r.Ano||'2025'}-${String(mo).padStart(2,'0')}`;
     rendMonthlyMap[key]=(rendMonthlyMap[key]||0)+parseFloat(r.Valor_Rendido||0);
   });
@@ -2345,7 +2425,7 @@ function renderProjectDetail(pid){
   // =========================================================
   content.innerHTML = `
 
-  <!-- ── SECTION: KPIs ── -->
+  <!-- â”€â”€ SECTION: KPIs â”€â”€ -->
   <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
     <div class="kpi-card">
       <div class="kpi-label">PTR-B</div>
@@ -2360,7 +2440,7 @@ function renderProjectDetail(pid){
       <div class="kpi-value" style="font-size:20px;">${FMTK(fin.actual)}</div>
     </div>
     <div class="kpi-card ${execPct>=1?'red':execPct>=0.85?'amber':''}">
-      <div class="kpi-label">${L?'Execução':'Execution'}</div>
+      <div class="kpi-label">${L?'ExecuÃ§Ã£o':'Execution'}</div>
       <div class="kpi-value" style="font-size:20px;">${PCT(execPct)}</div>
     </div>
     <div class="kpi-card">
@@ -2369,22 +2449,22 @@ function renderProjectDetail(pid){
     </div>
   </div>
 
-  <!-- ── SECTION: General Info + Milestone summary ── -->
+  <!-- â”€â”€ SECTION: General Info + Milestone summary â”€â”€ -->
   <div class="section-grid cols-2" style="margin-bottom:20px;">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="card-title" style="margin-bottom:0;">${L?'Informações Gerais':'General Info'}</div>
+        <div class="card-title" style="margin-bottom:0;">${L?'InformaÃ§Ãµes Gerais':'General Info'}</div>
         <button class="btn btn-secondary btn-sm" onclick="openProjectEditModal('${pid}')">${L?'Editar':'Edit'}</button>
       </div>
       <table style="width:100%;font-size:13px;border-collapse:collapse;">
-        <tr><td style="padding:6px 0;color:var(--ink3);width:130px;">Executor</td><td class="fw-600">${proj.Executor||'—'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">Nº ANP</td><td class="fw-600">${proj['Número ANP']||'—'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Gerente':'Project Manager'}</td><td>${proj['Project Manager']||'—'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'—'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Início':'Start'}</td><td>${FMTD(proj['Data de início ']||proj['Data de início'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);width:130px;">Executor</td><td class="fw-600">${proj.Executor||'â€”'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">NÂº ANP</td><td class="fw-600">${proj['NÃºmero ANP']||'â€”'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Gerente':'Project Manager'}</td><td>${proj['Project Manager']||'â€”'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'â€”'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start'}</td><td>${FMTD(proj['Data de inÃ­cio ']||proj['Data de inÃ­cio'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim':'End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
         ${proj['Data final real'] ? `<tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End'}</td><td>${FMTD(proj['Data final real'])}</td></tr>` : ''}
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Duração':'Duration'}</td><td>${proj['Duração (meses)']||'—'} ${L?'meses':'months'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'DuraÃ§Ã£o':'Duration'}</td><td>${proj['DuraÃ§Ã£o (meses)']||'â€”'} ${L?'meses':'months'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
       </table>
     </div>
@@ -2397,7 +2477,7 @@ function renderProjectDetail(pid){
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--amber-light);border-radius:8px;">
           <div style="font-size:22px;font-weight:600;color:var(--amber);">${msUpcoming.length}</div>
-          <div style="font-size:10px;color:var(--amber);margin-top:2px;">${L?'Próximos':'Upcoming'}</div>
+          <div style="font-size:10px;color:var(--amber);margin-top:2px;">${L?'PrÃ³ximos':'Upcoming'}</div>
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--blue-light);border-radius:8px;">
           <div style="font-size:22px;font-weight:600;color:var(--blue);">${msPlanned.length}</div>
@@ -2405,7 +2485,7 @@ function renderProjectDetail(pid){
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--green-light);border-radius:8px;">
           <div style="font-size:22px;font-weight:600;color:var(--green);">${msCompleted.length}</div>
-          <div style="font-size:10px;color:var(--green);margin-top:2px;">${L?'Concluídos':'Completed'}</div>
+          <div style="font-size:10px;color:var(--green);margin-top:2px;">${L?'ConcluÃ­dos':'Completed'}</div>
         </div>
       </div>
       <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
@@ -2417,28 +2497,28 @@ function renderProjectDetail(pid){
     </div>
   </div>
 
-  <!-- ── SECTION: Milestones full table ── -->
+  <!-- â”€â”€ SECTION: Milestones full table â”€â”€ -->
   <div class="table-card" style="margin-bottom:20px;">
     <div class="table-header">
       <div class="table-title">${L?'Todos os Marcos':'All Milestones'}</div>
-      <div style="font-size:12px;color:var(--ink3);">${projMarcos.length} ${L?'entregáveis':'deliverables'}</div>
+      <div style="font-size:12px;color:var(--ink3);">${projMarcos.length} ${L?'entregÃ¡veis':'deliverables'}</div>
     </div>
     <div class="table-scroll">
       <table>
         <thead><tr>
           <th>ID</th>
-          <th>${L?'Descrição':'Description'}</th>
+          <th>${L?'DescriÃ§Ã£o':'Description'}</th>
           <th>${L?'Baseline':'Baseline'}</th>
-          <th>${L?'Previsão':'Forecast'}</th>
+          <th>${L?'PrevisÃ£o':'Forecast'}</th>
           <th>Status</th>
         </tr></thead>
         <tbody>
           ${projMarcos.map(m=>{
             const isSusp = String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
-            const origIdx = DATA.marcos.findIndex(om=>om.ID===m.ID&&om['Descrição']===m['Descrição']);
+            const origIdx = DATA.marcos.findIndex(om=>om.ID===m.ID&&om['DescriÃ§Ã£o']===m['DescriÃ§Ã£o']);
             return `<tr>
-              <td class="fw-600 fs-12">${m.ID||'—'}</td>
-              <td style="max-width:300px;">${m['Descrição']||'—'}</td>
+              <td class="fw-600 fs-12">${m.ID||'â€”'}</td>
+              <td style="max-width:300px;">${m['DescriÃ§Ã£o']||'â€”'}</td>
               <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
               <td>${isSusp
                 ? `<span class="badge badge-gray">${L?'Suspenso':'Suspended'}</span>`
@@ -2452,14 +2532,14 @@ function renderProjectDetail(pid){
     </div>
   </div>
 
-  <!-- ── SECTION: Financial ── -->
+  <!-- â”€â”€ SECTION: Financial â”€â”€ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'Execução Financeira':'Financial Execution'}</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'ExecuÃ§Ã£o Financeira':'Financial Execution'}</div>
     <button class="btn btn-primary btn-sm" onclick="openGastoModal('${pid}')">+ ${L?'Novo Gasto':'New Expense'}</button>
   </div>
 
   <div class="card" style="margin-bottom:16px;">
-    <div class="card-title">${L?'Gastos por Mês':'Monthly Expenditures'}</div>
+    <div class="card-title">${L?'Gastos por MÃªs':'Monthly Expenditures'}</div>
     <div class="chart-wrap tall"><canvas id="proj-monthly-chart"></canvas></div>
   </div>
 
@@ -2509,9 +2589,9 @@ function renderProjectDetail(pid){
     </div>
   </div>
 
-  <!-- ── SECTION: SMs ── -->
+  <!-- â”€â”€ SECTION: SMs â”€â”€ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'Solicitações de Mudança':'Change Requests (SM)'}</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'SolicitaÃ§Ãµes de MudanÃ§a':'Change Requests (SM)'}</div>
     <button class="btn btn-secondary btn-sm" onclick="openSMModal('${pid}')">+ ${L?'Nova SM':'New SM'}</button>
   </div>
 
@@ -2533,11 +2613,11 @@ function renderProjectDetail(pid){
                 const catsSM = [...new Set(projSMs.map(s=>s.Categoria_despesa))].sort(catCompare);
                 return catsSM.map(cat=>{
                   const ptrbRow = catPtrbMap[cat]||0;
-                  const aba = getCatABA(cat) || '—';
+                  const aba = getCatABA(cat) || 'â€”';
                   const cells = smNums.map((sn,si)=>{
                     const match = projSMs.find(s=>s.Categoria_despesa===cat&&s['SM#']===sn);
                     const v = match?parseFloat(match.Valor||0):null;
-                    // valor de referência: SM anterior se existir; senão PTR-B original
+                    // valor de referÃªncia: SM anterior se existir; senÃ£o PTR-B original
                     let ref;
                     if(si===0){ ref = ptrbRow; }
                     else {
@@ -2545,7 +2625,7 @@ function renderProjectDetail(pid){
                       ref = prevMatch ? parseFloat(prevMatch.Valor||0) : ptrbRow;
                     }
                     const changed = v!==null && Math.abs(v-ref)>0.005;
-                    return `<td class="text-right ${changed?'cell-sm-changed':''}">${v!==null?FMTK(v):'—'}</td>`;
+                    return `<td class="text-right ${changed?'cell-sm-changed':''}">${v!==null?FMTK(v):'â€”'}</td>`;
                   }).join('');
                   return `<tr>
                     <td class="fs-12">${cat}</td>
@@ -2569,7 +2649,7 @@ function renderProjectDetail(pid){
       </div>`
   }
 
-  <!-- ── SECTION: Rendimento ── -->
+  <!-- â”€â”€ SECTION: Rendimento â”€â”€ -->
   <div style="font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:12px;">${L?'Rendimento de Investimento':'Investment Income'}</div>
 
   <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
@@ -2582,14 +2662,14 @@ function renderProjectDetail(pid){
       <div class="kpi-value" style="font-size:20px;color:var(--amber);">${FMTK(usoTotal)}</div>
     </div>
     <div class="kpi-card ${rendSaldo<0?'red':''}">
-      <div class="kpi-label">${L?'Saldo Disponível':'Available Balance'}</div>
+      <div class="kpi-label">${L?'Saldo DisponÃ­vel':'Available Balance'}</div>
       <div class="kpi-value" style="font-size:20px;color:${rendSaldo<0?'var(--red)':'var(--accent)'};">${FMTK(rendSaldo)}</div>
     </div>
   </div>
 
   ${rendKeys.length>0 ? `
   <div class="card" style="margin-bottom:16px;">
-    <div class="card-title">${L?'Evolução do Rendimento Acumulado':'Cumulative Income Evolution'}</div>
+    <div class="card-title">${L?'EvoluÃ§Ã£o do Rendimento Acumulado':'Cumulative Income Evolution'}</div>
     <div class="chart-wrap"><canvas id="proj-rend-chart"></canvas></div>
   </div>` : ''}
 
@@ -2602,14 +2682,14 @@ function renderProjectDetail(pid){
       <table>
         <thead><tr>
           <th>SM</th>
-          <th>${L?'Descrição':'Description'}</th>
+          <th>${L?'DescriÃ§Ã£o':'Description'}</th>
           <th>${L?'Data':'Date'}</th>
           <th class="text-right">${L?'Valor Utilizado':'Amount Used'}</th>
         </tr></thead>
         <tbody>
           ${projUso.map(u=>`<tr>
-            <td class="fw-600 fs-12">${u.SM||'—'}</td>
-            <td class="fs-12">${u.Descricao||'—'}</td>
+            <td class="fw-600 fs-12">${u.SM||'â€”'}</td>
+            <td class="fs-12">${u.Descricao||'â€”'}</td>
             <td class="fs-12 color-ink3">${FMTD(u.Data)}</td>
             <td class="text-right fw-600 color-amber">${FMTK(parseFloat(u.Valor_Utilizado||0))}</td>
           </tr>`).join('')}
@@ -2623,7 +2703,7 @@ function renderProjectDetail(pid){
   </div>` : `<div class="card empty-state" style="margin-bottom:20px;">${L?'Nenhum uso de rendimento registrado.':'No income usage recorded.'}</div>`}
   `;
 
-  // ── Charts ──
+  // â”€â”€ Charts â”€â”€
   destroyChart('proj-monthly-chart');
   const ctxM = document.getElementById('proj-monthly-chart');
   if(ctxM && monthlyKeys.length){
@@ -2688,7 +2768,7 @@ function renderProjectDetail(pid){
   }
 }
 
-// ===================== RENDER — MILESTONES =====================
+// ===================== RENDER â€” MILESTONES =====================
 function renderMilestones(){
   const pFilter=document.getElementById('ms-project-filter').value;
   const sFilter=document.getElementById('ms-status-filter').value;
@@ -2697,7 +2777,7 @@ function renderMilestones(){
   let marcos=DATA.marcos.slice();
   if(pFilter!=='ALL') marcos=marcos.filter(m=>m.Projeto===pFilter);
   if(sFilter!=='ALL') marcos=marcos.filter(m=>String(m.Status||'').trim()===sFilter);
-  if(search) marcos=marcos.filter(m=>(m['Descrição']||'').toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
+  if(search) marcos=marcos.filter(m=>(m['DescriÃ§Ã£o']||'').toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
 
   // popula o filtro de status com os valores reais da planilha (uma vez)
   const sf=document.getElementById('ms-status-filter');
@@ -2726,16 +2806,16 @@ function renderMilestones(){
     return;
   }
   marcos.forEach((m,i)=>{
-    const origIdx=DATA.marcos.findIndex(om=>om.ID===m.ID&&om['Descrição']===m['Descrição']);
+    const origIdx=DATA.marcos.findIndex(om=>om.ID===m.ID&&om['DescriÃ§Ã£o']===m['DescriÃ§Ã£o']);
     const isSuspended=String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
     const dateCell=isSuspended
       ?`<span class="badge badge-gray">${t('suspended')}</span>`
       :`<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${m['Data prevista / Data de entrega']?m['Data prevista / Data de entrega'].split('T')[0]:''}" onchange="updateMilestoneDate(${origIdx},this.value)" ${isSuspended?'disabled':''}>`;
 
     tbody.innerHTML+=`<tr>
-      <td class="fw-600 fs-12">${m.ID||'—'}</td>
+      <td class="fw-600 fs-12">${m.ID||'â€”'}</td>
       <td class="fs-12">${m.Projeto}</td>
-      <td style="max-width:280px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${m['Descrição']||'—'}</div></td>
+      <td style="max-width:280px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${m['DescriÃ§Ã£o']||'â€”'}</div></td>
       <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
       <td>${dateCell}</td>
       <td>${milestoneStatusSelect(m, origIdx)}</td>
@@ -2748,7 +2828,7 @@ function updateMilestoneDate(idx,val){
   DATA.marcos[idx]['Data prevista / Data de entrega']=val;
   milestonesChanged=true;
 }
-// A2: alterar status grava imediatamente na planilha (sem cálculo automático)
+// A2: alterar status grava imediatamente na planilha (sem cÃ¡lculo automÃ¡tico)
 async function updateMilestoneStatus(idx,val){
   if(idx<0||idx>=DATA.marcos.length)return;
   const m=DATA.marcos[idx];
@@ -2774,7 +2854,7 @@ async function rewriteMarcosSheet(){
   const dataRows = DATA.marcos.map(m=>[
     m.Projeto||'',
     m.ID||'',
-    m['Descrição']||'',
+    m['DescriÃ§Ã£o']||'',
     isoToExcelSerial(m['Data Base'])||'',
     String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended'
       ? 'Suspended'
@@ -2785,7 +2865,7 @@ async function rewriteMarcosSheet(){
 }
 
 async function saveMilestones(){
-  if(!milestonesChanged){alert(lang==='pt'?'Nenhuma alteração para salvar.':'No changes to save.');return;}
+  if(!milestonesChanged){alert(lang==='pt'?'Nenhuma alteraÃ§Ã£o para salvar.':'No changes to save.');return;}
   showLoading(lang==='pt'?'Salvando marcos no Excel...':'Saving milestones to Excel...');
   try{
     await rewriteMarcosSheet();
@@ -2799,25 +2879,25 @@ async function saveMilestones(){
   }
 }
 
-// ===================== RENDER — RUBRICAS =====================
+// ===================== RENDER â€” RUBRICAS =====================
 function getCatABA(cat){
   const c = DATA.categorias.find(x => x['Categoria_despesa_PT'] === cat || x['Categoria_despesa_ENG'] === cat);
   return c ? c.ABA || '' : '';
 }
 
-// A4: chave de ordenação seguindo a sequência das abas da planilha (F,G,H,I,J,K...),
-// e não ordem alfabética da categoria. Usa o índice da categoria em DATA.categorias
-// (que reflete a ordem das abas no Excel) e, como desempate, o código de aba.
+// A4: chave de ordenaÃ§Ã£o seguindo a sequÃªncia das abas da planilha (F,G,H,I,J,K...),
+// e nÃ£o ordem alfabÃ©tica da categoria. Usa o Ã­ndice da categoria em DATA.categorias
+// (que reflete a ordem das abas no Excel) e, como desempate, o cÃ³digo de aba.
 function catTabOrder(cat){
   const idx = DATA.categorias.findIndex(x => x['Categoria_despesa_PT'] === cat || x['Categoria_despesa_ENG'] === cat);
   return idx === -1 ? Number.MAX_SAFE_INTEGER : idx;
 }
 function catAbaKey(cat){
-  // ordena pelo código de aba alfabético (A<B<...<F<G<H...); aba ausente vai para o fim
+  // ordena pelo cÃ³digo de aba alfabÃ©tico (A<B<...<F<G<H...); aba ausente vai para o fim
   const aba = String(getCatABA(cat)||'').trim().toUpperCase();
   return aba || '\uFFFF';
 }
-// comparador único: prioriza a ordem das abas (DATA.categorias); fallback no código de aba; depois nome
+// comparador Ãºnico: prioriza a ordem das abas (DATA.categorias); fallback no cÃ³digo de aba; depois nome
 function catCompare(a,b){
   const ia=catTabOrder(a), ib=catTabOrder(b);
   if(ia!==ib) return ia-ib;
@@ -2827,8 +2907,8 @@ function catCompare(a,b){
 }
 
 let rubPendingChanges = 0;
-// Buffer de alterações pendentes da aba Rubricas (proj|cat|month|exec → {…,newVal}).
-// Nada é gravado em DATA.gastos até o usuário clicar em "Salvar alterações".
+// Buffer de alteraÃ§Ãµes pendentes da aba Rubricas (proj|cat|month|exec â†’ {â€¦,newVal}).
+// Nada Ã© gravado em DATA.gastos atÃ© o usuÃ¡rio clicar em "Salvar alteraÃ§Ãµes".
 const rubPending = new Map();
 
 function rubFmt(v){ return FMTFULL.format(parseFloat(v)||0); }
@@ -2849,7 +2929,7 @@ function rubMonthFromKey(month){
   return {year, mo, monthName:Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo,10))?.[0]||'janeiro'};
 }
 function rubMonthKey(g){
-  const rawMonth = g.Mês || g['Mês'] || g['MÃªs'];
+  const rawMonth = g.MÃªs || g['MÃªs'] || g['MÃƒÂªs'];
   const fromDate = rubDateMonthKey(g.Data);
   if(!rawMonth && fromDate) return fromDate;
   const mo=MONTHS_PT[String(rawMonth||'').toLowerCase()]||1;
@@ -2877,10 +2957,14 @@ function rubProjectYearOptions(pid){
     .filter(g=>(g.Projetos||g.Projeto)===pid)
     .map(g=>parseInt(rubMonthKey(g).slice(0,4),10))
     .filter(y=>Number.isFinite(y));
+  const rendimentoYears=(DATA.rendimento||[])
+    .filter(r=>r.Projeto===pid)
+    .map(r=>parseInt(rendimentoMonthKey(r).slice(0,4),10))
+    .filter(y=>Number.isFinite(y));
   const startYear=rubDateYear(proj['Data de in\u00edcio ']||proj['Data de in\u00edcio'])||currentYear;
   const endYear=rubDateYear(proj['Data final real']||proj['Data final'])||currentYear;
-  const minYear=Math.min(startYear,currentYear,...gastoYears);
-  const maxYear=Math.max(endYear,currentYear+2,...gastoYears);
+  const minYear=Math.min(startYear,currentYear,...gastoYears,...rendimentoYears);
+  const maxYear=Math.max(endYear,currentYear+2,...gastoYears,...rendimentoYears);
   const years=[];
   for(let y=minYear;y<=maxYear;y++) years.push(y);
   return years;
@@ -2894,7 +2978,7 @@ function rubProjectMonthKeys(pid){
   const keys=new Set();
   DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>keys.add(rubMonthKey(g)));
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const startKey=rubDateMonthKey(proj?.['Data de início ']||proj?.['Data de início']);
+  const startKey=rubDateMonthKey(proj?.['Data de inÃ­cio ']||proj?.['Data de inÃ­cio']);
   const todayKey=rubDateMonthKey(new Date());
   if(startKey && todayKey){
     let [y,m]=startKey.split('-').map(n=>parseInt(n,10));
@@ -2928,13 +3012,17 @@ function rubLatestSMPlanMap(pid){
 }
 function rubResolveExecutor(pid, exec){
   if(exec && exec!=='ALL') return exec;
-  const executors=rubProjectExecutors(pid);
+  let executors=rubProjectExecutors(pid);
+  if(!executors.length){
+    const proj=DATA.projetos.find(p=>p.Projeto===pid);
+    if(proj?.Executor) executors=[proj.Executor];
+  }
   if(executors.length===1) return executors[0];
   const projData=DATA.projetos.find(p=>p.Projeto===pid);
   return String(projData?.Executor||'').trim();
 }
 
-// Constrói o pivot (cat x mês) para um projeto, opcionalmente filtrado por executor.
+// ConstrÃ³i o pivot (cat x mÃªs) para um projeto, opcionalmente filtrado por executor.
 // Retorna { months, allCats, pivot, planMap, ptrbMap }
 function buildRubPivot(pid, execFilter){
   const executors=rubProjectExecutors(pid);
@@ -2981,7 +3069,7 @@ function renderRubReadonlyTable(pid){
   const {months, allCats, pivot, planMap, ptrbMap}=buildRubPivot(pid,'ALL');
   if(!allCats.length) return '';
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const title=pid+' — '+((proj&&(proj['Título do projeto']||''))||'').split(':')[0].trim();
+  const title=pid+' â€” '+((proj&&(proj['TÃ­tulo do projeto']||''))||'').split(':')[0].trim();
   const frozenHeaders=`
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-aba">ABA</th>
@@ -3036,9 +3124,11 @@ function renderRubricas(){
   const expProj = document.getElementById('btn-export-rub-proj');
   const expAll  = document.getElementById('btn-export-rub-all');
   const addBtn  = document.getElementById('btn-rub-add');
+  const rendBtn = document.getElementById('btn-rub-rend');
   if(expProj) expProj.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
   if(expAll)  expAll.style.display  = 'flex';
   if(addBtn) addBtn.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
+  if(rendBtn) rendBtn.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
   if(expProj && pFilter==='ALL' && expAll) expAll.style.marginLeft='auto';
   else if(expAll) expAll.style.marginLeft='';
 
@@ -3079,6 +3169,11 @@ function renderRubricas(){
     addBtn.style.opacity = canEdit ? '1' : '0.55';
     document.getElementById('lbl-rub-add').textContent = L ? 'Adicionar gastos' : 'Add expenses';
   }
+  if(rendBtn){
+    rendBtn.disabled = !canEdit;
+    rendBtn.style.opacity = canEdit ? '1' : '0.55';
+    document.getElementById('lbl-rub-rend').textContent = L ? 'Adicionar rendimento' : 'Add income';
+  }
 
   // Filter data
   let gastos = DATA.gastos.filter(g => g.Projetos === pFilter);
@@ -3087,7 +3182,7 @@ function renderRubricas(){
   let plano = DATA.plano.filter(r => r.Projeto === pFilter);
   if(execFilter !== 'ALL' && hasMultiExec) plano = plano.filter(r => r.Executor === execFilter);
 
-  // Build pivot: cat → monthKey → value
+  // Build pivot: cat â†’ monthKey â†’ value
   const pivot = {};
   const monthSet = new Set();
   gastos.forEach(g => {
@@ -3132,9 +3227,9 @@ function renderRubricas(){
       <td class="col-frozen col-cat fs-12">${cat}</td>
       <td class="col-frozen col-aba fw-600 fs-12 color-ink3">${aba}</td>
       <td class="col-frozen col-ptrb color-ink3" id="rub-ptrb-${ci}">${rubFmt(ptrb)}</td>
-      <td class="col-frozen col-plan fw-600" id="rub-plan-${ci}" data-value="${plan}">${showCurrentPlan?rubFmt(plan):'—'}</td>
+      <td class="col-frozen col-plan fw-600" id="rub-plan-${ci}" data-value="${plan}">${showCurrentPlan?rubFmt(plan):'â€”'}</td>
       <td class="col-frozen col-total fw-600" id="rub-rowt-${ci}" data-value="${rowTotal}">${rubFmt(rowTotal)}</td>
-      <td class="col-frozen col-pct" id="rub-pct-${ci}">${showCurrentPlan?`<span class="${pctColor(pct)}">${PCT(pct)}</span>`:'—'}</td>`;
+      <td class="col-frozen col-pct" id="rub-pct-${ci}">${showCurrentPlan?`<span class="${pctColor(pct)}">${PCT(pct)}</span>`:'â€”'}</td>`;
     const monthCells = months.map((m, mi)=>{
       const v=(pivot[cat]||{})[m]||0;
       const editClass=canEdit?' cell-editable':'';
@@ -3153,13 +3248,13 @@ function renderRubricas(){
     <td class="col-frozen col-cat">TOTAL</td>
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-ptrb" id="rub-grand-ptrb">${rubFmt(grandPtrb)}</td>
-    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${grandPlan}">${showCurrentPlan?rubFmt(grandPlan):'—'}</td>
+    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${grandPlan}">${showCurrentPlan?rubFmt(grandPlan):'â€”'}</td>
     <td class="col-frozen col-total" id="rub-grand-total" data-value="${grandTotal}">${rubFmt(grandTotal)}</td>
-    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'—'}</td>
+    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const readOnlyNote = hasMultiExec && execFilter==='ALL'
-    ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visão consolidada é somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
+    ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visÃ£o consolidada Ã© somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
     : '';
 
   document.getElementById('rubricas-content').innerHTML = `
@@ -3171,10 +3266,10 @@ function renderRubricas(){
       </table>
     </div>
     <div id="rub-save-bar" style="display:none;" class="rub-save-bar">
-      <span class="rub-save-badge" id="rub-change-count">0 ${L?'alterações pendentes':'pending changes'}</span>
+      <span class="rub-save-badge" id="rub-change-count">0 ${L?'alteraÃ§Ãµes pendentes':'pending changes'}</span>
       <div style="display:flex;gap:10px;">
         <button class="btn btn-secondary btn-sm" onclick="cancelRubEdits()">${L?'Cancelar':'Cancel'}</button>
-        <button class="btn btn-primary btn-sm" onclick="saveRubEdits()">${L?'Salvar alterações':'Save changes'}</button>
+        <button class="btn btn-primary btn-sm" onclick="saveRubEdits()">${L?'Salvar alteraÃ§Ãµes':'Save changes'}</button>
       </div>
     </div>`;
 
@@ -3206,17 +3301,17 @@ function rubStartEdit(cell){
     const newVal = parseFloat(input.value)||0;
     const key = rubKey(proj, cat, month, exec);
 
-    // Se voltou ao valor original, a célula deixa de ser uma alteração pendente.
+    // Se voltou ao valor original, a cÃ©lula deixa de ser uma alteraÃ§Ã£o pendente.
     if(Math.abs(newVal-curVal) < 0.005){
       rubPending.delete(key);
       cell.classList.remove('cell-changed');
     }else{
-      // Apenas BUFFER — não mexe em DATA.gastos. Reeditar a mesma célula
+      // Apenas BUFFER â€” nÃ£o mexe em DATA.gastos. Reeditar a mesma cÃ©lula
       // sobrescreve a mesma chave (sem duplicar a contagem).
       rubPending.set(key, {proj, cat, month, exec, newVal});
       cell.classList.add('cell-changed');
     }
-    // Atualiza só a exibição da célula (não a fonte de dados)
+    // Atualiza sÃ³ a exibiÃ§Ã£o da cÃ©lula (nÃ£o a fonte de dados)
     rubSetCell(cell, newVal);
     // Recalcula totais a partir de data-value, nunca do texto formatado
     rubUpdateTotals(ci, mi);
@@ -3230,26 +3325,26 @@ function rubStartEdit(cell){
   });
 }
 
-// Chave única de uma célula da pivot (projeto|categoria|mês|executor)
+// Chave Ãºnica de uma cÃ©lula da pivot (projeto|categoria|mÃªs|executor)
 function rubKey(proj, cat, month, exec){ return `${proj}|${cat}|${month}|${exec}`; }
 
-// Contador = nº de chaves únicas no buffer. Atualiza barra e badge.
+// Contador = nÂº de chaves Ãºnicas no buffer. Atualiza barra e badge.
 function rubRefreshSaveBar(){
   rubPendingChanges = rubPending.size;
   const L=lang==='pt';
   const bar=document.getElementById('rub-save-bar');
   if(bar) bar.style.display = rubPendingChanges>0 ? 'flex' : 'none';
   const badge=document.getElementById('rub-change-count');
-  if(badge) badge.textContent=`${rubPendingChanges} ${L?'alterações pendentes':'pending changes'}`;
+  if(badge) badge.textContent=`${rubPendingChanges} ${L?'alteraÃ§Ãµes pendentes':'pending changes'}`;
 }
 
-// Aplica UMA alteração pendente a DATA.gastos (chamada só no save, por chave única).
+// Aplica UMA alteraÃ§Ã£o pendente a DATA.gastos (chamada sÃ³ no save, por chave Ãºnica).
 function rubApplyChange(proj, cat, month, exec, newVal){
   const [year, mo] = month.split('-');
   const monthName = Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo))?.[0]||'janeiro';
   const executor = rubResolveExecutor(proj, exec);
   if(!executor) throw new Error(lang==='pt'
-    ? 'Selecione um executor antes de salvar alterações neste projeto.'
+    ? 'Selecione um executor antes de salvar alteraÃ§Ãµes neste projeto.'
     : 'Select an executor before saving changes for this project.');
   // Remove existing entries for this proj/cat/month(/exec if filtered)
   DATA.gastos = DATA.gastos.filter(g=>{
@@ -3260,7 +3355,7 @@ function rubApplyChange(proj, cat, month, exec, newVal){
     return false;
   });
   if(newVal>0){
-    DATA.gastos.push({Projetos:proj,Executor:executor,Ano:year,Mês:monthName,
+    DATA.gastos.push({Projetos:proj,Executor:executor,Ano:year,MÃªs:monthName,
       Data:`${year}-${mo}-01`,Categoria_despesa:cat,Valor:newVal});
   }
 }
@@ -3272,7 +3367,7 @@ function gastoCellFor(header, g){
   if(h==='data') return isoToExcelSerial(g.Data)||'';
   if(h==='categoria') return g.Categoria_despesa||'';
   if(h==='valor') return parseFloat(g.Valor)||0;
-  if(h==='descricao' || h==='descrição') return g.Descricao||'';
+  if(h==='descricao' || h==='descriÃ§Ã£o') return g.Descricao||'';
   return g[header]||'';
 }
 async function rewriteGastosSheetFromMemory(){
@@ -3281,6 +3376,22 @@ async function rewriteGastosSheetFromMemory(){
     : ['Projeto','Executor','Data','Categoria','Valor','Descricao'];
   const dataRows=DATA.gastos.map(g=>headers.map(h=>gastoCellFor(h,g)));
   await rewriteExcelSheet('Gastos', headers, dataRows);
+}
+
+function rendimentoCellFor(header, r){
+  const h=String(header||'').trim().toLowerCase();
+  if(h==='projeto') return r.Projeto||'';
+  if(h==='executor') return r.Executor||'';
+  if(h==='data') return isoToExcelSerial(r.Data)||'';
+  if(h==='valor_rendido') return parseFloat(r.Valor_Rendido)||0;
+  return r[header]||'';
+}
+async function rewriteRendimentoSheetFromMemory(){
+  const headers=(DATA._headers&&DATA._headers.Rendimento&&DATA._headers.Rendimento.length)
+    ? DATA._headers.Rendimento
+    : ['Projeto','Executor','Data','Valor_Rendido'];
+  const dataRows=(DATA.rendimento||[]).map(r=>headers.map(h=>rendimentoCellFor(h,r)));
+  await rewriteExcelSheet('Rendimento', headers, dataRows);
 }
 
 function rubUpdateTotals(ci, mi){
@@ -3299,7 +3410,7 @@ function rubUpdateTotals(ci, mi){
   const rowTEl=document.getElementById(`rub-rowt-${ci}`);
   const pctEl=document.getElementById(`rub-pct-${ci}`);
   if(rowTEl){ rowTEl.dataset.value=String(rowTotal); rowTEl.textContent=rubFmt(rowTotal); }
-  if(pctEl) pctEl.innerHTML=showCurrentPlan ? `<span class="${pctColor(pct)}">${PCT(pct)}</span>` : '—';
+  if(pctEl) pctEl.innerHTML=showCurrentPlan ? `<span class="${pctColor(pct)}">${PCT(pct)}</span>` : 'â€”';
 
   // Recalculate column total
   let colTotal=0;
@@ -3322,11 +3433,11 @@ function rubUpdateTotals(ci, mi){
   const grandEl=document.getElementById('rub-grand-total');
   const grandPctEl=document.getElementById('rub-grand-pct');
   if(grandEl){ grandEl.dataset.value=String(grand); grandEl.textContent=rubFmt(grand); }
-  if(grandPctEl) grandPctEl.textContent=showCurrentPlan ? PCT(gPct) : '—';
+  if(grandPctEl) grandPctEl.textContent=showCurrentPlan ? PCT(gPct) : 'â€”';
 }
 
 function cancelRubEdits(){
-  // Descarta TODAS as alterações pendentes. Como nada foi escrito em DATA.gastos,
+  // Descarta TODAS as alteraÃ§Ãµes pendentes. Como nada foi escrito em DATA.gastos,
   // o re-render restaura exatamente os valores originais.
   rubPending.clear();
   rubPendingChanges=0;
@@ -3339,11 +3450,11 @@ async function saveRubEdits(){
   // Snapshot para rollback caso a escrita no Excel falhe
   const snapshot = JSON.parse(JSON.stringify(DATA.gastos));
   try{
-    // Aplica cada alteração pendente UMA vez (chaves únicas → sem updates múltiplos)
+    // Aplica cada alteraÃ§Ã£o pendente UMA vez (chaves Ãºnicas â†’ sem updates mÃºltiplos)
     rubPending.forEach(({proj, cat, month, exec, newVal})=>{
       rubApplyChange(proj, cat, month, exec, newVal);
     });
-    // Reescreve a sheet Gastos completa com DATA.gastos atualizado em memória
+    // Reescreve a sheet Gastos completa com DATA.gastos atualizado em memÃ³ria
     await rewriteGastosSheetFromMemory();
     rubPending.clear();
     rubPendingChanges=0;
@@ -3353,7 +3464,7 @@ async function saveRubEdits(){
     hideLoading();
     alert(lang==='pt'?'Gastos salvos com sucesso!':'Expenses saved successfully!');
   }catch(e){
-    // Rollback: restaura DATA.gastos; mantém o buffer para o usuário tentar de novo
+    // Rollback: restaura DATA.gastos; mantÃ©m o buffer para o usuÃ¡rio tentar de novo
     DATA.gastos = snapshot;
     hideLoading();
     console.error('saveRubEdits error:',e);
@@ -3384,12 +3495,140 @@ function rubExpenseValue(pid, exec, cat, month){
   }).reduce((s,g)=>s+parseFloat(g.Valor||0),0);
 }
 
+function rubSelectedRendimentoMonth(){
+  const month=document.getElementById('rub-rend-month-num')?.value;
+  const year=document.getElementById('rub-rend-year')?.value;
+  return year && month ? `${year}-${month}` : '';
+}
+
+function rendimentoMonthKey(r){
+  return rubDateMonthKey(r?.Data) || rubMonthKey(r||{});
+}
+
+function rubRendimentoValue(pid, exec, month){
+  return (DATA.rendimento||[]).filter(r=>{
+    if(r.Projeto!==pid) return false;
+    if(exec && exec!=='ALL' && r.Executor!==exec) return false;
+    return rendimentoMonthKey(r)===month;
+  }).reduce((s,r)=>s+parseFloat(r.Valor_Rendido||0),0);
+}
+
+function rubApplyRendimentoChange(proj, month, exec, newVal){
+  const [year, mo] = month.split('-');
+  const monthName = Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo,10))?.[0]||'janeiro';
+  const executor = rubResolveExecutor(proj, exec);
+  if(!executor) throw new Error(lang==='pt'
+    ? 'Selecione um executor antes de salvar rendimento neste projeto.'
+    : 'Select an executor before saving income for this project.');
+  DATA.rendimento = (DATA.rendimento||[]).filter(r=>{
+    if(r.Projeto!==proj) return true;
+    if(rendimentoMonthKey(r)!==month) return true;
+    if(r.Executor!==executor) return true;
+    return false;
+  });
+  if(newVal>0){
+    DATA.rendimento.push({
+      Projeto:proj, Executor:executor, Ano:year, 'MÃªs':monthName, 'MÃƒÂªs':monthName,
+      Data:`${year}-${mo}-01`, Valor_Rendido:newVal
+    });
+  }
+}
+
+function openRubRendimentoModal(){
+  const state=window._rubState;
+  const L=lang==='pt';
+  if(!state || !state.pFilter || state.pFilter==='ALL') return;
+  if(rubPending.size>0){
+    alert(L?'Salve ou cancele as alteraÃƒÂ§ÃƒÂµes pendentes antes de adicionar rendimento.':'Save or cancel pending changes before adding income.');
+    return;
+  }
+  if(!state.canEdit){
+    alert(L?'Selecione um executor para adicionar rendimento neste projeto.':'Select an executor to add income for this project.');
+    return;
+  }
+  const pid=state.pFilter;
+  const executor=rubResolveExecutor(pid,state.execFilter);
+  if(!executor){
+    alert(L?'Selecione um executor para adicionar rendimento neste projeto.':'Select an executor to add income for this project.');
+    return;
+  }
+  const proj=DATA.projetos.find(p=>p.Projeto===pid);
+  const title=(proj?.['TÃƒÂ­tulo do projeto']||'').split(':')[0].trim();
+  const currentKey=rubDateMonthKey(new Date());
+  const [currentYear,currentMonth]=currentKey.split('-');
+  const yearOptions=rubProjectYearOptions(pid);
+  document.getElementById('modal-rub-rend-title').textContent=L?'Adicionar rendimento mensal':'Add monthly income';
+  document.getElementById('lbl-rub-rend-project').textContent=L?'Projeto':'Project';
+  document.getElementById('lbl-rub-rend-executor').textContent='Executor';
+  document.getElementById('lbl-rub-rend-year').textContent=L?'Ano':'Year';
+  document.getElementById('lbl-rub-rend-month').textContent=L?'MÃƒÂªs':'Month';
+  document.getElementById('lbl-rub-rend-value').textContent=L?'Valor do rendimento (R$)':'Income amount (R$)';
+  document.getElementById('btn-rub-rend-cancel').textContent=L?'Cancelar':'Cancel';
+  document.getElementById('btn-rub-rend-save').textContent=L?'Salvar rendimento do mÃƒÂªs':'Save monthly income';
+  document.getElementById('rub-rend-project').value=pid;
+  document.getElementById('rub-rend-project-label').value=`${pid}${title?' Ã¢â‚¬â€ '+title:''}`;
+  document.getElementById('rub-rend-executor').value=executor;
+  const monthEl=document.getElementById('rub-rend-month-num');
+  monthEl.innerHTML=Array.from({length:12},(_,i)=>{
+    const mo=String(i+1).padStart(2,'0');
+    const label=rubMonthLabel(`${currentYear}-${mo}`).replace(/\s+\d{4}$/,'');
+    return `<option value="${mo}" ${mo===currentMonth?'selected':''}>${mo} - ${label}</option>`;
+  }).join('');
+  const yearEl=document.getElementById('rub-rend-year');
+  yearEl.innerHTML=yearOptions.map(y=>`<option value="${y}" ${String(y)===currentYear?'selected':''}>${y}</option>`).join('');
+  populateRubRendimentoValue();
+  document.getElementById('rub-rend-modal').classList.add('show');
+}
+
+function populateRubRendimentoValue(){
+  const pid=document.getElementById('rub-rend-project')?.value;
+  const exec=document.getElementById('rub-rend-executor')?.value;
+  const month=rubSelectedRendimentoMonth();
+  if(!pid||!exec||!month) return;
+  const value=rubRendimentoValue(pid,exec,month);
+  const input=document.getElementById('rub-rend-value');
+  if(input){
+    input.dataset.original=String(value);
+    input.value=value?String(value):'';
+  }
+}
+
+async function saveRubRendimentoModal(){
+  const L=lang==='pt';
+  const pid=document.getElementById('rub-rend-project').value;
+  const exec=document.getElementById('rub-rend-executor').value;
+  const month=rubSelectedRendimentoMonth();
+  const input=document.getElementById('rub-rend-value');
+  if(!pid||!exec||!month||!input) return;
+  const original=parseFloat(input.dataset.original||'0')||0;
+  const newVal=parseFloat(input.value)||0;
+  if(Math.abs(newVal-original)<0.005){
+    closeModal('rub-rend-modal');
+    return;
+  }
+  showLoading(L?'Salvando rendimento do mÃƒÂªs...':'Saving monthly income...');
+  const snapshot=JSON.parse(JSON.stringify(DATA.rendimento||[]));
+  try{
+    rubApplyRendimentoChange(pid,month,exec,newVal);
+    await rewriteRendimentoSheetFromMemory();
+    hideLoading();
+    closeModal('rub-rend-modal');
+    renderRubricas();
+    alert(L?'Rendimento do mÃƒÂªs salvo com sucesso!':'Monthly income saved successfully!');
+  }catch(e){
+    DATA.rendimento=snapshot;
+    hideLoading();
+    console.error('saveRubRendimentoModal error:',e);
+    alert((L?'Erro ao salvar rendimento do mÃƒÂªs: ':'Error saving monthly income: ')+e.message);
+  }
+}
+
 function openRubGastoModal(){
   const state=window._rubState;
   const L=lang==='pt';
   if(!state || !state.pFilter || state.pFilter==='ALL') return;
   if(rubPending.size>0){
-    alert(L?'Salve ou cancele as alterações pendentes antes de adicionar gastos.':'Save or cancel pending changes before adding expenses.');
+    alert(L?'Salve ou cancele as alteraÃ§Ãµes pendentes antes de adicionar gastos.':'Save or cancel pending changes before adding expenses.');
     return;
   }
   if(!state.canEdit){
@@ -3403,7 +3642,7 @@ function openRubGastoModal(){
     return;
   }
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const title=(proj?.['Título do projeto']||'').split(':')[0].trim();
+  const title=(proj?.['TÃ­tulo do projeto']||'').split(':')[0].trim();
   const currentKey=rubDateMonthKey(new Date());
   const [currentYear,currentMonth]=currentKey.split('-');
   const yearOptions=rubProjectYearOptions(pid);
@@ -3411,13 +3650,13 @@ function openRubGastoModal(){
   document.getElementById('lbl-rub-gasto-project').textContent=L?'Projeto':'Project';
   document.getElementById('lbl-rub-gasto-executor').textContent='Executor';
   document.getElementById('lbl-rub-gasto-year').textContent=L?'Ano':'Year';
-  document.getElementById('lbl-rub-gasto-month').textContent=L?'Mês':'Month';
+  document.getElementById('lbl-rub-gasto-month').textContent=L?'MÃªs':'Month';
   document.getElementById('rub-gasto-th-cat').textContent=L?'Rubrica':'Category';
   document.getElementById('rub-gasto-th-value').textContent=L?'Valor (R$)':'Amount (R$)';
   document.getElementById('btn-rub-gasto-cancel').textContent=L?'Cancelar':'Cancel';
-  document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mês':'Save monthly expenses';
+  document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mÃªs':'Save monthly expenses';
   document.getElementById('rub-gasto-project').value=pid;
-  document.getElementById('rub-gasto-project-label').value=`${pid}${title?' — '+title:''}`;
+  document.getElementById('rub-gasto-project-label').value=`${pid}${title?' â€” '+title:''}`;
   document.getElementById('rub-gasto-executor').value=executor;
   const monthEl=document.getElementById('rub-gasto-month-num');
   monthEl.innerHTML=Array.from({length:12},(_,i)=>{
@@ -3469,7 +3708,7 @@ async function saveRubGastoModal(){
     closeModal('rub-gasto-modal');
     return;
   }
-  showLoading(L?'Salvando gastos do mês...':'Saving monthly expenses...');
+  showLoading(L?'Salvando gastos do mÃªs...':'Saving monthly expenses...');
   const snapshot=JSON.parse(JSON.stringify(DATA.gastos));
   try{
     changes.forEach(({cat,newVal})=>rubApplyChange(pid,cat,month,exec,newVal));
@@ -3477,12 +3716,12 @@ async function saveRubGastoModal(){
     hideLoading();
     closeModal('rub-gasto-modal');
     renderRubricas();
-    alert(L?'Gastos do mês salvos com sucesso!':'Monthly expenses saved successfully!');
+    alert(L?'Gastos do mÃªs salvos com sucesso!':'Monthly expenses saved successfully!');
   }catch(e){
     DATA.gastos=snapshot;
     hideLoading();
     console.error('saveRubGastoModal error:',e);
-    alert((L?'Erro ao salvar gastos do mês: ':'Error saving monthly expenses: ')+e.message);
+    alert((L?'Erro ao salvar gastos do mÃªs: ':'Error saving monthly expenses: ')+e.message);
   }
 }
 
@@ -3541,7 +3780,7 @@ function buildRubWorksheet(pid, execFilter){
   return ws;
 }
 
-// nome de aba válido p/ Excel (<=31 chars, sem caracteres proibidos)
+// nome de aba vÃ¡lido p/ Excel (<=31 chars, sem caracteres proibidos)
 function safeSheetName(name){
   return String(name).replace(/[\\/?*\[\]:]/g,'-').substring(0,31);
 }
@@ -3556,7 +3795,7 @@ function exportRubricasProjeto(){
   XLSX.writeFile(wb,`Gastos_${pFilter}_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
-// Export de todos os projetos — uma aba por projeto
+// Export de todos os projetos â€” uma aba por projeto
 function exportRubricasTodos(){
   const wb=XLSX.utils.book_new();
   let added=0;
@@ -3570,7 +3809,7 @@ function exportRubricasTodos(){
   XLSX.writeFile(wb,`Gastos_Todos_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
-// ===================== RENDER — SMs =====================
+// ===================== RENDER â€” SMs =====================
 function smTypeBadge(tipo){
   if(tipo==='DV') return '<span class="badge badge-purple" style="font-size:10px;">DV</span>';
   if(tipo==='DE') return '<span class="badge badge-teal" style="font-size:10px;">DE</span>';
@@ -3578,10 +3817,10 @@ function smTypeBadge(tipo){
 }
 
 function smStatusBadge(st){
-  if(!st) return '—';
+  if(!st) return 'â€”';
   const low=st.toLowerCase();
   const cls = low.includes('aprovad')||low.includes('approved') ? 'badge-green'
-    : low.includes('pendente')||low.includes('análise')||low.includes('revisão') ? 'badge-amber'
+    : low.includes('pendente')||low.includes('anÃ¡lise')||low.includes('revisÃ£o') ? 'badge-amber'
     : low.includes('rejeit') ? 'badge-red'
     : 'badge-gray';
   return `<span class="badge ${cls}">${st}</span>`;
@@ -3614,22 +3853,22 @@ function renderSMs(){
         <div class="table-scroll"><table>
           <thead><tr>
             <th>${L?'Projeto':'Project'}</th>
-            <th>${L?'Código':'Code'}</th>
-            <th>${L?'Submissão':'Submitted'}</th>
-            <th>${L?'Aprovação':'Approved'}</th>
+            <th>${L?'CÃ³digo':'Code'}</th>
+            <th>${L?'SubmissÃ£o':'Submitted'}</th>
+            <th>${L?'AprovaÃ§Ã£o':'Approved'}</th>
             <th>Status</th>
-            <th>${L?'Observações':'Notes'}</th>
+            <th>${L?'ObservaÃ§Ãµes':'Notes'}</th>
           </tr></thead>
           <tbody>
             ${rows.map(s=>{
               const origIdx=DATA.solicitacoes.indexOf(s);
               return `<tr class="tr-clickable" onclick="openSolEditModal(${origIdx})" title="${L?'Clique para editar':'Click to edit'}">
-                <td class="fs-12 color-ink3">${s.Projeto||'—'}</td>
-                <td class="fw-600">${s['SM#']||s.Numero||'—'}</td>
-                <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'—'}</td>
-                <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'—'}</td>
+                <td class="fs-12 color-ink3">${s.Projeto||'â€”'}</td>
+                <td class="fw-600">${s['SM#']||s.Numero||'â€”'}</td>
+                <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'â€”'}</td>
+                <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'â€”'}</td>
                 <td>${smStatusBadge(s.Status)}</td>
-                <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'—')}</td>
+                <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||'â€”')}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -3642,24 +3881,24 @@ function renderSMs(){
 function smTypeFilterBadgeLabel(type,L){
   if(type==='DV') return L?'Viagens (DV)':'Travel Requests (DV)';
   if(type==='DE') return L?'Despesas Especiais (DE)':'Special Expenses (DE)';
-  return L?'Solicitações de Mudança (SM)':'Change Requests (SM)';
+  return L?'SolicitaÃ§Ãµes de MudanÃ§a (SM)':'Change Requests (SM)';
 }
 
 function setSMType(type){ smTypeFilter = type; renderSMs(); }
 
 // D4: reescreve a sheet Solicitacoes preservando a ordem/colunas reais do Excel.
-// Mapeia cada coluna do header para o valor correspondente do objeto em memória.
+// Mapeia cada coluna do header para o valor correspondente do objeto em memÃ³ria.
 function solicitacaoCellFor(header, s){
   const h=String(header||'').trim().toLowerCase();
   if(h==='projeto') return s.Projeto||'';
-  if(h==='numero_item'||h==='número_item'||h==='numero'||h==='número') return s.Numero||s['SM#']||'';
+  if(h==='numero_item'||h==='nÃºmero_item'||h==='numero'||h==='nÃºmero') return s.Numero||s['SM#']||'';
   if(h==='tipo') return s.Tipo||'SM';
-  if(h==='data_submissao'||h==='data submissão'||h==='data_submissão') return s.Data_Submissao?(isoToExcelSerial(s.Data_Submissao)||''):'';
-  if(h==='data_aprovacao'||h==='data aprovação'||h==='data_aprovação') return s.Data_Aprovacao?(isoToExcelSerial(s.Data_Aprovacao)||''):'';
+  if(h==='data_submissao'||h==='data submissÃ£o'||h==='data_submissÃ£o') return s.Data_Submissao?(isoToExcelSerial(s.Data_Submissao)||''):'';
+  if(h==='data_aprovacao'||h==='data aprovaÃ§Ã£o'||h==='data_aprovaÃ§Ã£o') return s.Data_Aprovacao?(isoToExcelSerial(s.Data_Aprovacao)||''):'';
   if(h==='status') return s.Status||'';
-  if(h==='observacoes'||h==='observações'||h==='obs') return s.Observacoes||'';
+  if(h==='observacoes'||h==='observaÃ§Ãµes'||h==='obs') return s.Observacoes||'';
   if(h==='valor') return parseFloat(s.Valor||0)||0;
-  return ''; // coluna desconhecida: vazio para não corromper
+  return ''; // coluna desconhecida: vazio para nÃ£o corromper
 }
 async function rewriteSolicitacoesSheet(){
   const headers=(DATA._headers&&DATA._headers['Solicitacoes'])
@@ -3669,7 +3908,7 @@ async function rewriteSolicitacoesSheet(){
   await rewriteExcelSheet('Solicitacoes', headers, dataRows);
 }
 
-// D3: menu de criação de registro (SM/DV/DE)
+// D3: menu de criaÃ§Ã£o de registro (SM/DV/DE)
 function toggleCreateSolMenu(ev){
   if(ev) ev.stopPropagation();
   const m=document.getElementById('create-sol-menu');
@@ -3687,19 +3926,19 @@ function closeCreateSolMenuOnce(){
 function createSolicitacao(type){
   closeCreateSolMenuOnce();
   if(type==='SM'){ openSMModal(); return; }   // SM usa o modal rico (com categorias)
-  openSolModal(type);                          // DV / DE usam o modal genérico
+  openSolModal(type);                          // DV / DE usam o modal genÃ©rico
 }
 
-// índice da solicitação em edição (null = criação)
+// Ã­ndice da solicitaÃ§Ã£o em ediÃ§Ã£o (null = criaÃ§Ã£o)
 let editingSolIdx=null;
 
 function populateSolProjects(){
   const sel=document.getElementById('sol-projeto');
   if(!sel) return;
-  sel.innerHTML=DATA.projetos.map(p=>`<option value="${escapeAttr(p.Projeto)}">${escapeHtml(p.Projeto)} — ${escapeHtml((p['Título do projeto']||'').split(':')[0])}</option>`).join('');
+  sel.innerHTML=DATA.projetos.map(p=>`<option value="${escapeAttr(p.Projeto)}">${escapeHtml(p.Projeto)} â€” ${escapeHtml((p['TÃ­tulo do projeto']||'').split(':')[0])}</option>`).join('');
 }
 
-// D3: criar DV/DE (ou SM via genérico, se chamado)
+// D3: criar DV/DE (ou SM via genÃ©rico, se chamado)
 function openSolModal(type){
   editingSolIdx=null;
   populateSolProjects();
@@ -3718,7 +3957,7 @@ function openSolModal(type){
   document.getElementById('sol-modal').classList.add('show');
 }
 
-// D4: editar uma solicitação existente (qualquer tipo)
+// D4: editar uma solicitaÃ§Ã£o existente (qualquer tipo)
 function openSolEditModal(idx){
   const s=DATA.solicitacoes[idx];
   if(!s) return;
@@ -3742,7 +3981,7 @@ function openSolEditModal(idx){
   document.getElementById('sol-modal').classList.add('show');
 }
 
-// D3/D4: salvar criação/edição → persiste reescrevendo a sheet Solicitacoes
+// D3/D4: salvar criaÃ§Ã£o/ediÃ§Ã£o â†’ persiste reescrevendo a sheet Solicitacoes
 async function saveSolModal(){
   const L=lang==='pt';
   const pid=document.getElementById('sol-projeto').value;
@@ -3754,14 +3993,30 @@ async function saveSolModal(){
   const valor=parseFloat(document.getElementById('sol-valor').value)||0;
   const obs=document.getElementById('sol-obs').value.trim();
 
-  if(!pid||!numero){ alert(L?'Preencha Projeto e Número/Código.':'Fill in Project and Number/Code.'); return; }
+  if(!pid||!numero){ alert(L?'Preencha Projeto e NÃºmero/CÃ³digo.':'Fill in Project and Number/Code.'); return; }
+
+  const ptrbLines=collectProjectPtrbLines();
+  const ptrbSum=ptrbLines.reduce((s,x)=>s+x.valor,0);
+  if(valor>0 && !executor){
+    alert(L?'Informe o executor antes de cadastrar o PTR-B por rubrica.':'Fill in the executor before adding PTR-B by category.');
+    return;
+  }
+  if(valor>0 && !ptrbLines.length){
+    alert(L?'Informe pelo menos uma rubrica de PTR-B para este projeto.':'Enter at least one PTR-B category for this project.');
+    return;
+  }
+  if(Math.abs(ptrbSum-valor)>=0.005){
+    alert(L?`A soma das rubricas (${FMT.format(ptrbSum)}) deve ser igual ao Valor PTR-B do projeto (${FMT.format(valor)}).`
+           :`Category total (${FMT.format(ptrbSum)}) must match the project PTR-B value (${FMT.format(valor)}).`);
+    return;
+  }
 
   const novo={
     Projeto:pid, 'SM#':numero, Numero:numero, Numero_Item:numero, Tipo:tipo,
     Data_Submissao:dataSub||'', Data_Aprovacao:dataApr||'', Status:status, Observacoes:obs, Valor:valor
   };
 
-  // aplica em memória (snapshot para rollback)
+  // aplica em memÃ³ria (snapshot para rollback)
   const snapshot=JSON.parse(JSON.stringify(DATA.solicitacoes||[]));
   if(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]){
     DATA.solicitacoes[editingSolIdx]=novo;
@@ -3788,13 +4043,73 @@ async function saveSolModal(){
 // ===================== MODAL: NOVO PROJETO =====================
 let editingProjectId=null;
 
+function projectPtrbCategories(){
+  return (DATA.categorias||[])
+    .map(c=>({
+      cat:c.Categoria_despesa_PT||c.Categoria_despesa_ENG||'',
+      aba:c.ABA||c.Codigo_ABA||''
+    }))
+    .filter(x=>x.cat)
+    .sort((a,b)=>catCompare(a.cat,b.cat));
+}
+
+function populateProjectPtrbTable(){
+  const L=lang==='pt';
+  const section=document.getElementById('pm-ptrb-section');
+  if(section) section.style.display=editingProjectId?'none':'block';
+  const tbody=document.getElementById('pm-ptrb-tbody');
+  if(!tbody) return;
+  document.getElementById('lbl-pm-ptrb-lines').textContent=L?'PTR-B por rubrica':'PTR-B by Category';
+  document.getElementById('pm-ptrb-total-label').textContent=L?'Total das rubricas':'Lines total';
+  document.getElementById('pm-ptrb-diff-label').textContent=L?'Diferenca':'Difference';
+  document.getElementById('pm-ptrb-th-cat').textContent=L?'Rubrica':'Category';
+  document.getElementById('pm-ptrb-th-value').textContent='PTR-B (R$)';
+  tbody.innerHTML=projectPtrbCategories().map((item,idx)=>`<tr>
+    <td class="fs-12">${escapeHtml(item.cat)}</td>
+    <td class="fw-600 fs-12 color-ink3">${escapeHtml(item.aba||getCatABA(item.cat)||'')}</td>
+    <td class="text-right">
+      <input class="form-input pm-ptrb-input" type="number" min="0" step="0.01"
+        data-cat="${escapeAttr(item.cat)}" data-aba="${escapeAttr(item.aba||getCatABA(item.cat)||'')}"
+        oninput="updateProjectPtrbTotal()" style="text-align:right;" id="pm-ptrb-val-${idx}">
+    </td>
+  </tr>`).join('') || `<tr><td colspan="3" class="empty-state">${L?'Nenhuma categoria disponivel.':'No categories available.'}</td></tr>`;
+  updateProjectPtrbTotal();
+}
+
+function collectProjectPtrbLines(){
+  return [...document.querySelectorAll('.pm-ptrb-input')]
+    .map(input=>({
+      cat:input.dataset.cat,
+      aba:input.dataset.aba||getCatABA(input.dataset.cat)||'',
+      valor:parseFloat(input.value)||0
+    }))
+    .filter(x=>x.cat && x.valor>0);
+}
+
+function updateProjectPtrbTotal(){
+  const lines=collectProjectPtrbLines();
+  const sum=lines.reduce((s,x)=>s+x.valor,0);
+  const total=parseFloat(document.getElementById('pm-valor')?.value)||0;
+  const diff=sum-total;
+  const totalEl=document.getElementById('pm-ptrb-lines-total');
+  const diffEl=document.getElementById('pm-ptrb-diff');
+  if(totalEl) totalEl.textContent=FMT.format(sum);
+  if(diffEl){
+    diffEl.textContent=FMT.format(diff);
+    diffEl.style.color=Math.abs(diff)<0.005?'var(--green)':'var(--red)';
+  }
+}
+
 function openProjectModal(){
   editingProjectId=null;
   ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-pmanager','pm-inicio','pm-fim','pm-fimreal','pm-duracao','pm-valor']
     .forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  const gestor=document.getElementById('pm-gestor'); if(gestor) gestor.value='Yiannis';
+  const status=document.getElementById('pm-status'); if(status) status.value='Em andamento';
   const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=false;
   const title=document.getElementById('modal-project-title');
   if(title) title.textContent = lang==='pt'?'Novo Projeto':'New Project';
+  populateProjectPtrbTable();
   document.getElementById('project-modal').classList.add('show');
 }
 
@@ -3805,30 +4120,31 @@ function openProjectEditModal(pid){
   editingProjectId=pid;
   const setV=(id,v)=>{const el=document.getElementById(id); if(el) el.value=v??'';};
   setV('pm-codigo', p.Projeto);
-  setV('pm-anp', p['Número ANP']||p.Numero_ANP||'');
-  setV('pm-titulo', p['Título do projeto']||'');
+  setV('pm-anp', p['NÃºmero ANP']||p.Numero_ANP||'');
+  setV('pm-titulo', p['TÃ­tulo do projeto']||'');
   setV('pm-executor', p.Executor||'');
   setV('pm-pmanager', p['Project Manager']||p.Project_Manager||'');
   setV('pm-gestor', p.Gestor||'Yiannis');
   setV('pm-status', p.Status_Projeto||'Em andamento');
-  setV('pm-inicio', (String(p['Data de início ']||p['Data de início']||'').split('T')[0]));
+  setV('pm-inicio', (String(p['Data de inÃ­cio ']||p['Data de inÃ­cio']||'').split('T')[0]));
   setV('pm-fim', (String(p['Data final']||'').split('T')[0]));
   setV('pm-fimreal', (String(p['Data final real']||'').split('T')[0]));
-  setV('pm-duracao', p['Duração (meses)']||p.Duracao_Meses||'');
+  setV('pm-duracao', p['DuraÃ§Ã£o (meses)']||p.Duracao_Meses||'');
   setV('pm-valor', p['Planned Value (R$)']||p.Valor_PTRB||'');
-  const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=true; // código é chave: não editável
+  const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=true; // cÃ³digo Ã© chave: nÃ£o editÃ¡vel
   const title=document.getElementById('modal-project-title');
   if(title) title.textContent = lang==='pt'?'Editar Projeto':'Edit Project';
+  populateProjectPtrbTable();
   document.getElementById('project-modal').classList.add('show');
 }
 
-// D2: despachante do botão salvar do modal de projeto
+// D2: despachante do botÃ£o salvar do modal de projeto
 function submitProjectModal(){
   if(editingProjectId) return saveProjectEdits();
   return saveNewProject();
 }
 
-// D2: salvar edição das informações gerais do projeto → persiste na sheet Projetos
+// D2: salvar ediÃ§Ã£o das informaÃ§Ãµes gerais do projeto â†’ persiste na sheet Projetos
 async function saveProjectEdits(){
   const L=lang==='pt';
   const pid=editingProjectId;
@@ -3848,32 +4164,32 @@ async function saveProjectEdits(){
   const status=document.getElementById('pm-status').value;
 
   if(!titulo||!inicio||!fim||isNaN(valor)){
-    alert(L?'Preencha os campos obrigatórios: Título, Início, Fim e Valor.'
+    alert(L?'Preencha os campos obrigatÃ³rios: TÃ­tulo, InÃ­cio, Fim e Valor.'
            :'Fill in required fields: Title, Start, End and Value.');
     return;
   }
   if(new Date(fim)<new Date(inicio)){
-    alert(L?'A data de fim não pode ser anterior à de início.':'End date cannot be before start date.');
+    alert(L?'A data de fim nÃ£o pode ser anterior Ã  de inÃ­cio.':'End date cannot be before start date.');
     return;
   }
 
   // snapshot para rollback
   const snap=JSON.parse(JSON.stringify(p));
   Object.assign(p,{
-    'Título do projeto':titulo,
+    'TÃ­tulo do projeto':titulo,
     Executor:executor,
-    'Número ANP':anp, Numero_ANP:anp,
+    'NÃºmero ANP':anp, Numero_ANP:anp,
     'Project Manager':pmanager, Project_Manager:pmanager,
     Gestor:gestor,
-    'Data de início ':inicio,
+    'Data de inÃ­cio ':inicio,
     'Data final':fim,
     'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
-    'Duração (meses)':duracao||'', Duracao_Meses:duracao||'',
+    'DuraÃ§Ã£o (meses)':duracao||'', Duracao_Meses:duracao||'',
     'Planned Value (R$)':valor, Valor_PTRB:valor,
     Status_Projeto:status,
   });
 
-  showLoading(L?'Salvando alterações do projeto...':'Saving project changes...');
+  showLoading(L?'Salvando alteraÃ§Ãµes do projeto...':'Saving project changes...');
   try{
     await rewriteProjetosSheet();
     hideLoading();
@@ -3887,7 +4203,7 @@ async function saveProjectEdits(){
     Object.assign(p,snap); // rollback
     hideLoading();
     console.error('saveProjectEdits error:',e);
-    alert((L?'Erro ao salvar alterações: ':'Error saving changes: ')+e.message);
+    alert((L?'Erro ao salvar alteraÃ§Ãµes: ':'Error saving changes: ')+e.message);
   }
 }
 
@@ -3906,48 +4222,65 @@ async function saveNewProject(){
   const status=document.getElementById('pm-status').value;
   const L=lang==='pt';
 
-  // validação: obrigatórios Código, Título, Início, Fim, Valor
+  // validaÃ§Ã£o: obrigatÃ³rios CÃ³digo, TÃ­tulo, InÃ­cio, Fim, Valor
   if(!codigo||!titulo||!inicio||!fim||isNaN(valor)){
-    alert(L?'Preencha os campos obrigatórios: Código, Título, Início, Fim e Valor.'
+    alert(L?'Preencha os campos obrigatÃ³rios: CÃ³digo, TÃ­tulo, InÃ­cio, Fim e Valor.'
            :'Fill in required fields: Code, Title, Start, End and Value.');
     return;
   }
-  // código único
+  // cÃ³digo Ãºnico
   if(DATA.projetos.some(p=>String(p.Projeto).trim().toLowerCase()===codigo.toLowerCase())){
-    alert(L?`Já existe um projeto com o código "${codigo}".`:`A project with code "${codigo}" already exists.`);
+    alert(L?`JÃ¡ existe um projeto com o cÃ³digo "${codigo}".`:`A project with code "${codigo}" already exists.`);
     return;
   }
   if(new Date(fim)<new Date(inicio)){
-    alert(L?'A data de fim não pode ser anterior à de início.':'End date cannot be before start date.');
+    alert(L?'A data de fim nÃ£o pode ser anterior Ã  de inÃ­cio.':'End date cannot be before start date.');
     return;
   }
 
-  // objeto em memória (mesmo shape do normalizeProjeto)
+  // objeto em memÃ³ria (mesmo shape do normalizeProjeto)
   const novo={
     Projeto:codigo,
-    'Título do projeto':titulo,
+    'TÃ­tulo do projeto':titulo,
     Executor:executor,
-    'Número ANP':anp, Numero_ANP:anp, 'Numero ANP raw':anp,
+    'NÃºmero ANP':anp, Numero_ANP:anp, 'Numero ANP raw':anp,
     'Project Manager':pmanager, Project_Manager:pmanager,
     Gestor:gestor,
-    'Data de início ':inicio,
+    'Data de inÃ­cio ':inicio,
     'Data final':fim,
     'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
-    'Duração (meses)':duracao||'', Duracao_Meses:duracao||'',
+    'DuraÃ§Ã£o (meses)':duracao||'', Duracao_Meses:duracao||'',
     'Planned Value (R$)':valor, Valor_PTRB:valor,
     Status_Projeto:status,
   };
+  const novoPlano=ptrbLines.map(l=>({
+    Projeto:codigo,
+    Executor:executor,
+    Categoria_despesa:l.cat,
+    Categoria:l.cat,
+    Codigo_ABA:l.aba||getCatABA(l.cat)||'',
+    'Plano_PTR-B':l.valor,
+    Valor_PTRB:l.valor,
+    Plano_Atual:l.valor,
+  }));
 
   showLoading(L?'Salvando projeto no Excel...':'Saving project to Excel...');
   try{
-    // append na sheet Projetos — ordem exata das colunas
+    // append na sheet Projetos â€” ordem exata das colunas
     await appendExcelRow('Projetos',[
       codigo, titulo, executor, anp, pmanager, gestor,
       isoToExcelSerial(inicio)||'', isoToExcelSerial(fim)||'',
       fimreal?(isoToExcelSerial(fimreal)||''):'', duracao||'',
       valor, status
     ]);
+    const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
+      ? DATA._headers.Plano_Orcamentario
+      : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
+    for(const linha of novoPlano){
+      await appendExcelRow('Plano_Orcamentario', planoHeaders.map(h=>planoCellFor(h,linha)));
+    }
     DATA.projetos.push(novo);
+    DATA.plano.push(...novoPlano);
     hideLoading();
     closeModal('project-modal');
     populateDropdowns();
@@ -3982,15 +4315,15 @@ async function saveGasto(){
   const date=document.getElementById('gasto-date').value;
   const ano=date.split('-')[0];
   const mo=parseInt(date.split('-')[1]);
-  const mesNames=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const mesNames=['janeiro','fevereiro','marÃ§o','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const mes=mesNames[mo-1];
 
   if(!pid||!cat||isNaN(valor)||!date){
     alert(lang==='pt'?'Preencha todos os campos.':'Fill in all fields.');return;
   }
 
-  // Primeiro atualiza DATA em memória
-  DATA.gastos.push({Projetos:pid,Projeto:pid,Executor:proj?proj.Executor:'',Ano:ano,Mês:mes,Data:date,Categoria_despesa:cat,Valor:valor});
+  // Primeiro atualiza DATA em memÃ³ria
+  DATA.gastos.push({Projetos:pid,Projeto:pid,Executor:proj?proj.Executor:'',Ano:ano,MÃªs:mes,Data:date,Categoria_despesa:cat,Valor:valor});
   // Persiste no Excel via Graph API (append na sheet Gastos)
   try{
     await appendExcelRow('Gastos',[
@@ -3998,7 +4331,7 @@ async function saveGasto(){
     ]);
   }catch(e){
     console.error('saveGasto Excel error:',e);
-    alert((lang==='pt'?'Aviso: gasto salvo em memória mas erro ao gravar no Excel: ':'Warning: expense saved in memory but Excel write failed: ')+e.message);
+    alert((lang==='pt'?'Aviso: gasto salvo em memÃ³ria mas erro ao gravar no Excel: ':'Warning: expense saved in memory but Excel write failed: ')+e.message);
   }
 
   closeModal('gasto-modal');
@@ -4033,14 +4366,14 @@ function onSMProjectChange(){
   cats.sort(catCompare);
 
   if(!cats.length){
-    table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponível.':'No categories available.'}</div>`;
+    table.innerHTML=`<div class="empty-state fs-12">${lang==='pt'?'Nenhuma categoria disponÃ­vel.':'No categories available.'}</div>`;
     return;
   }
 
   table.innerHTML=`<div class="table-scroll"><table style="font-size:12px;">
     <thead><tr>
       <th>${lang==='pt'?'Categoria':'Category'}</th>
-      <th>Cód. ABA</th>
+      <th>CÃ³d. ABA</th>
       <th class="text-right">PTR-B Atual</th>
       <th class="text-right">Plano Atual</th>
       <th class="text-right">Novo Valor</th>
@@ -4049,7 +4382,7 @@ function onSMProjectChange(){
       ${cats.map(cat=>{
         const rows=planoRows.filter(r=>r.Categoria_despesa===cat);
         const catRef=(DATA.categorias||[]).find(c=>c.Categoria_despesa_PT===cat||c.Categoria_despesa_ENG===cat)||{};
-        const aba=(rows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || '—';
+        const aba=(rows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || 'â€”';
         const ptrb=rows.reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
         const plan=rows.reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
         return `<tr>
@@ -4057,11 +4390,97 @@ function onSMProjectChange(){
           <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
           <td class="text-right">${FMTK(ptrb)}</td>
           <td class="text-right fw-600">${FMTK(plan)}</td>
-          <td><input type="number" class="form-input" step="0.01" placeholder="—" data-cat="${escapeAttr(cat)}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
+          <td><input type="number" class="form-input" step="0.01" placeholder="â€”" data-cat="${escapeAttr(cat)}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
         </tr>`;
       }).join('')}
     </tbody>
   </table></div>`;
+}
+
+function smAllAnpCategories(){
+  return (DATA.categorias||[])
+    .map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG)
+    .filter(Boolean)
+    .sort(catCompare);
+}
+
+function smCategoryRowHtml(pid, cat, isNew=false){
+  const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid && r.Categoria_despesa===cat);
+  const catRef=(DATA.categorias||[]).find(c=>c.Categoria_despesa_PT===cat||c.Categoria_despesa_ENG===cat)||{};
+  const aba=(planoRows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || catRef.Codigo_ABA || getCatABA(cat) || 'Ã¢â‚¬â€';
+  const ptrb=planoRows.reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
+  const plan=planoRows.reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
+  return `<tr data-cat-row="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}">
+    <td>${escapeHtml(cat)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">${lang==='pt'?'Nova':'New'}</span>`:''}</td>
+    <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
+    <td class="text-right">${FMTK(ptrb)}</td>
+    <td class="text-right fw-600">${FMTK(plan)}</td>
+    <td><input type="number" class="form-input" step="0.01" placeholder="Ã¢â‚¬â€" data-cat="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}" oninput="updateSMTotal()" style="min-width:120px;text-align:right;"></td>
+  </tr>`;
+}
+
+function refreshSMAddCategoryOptions(){
+  const sel=document.getElementById('sm-add-cat-select');
+  if(!sel) return;
+  const used=[...document.querySelectorAll('#sm-categories-table input[data-cat]')].map(i=>i.dataset.cat);
+  const missing=smAllAnpCategories().filter(cat=>!used.includes(cat));
+  sel.innerHTML=missing.map(cat=>`<option value="${escapeAttr(cat)}">${escapeHtml(cat)} (${escapeHtml(getCatABA(cat)||'')})</option>`).join('');
+  const btn=document.getElementById('sm-add-cat-btn');
+  if(btn) btn.disabled=!missing.length;
+}
+
+function addSMCategoryRow(){
+  const pid=document.getElementById('sm-project')?.value||'';
+  const sel=document.getElementById('sm-add-cat-select');
+  const tbody=document.getElementById('sm-cat-tbody');
+  const cat=sel?.value||'';
+  if(!pid||!cat||!tbody) return;
+  const exists=[...document.querySelectorAll('#sm-categories-table input[data-cat]')].some(input=>input.dataset.cat===cat);
+  if(exists) return;
+  if(!document.querySelector('#sm-categories-table input[data-cat]')) tbody.innerHTML='';
+  tbody.insertAdjacentHTML('beforeend', smCategoryRowHtml(pid,cat,true));
+  refreshSMAddCategoryOptions();
+  updateSMTotal();
+}
+
+function onSMProjectChange(){
+  const pid=document.getElementById('sm-project')?.value||'';
+  const table=document.getElementById('sm-categories-table');
+  if(!table) return;
+
+  const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid);
+  const cats=[...new Set(planoRows.map(r=>r.Categoria_despesa).filter(Boolean))].sort(catCompare);
+  const executors=rubProjectExecutors(pid);
+  const execOptions=executors.map(e=>`<option value="${escapeAttr(e)}">${escapeHtml(e)}</option>`).join('');
+  const newCatExecutor=executors.length>1
+    ? `<div class="form-group" style="min-width:180px;margin:0;">
+        <label class="form-label" style="font-size:11px;">${lang==='pt'?'Executor das novas rubricas':'Executor for new categories'}</label>
+        <select class="form-select" id="sm-new-cat-executor">${execOptions}</select>
+      </div>`
+    : `<input type="hidden" id="sm-new-cat-executor" value="${escapeAttr(executors[0]||'')}">`;
+
+  table.innerHTML=`
+    <div style="display:flex;gap:8px;align-items:flex-end;padding:10px;background:var(--surface2);border-bottom:1px solid var(--border);">
+      <div class="form-group" style="flex:1;margin:0;">
+        <label class="form-label" style="font-size:11px;">${lang==='pt'?'Adicionar rubrica ANP existente':'Add existing ANP category'}</label>
+        <select class="form-select" id="sm-add-cat-select"></select>
+      </div>
+      ${newCatExecutor}
+      <button type="button" class="btn btn-secondary btn-sm" id="sm-add-cat-btn" onclick="addSMCategoryRow()">${lang==='pt'?'Adicionar':'Add'}</button>
+    </div>
+    <div class="table-scroll"><table style="font-size:12px;">
+      <thead><tr>
+        <th>${lang==='pt'?'Categoria':'Category'}</th>
+        <th>CÃƒÂ³d. ABA</th>
+        <th class="text-right">PTR-B Atual</th>
+        <th class="text-right">Plano Atual</th>
+        <th class="text-right">Novo Valor</th>
+      </tr></thead>
+      <tbody id="sm-cat-tbody">
+        ${cats.map(cat=>smCategoryRowHtml(pid,cat,false)).join('') || `<tr><td colspan="5" class="empty-state">${lang==='pt'?'Nenhuma rubrica no projeto. Adicione uma categoria ANP acima.':'No project categories. Add an ANP category above.'}</td></tr>`}
+      </tbody>
+    </table></div>`;
+  refreshSMAddCategoryOptions();
 }
 
 function updateSMTotal(){
@@ -4081,7 +4500,7 @@ async function saveSM(){
   const dataSubmissao = document.getElementById('sm-date-submissao').value;
   const status = document.getElementById('sm-status').value;
 
-  if(!pid || !smNum){ alert('Preencha Projeto e Número da SM.'); return; }
+  if(!pid || !smNum){ alert('Preencha Projeto e NÃºmero da SM.'); return; }
 
   const inputs = document.querySelectorAll('#sm-categories-table input[data-cat]');
   const linhas = [];
@@ -4092,8 +4511,35 @@ async function saveSM(){
 
   if(!linhas.length){ alert('Informe ao menos um valor.'); return; }
 
+  const missingCats=[...new Set(linhas
+    .map(l=>l.cat)
+    .filter(cat=>!(DATA.plano||[]).some(r=>r.Projeto===pid && r.Categoria_despesa===cat)))];
+  const newCatExecutor=document.getElementById('sm-new-cat-executor')?.value || rubResolveExecutor(pid,'ALL');
+  if(missingCats.length && !newCatExecutor){
+    alert(lang==='pt'?'Informe o executor das novas rubricas.':'Select the executor for the new categories.');
+    return;
+  }
+  const newPlanoRows=missingCats.map(cat=>({
+    Projeto:pid,
+    Executor:newCatExecutor,
+    Categoria_despesa:cat,
+    Categoria:cat,
+    Codigo_ABA:getCatABA(cat)||'',
+    'Plano_PTR-B':0,
+    Valor_PTRB:0,
+    Plano_Atual:0,
+  }));
+
   showLoading('Saving SM...');
   try {
+    const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
+      ? DATA._headers.Plano_Orcamentario
+      : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
+    for(const row of newPlanoRows){
+      await appendExcelRow('Plano_Orcamentario', planoHeaders.map(h=>planoCellFor(h,row)));
+      DATA.plano.push(row);
+    }
+
     await appendExcelRow('Solicitacoes', [
       pid, smNum, 'SM',
       isoToExcelSerial(dataSubmissao) || '',
