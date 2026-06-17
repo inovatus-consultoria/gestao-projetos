@@ -611,6 +611,10 @@ tr:hover td{background:var(--surface3);}
         <select class="form-select" id="rub-exec-filter" onchange="renderRubricas()" style="display:none;">
           <option value="ALL">All Executors</option>
         </select>
+        <button class="btn btn-primary btn-sm" onclick="openRubGastoModal()" id="btn-rub-add" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span id="lbl-rub-add">Add expenses</span>
+        </button>
         <button class="btn btn-secondary btn-sm" onclick="exportRubricasProjeto()" id="btn-export-rub-proj" style="display:none;margin-left:auto;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span id="lbl-export-proj">Export project</span>
@@ -651,6 +655,46 @@ tr:hover td{background:var(--surface3);}
     </div>
 
   </main>
+</div>
+
+<!-- ===================== MODAL: ADD MONTHLY RUBRICAS ===================== -->
+<div class="modal-overlay" id="rub-gasto-modal">
+  <div class="modal" style="max-width:820px;">
+    <h2 class="modal-title" id="modal-rub-gasto-title">Add Monthly Expenses</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-gasto-project">Project</label>
+        <input class="form-input" id="rub-gasto-project-label" readonly style="background:var(--surface2);">
+        <input type="hidden" id="rub-gasto-project">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-gasto-executor">Executor</label>
+        <input class="form-input" id="rub-gasto-executor" readonly style="background:var(--surface2);">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-gasto-month">Month</label>
+        <select class="form-select" id="rub-gasto-month" onchange="populateRubGastoValues()"></select>
+      </div>
+    </div>
+    <div class="table-card" style="box-shadow:none;margin-top:12px;">
+      <div class="table-scroll" style="max-height:420px;">
+        <table>
+          <thead>
+            <tr>
+              <th id="rub-gasto-th-cat">Category</th>
+              <th style="width:80px;">ABA</th>
+              <th class="text-right" style="width:180px;" id="rub-gasto-th-value">Amount (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="rub-gasto-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('rub-gasto-modal')" id="btn-rub-gasto-cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRubGastoModal()" id="btn-rub-gasto-save">Save monthly expenses</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===================== MODAL: ADD GASTO ===================== -->
@@ -2796,9 +2840,46 @@ function rubSetCell(cell, value){
   cell.dataset.value=String(v);
   cell.innerHTML=rubFmtCell(v);
 }
+function rubMonthFromKey(month){
+  const [year, mo] = String(month||'').split('-');
+  return {year, mo, monthName:Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo,10))?.[0]||'janeiro'};
+}
 function rubMonthKey(g){
-  const mo=MONTHS_PT[String(g.Mês||'').toLowerCase()]||1;
+  const rawMonth = g.Mês || g['Mês'] || g['MÃªs'];
+  const fromDate = rubDateMonthKey(g.Data);
+  if(!rawMonth && fromDate) return fromDate;
+  const mo=MONTHS_PT[String(rawMonth||'').toLowerCase()]||1;
   return `${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
+}
+function rubDateMonthKey(dateLike){
+  if(!dateLike) return '';
+  const d = dateLike instanceof Date ? dateLike : new Date(String(dateLike).substring(0,10)+'T00:00:00');
+  if(isNaN(d)) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function rubMonthLabel(month){
+  const {year, mo, monthName}=rubMonthFromKey(month);
+  const name = lang==='pt' ? monthName : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(parseInt(mo,10)||1)-1];
+  return `${name.charAt(0).toUpperCase()+name.slice(1)} ${year}`;
+}
+function rubProjectMonthKeys(pid){
+  const keys=new Set();
+  DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>keys.add(rubMonthKey(g)));
+  const proj=DATA.projetos.find(p=>p.Projeto===pid);
+  const startKey=rubDateMonthKey(proj?.['Data de início ']||proj?.['Data de início']);
+  const todayKey=rubDateMonthKey(new Date());
+  if(startKey && todayKey){
+    let [y,m]=startKey.split('-').map(n=>parseInt(n,10));
+    const [endY,endM]=todayKey.split('-').map(n=>parseInt(n,10));
+    while(y<endY || (y===endY && m<=endM)){
+      keys.add(`${y}-${String(m).padStart(2,'0')}`);
+      m++;
+      if(m>12){m=1;y++;}
+    }
+  }else if(!keys.size && todayKey){
+    keys.add(todayKey);
+  }
+  return [...keys].filter(Boolean).sort();
 }
 function rubProjectExecutors(pid){
   const vals=[
@@ -2845,7 +2926,7 @@ function buildRubPivot(pid, execFilter){
     const cat=g.Categoria_despesa||'Outros';
     (pivot[cat]=pivot[cat]||{})[key]=(pivot[cat][key]||0)+parseFloat(g.Valor||0);
   });
-  const months=[...monthSet].sort();
+  const months=[...new Set([...rubProjectMonthKeys(pid),...monthSet])].sort();
   const planMap={}, ptrbMap={};
   plano.forEach(r=>{
     const cc=r.Categoria_despesa;
@@ -2926,8 +3007,10 @@ function renderRubricas(){
   // Export buttons visibility
   const expProj = document.getElementById('btn-export-rub-proj');
   const expAll  = document.getElementById('btn-export-rub-all');
+  const addBtn  = document.getElementById('btn-rub-add');
   if(expProj) expProj.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
   if(expAll)  expAll.style.display  = 'flex';
+  if(addBtn) addBtn.style.display = pFilter !== 'ALL' ? 'flex' : 'none';
   if(expProj && pFilter==='ALL' && expAll) expAll.style.marginLeft='auto';
   else if(expAll) expAll.style.marginLeft='';
 
@@ -2963,6 +3046,11 @@ function renderRubricas(){
     }
   }
   const canEdit = !hasMultiExec || execFilter !== 'ALL';
+  if(addBtn){
+    addBtn.disabled = !canEdit;
+    addBtn.style.opacity = canEdit ? '1' : '0.55';
+    document.getElementById('lbl-rub-add').textContent = L ? 'Adicionar gastos' : 'Add expenses';
+  }
 
   // Filter data
   let gastos = DATA.gastos.filter(g => g.Projetos === pFilter);
@@ -2975,14 +3063,13 @@ function renderRubricas(){
   const pivot = {};
   const monthSet = new Set();
   gastos.forEach(g => {
-    const mo = MONTHS_PT[g.Mês?.toLowerCase()] || 1;
-    const key = `${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
+    const key = rubMonthKey(g);
     monthSet.add(key);
     const cat = g.Categoria_despesa || 'Outros';
     if(!pivot[cat]) pivot[cat] = {};
     pivot[cat][key] = (pivot[cat][key]||0) + parseFloat(g.Valor||0);
   });
-  const months = [...monthSet].sort();
+  const months = [...new Set([...rubProjectMonthKeys(pFilter),...monthSet])].sort();
 
   // Plano maps
   const {planMap, ptrbMap, showCurrentPlan}=buildRubPivot(pFilter, execFilter);
@@ -3044,7 +3131,7 @@ function renderRubricas(){
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const readOnlyNote = hasMultiExec && execFilter==='ALL'
-    ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar os valores deste projeto. A visão consolidada é somente leitura.':'Select an executor to edit this project. The consolidated view is read-only.'}</div>`
+    ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visão consolidada é somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
     : '';
 
   document.getElementById('rubricas-content').innerHTML = `
@@ -3150,6 +3237,24 @@ function rubApplyChange(proj, cat, month, exec, newVal){
   }
 }
 
+function gastoCellFor(header, g){
+  const h=String(header||'').trim().toLowerCase();
+  if(h==='projeto') return g.Projeto||g.Projetos||'';
+  if(h==='executor') return g.Executor||'';
+  if(h==='data') return isoToExcelSerial(g.Data)||'';
+  if(h==='categoria') return g.Categoria_despesa||'';
+  if(h==='valor') return parseFloat(g.Valor)||0;
+  if(h==='descricao' || h==='descrição') return g.Descricao||'';
+  return g[header]||'';
+}
+async function rewriteGastosSheetFromMemory(){
+  const headers=(DATA._headers&&DATA._headers.Gastos&&DATA._headers.Gastos.length)
+    ? DATA._headers.Gastos
+    : ['Projeto','Executor','Data','Categoria','Valor','Descricao'];
+  const dataRows=DATA.gastos.map(g=>headers.map(h=>gastoCellFor(h,g)));
+  await rewriteExcelSheet('Gastos', headers, dataRows);
+}
+
 function rubUpdateTotals(ci, mi){
   if(!window._rubState) return;
   const {months, allCats, showCurrentPlan, planMap} = window._rubState;
@@ -3211,16 +3316,7 @@ async function saveRubEdits(){
       rubApplyChange(proj, cat, month, exec, newVal);
     });
     // Reescreve a sheet Gastos completa com DATA.gastos atualizado em memória
-    const headers=['Projeto','Executor','Data','Categoria','Valor','Descricao'];
-    const dataRows = DATA.gastos.map(g=>[
-      g.Projeto||g.Projetos||'',
-      g.Executor||'',
-      isoToExcelSerial(g.Data)||'',
-      g.Categoria_despesa||'',
-      parseFloat(g.Valor)||0,
-      g.Descricao||'',
-    ]);
-    await rewriteExcelSheet('Gastos', headers, dataRows);
+    await rewriteGastosSheetFromMemory();
     rubPending.clear();
     rubPendingChanges=0;
     const bar=document.getElementById('rub-save-bar');
@@ -3237,29 +3333,176 @@ async function saveRubEdits(){
   }
 }
 
+function rubEntryCategories(pid, exec){
+  let planRows=DATA.plano.filter(r=>r.Projeto===pid);
+  if(exec && exec!=='ALL'){
+    const filtered=planRows.filter(r=>r.Executor===exec);
+    if(filtered.length) planRows=filtered;
+  }
+  const cats=[
+    ...planRows.map(r=>r.Categoria_despesa),
+    ...DATA.gastos
+      .filter(g=>(g.Projetos||g.Projeto)===pid && (!exec || exec==='ALL' || g.Executor===exec))
+      .map(g=>g.Categoria_despesa),
+  ];
+  return [...new Set(cats.filter(Boolean))].sort(catCompare);
+}
+
+function rubExpenseValue(pid, exec, cat, month){
+  return DATA.gastos.filter(g=>{
+    if((g.Projetos||g.Projeto)!==pid || g.Categoria_despesa!==cat) return false;
+    if(exec && exec!=='ALL' && g.Executor!==exec) return false;
+    return rubMonthKey(g)===month;
+  }).reduce((s,g)=>s+parseFloat(g.Valor||0),0);
+}
+
+function openRubGastoModal(){
+  const state=window._rubState;
+  const L=lang==='pt';
+  if(!state || !state.pFilter || state.pFilter==='ALL') return;
+  if(rubPending.size>0){
+    alert(L?'Salve ou cancele as alterações pendentes antes de adicionar gastos.':'Save or cancel pending changes before adding expenses.');
+    return;
+  }
+  if(!state.canEdit){
+    alert(L?'Selecione um executor para adicionar gastos neste projeto.':'Select an executor to add expenses for this project.');
+    return;
+  }
+  const pid=state.pFilter;
+  const executor=rubResolveExecutor(pid,state.execFilter);
+  if(!executor){
+    alert(L?'Selecione um executor para adicionar gastos neste projeto.':'Select an executor to add expenses for this project.');
+    return;
+  }
+  const proj=DATA.projetos.find(p=>p.Projeto===pid);
+  const title=(proj?.['Título do projeto']||'').split(':')[0].trim();
+  const months=rubProjectMonthKeys(pid);
+  const currentKey=rubDateMonthKey(new Date());
+  const selected=months.includes(currentKey)?currentKey:(months[months.length-1]||currentKey);
+  document.getElementById('modal-rub-gasto-title').textContent=L?'Adicionar gastos mensais':'Add monthly expenses';
+  document.getElementById('lbl-rub-gasto-project').textContent=L?'Projeto':'Project';
+  document.getElementById('lbl-rub-gasto-executor').textContent='Executor';
+  document.getElementById('lbl-rub-gasto-month').textContent=L?'Mês':'Month';
+  document.getElementById('rub-gasto-th-cat').textContent=L?'Rubrica':'Category';
+  document.getElementById('rub-gasto-th-value').textContent=L?'Valor (R$)':'Amount (R$)';
+  document.getElementById('btn-rub-gasto-cancel').textContent=L?'Cancelar':'Cancel';
+  document.getElementById('btn-rub-gasto-save').textContent=L?'Salvar gastos do mês':'Save monthly expenses';
+  document.getElementById('rub-gasto-project').value=pid;
+  document.getElementById('rub-gasto-project-label').value=`${pid}${title?' — '+title:''}`;
+  document.getElementById('rub-gasto-executor').value=executor;
+  const monthEl=document.getElementById('rub-gasto-month');
+  monthEl.innerHTML=months.map(m=>`<option value="${m}" ${m===selected?'selected':''}>${rubMonthLabel(m)}</option>`).join('');
+  populateRubGastoValues();
+  document.getElementById('rub-gasto-modal').classList.add('show');
+}
+
+function populateRubGastoValues(){
+  const pid=document.getElementById('rub-gasto-project')?.value;
+  const exec=document.getElementById('rub-gasto-executor')?.value;
+  const month=document.getElementById('rub-gasto-month')?.value;
+  if(!pid||!exec||!month) return;
+  const cats=rubEntryCategories(pid,exec);
+  const tbody=document.getElementById('rub-gasto-tbody');
+  tbody.innerHTML=cats.map((cat,idx)=>{
+    const v=rubExpenseValue(pid,exec,cat,month);
+    return `<tr>
+      <td class="fs-12">${escapeHtml(cat)}</td>
+      <td class="fw-600 fs-12 color-ink3">${escapeHtml(getCatABA(cat)||'')}</td>
+      <td class="text-right">
+        <input class="form-input rub-gasto-input" type="number" min="0" step="0.01"
+          data-cat="${escapeAttr(cat)}" data-original="${v}" value="${v?String(v):''}"
+          style="text-align:right;" id="rub-gasto-val-${idx}">
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="3" class="empty-state">${lang==='pt'?'Sem rubricas para este executor.':'No categories for this executor.'}</td></tr>`;
+}
+
+async function saveRubGastoModal(){
+  const L=lang==='pt';
+  const pid=document.getElementById('rub-gasto-project').value;
+  const exec=document.getElementById('rub-gasto-executor').value;
+  const month=document.getElementById('rub-gasto-month').value;
+  if(!pid||!exec||!month) return;
+  const inputs=[...document.querySelectorAll('.rub-gasto-input')];
+  const changes=inputs.map(input=>{
+    const cat=input.dataset.cat;
+    const original=parseFloat(input.dataset.original||'0')||0;
+    const newVal=parseFloat(input.value)||0;
+    return {cat, original, newVal};
+  }).filter(x=>Math.abs(x.newVal-x.original)>=0.005);
+  if(!changes.length){
+    closeModal('rub-gasto-modal');
+    return;
+  }
+  showLoading(L?'Salvando gastos do mês...':'Saving monthly expenses...');
+  const snapshot=JSON.parse(JSON.stringify(DATA.gastos));
+  try{
+    changes.forEach(({cat,newVal})=>rubApplyChange(pid,cat,month,exec,newVal));
+    await rewriteGastosSheetFromMemory();
+    hideLoading();
+    closeModal('rub-gasto-modal');
+    renderRubricas();
+    alert(L?'Gastos do mês salvos com sucesso!':'Monthly expenses saved successfully!');
+  }catch(e){
+    DATA.gastos=snapshot;
+    hideLoading();
+    console.error('saveRubGastoModal error:',e);
+    alert((L?'Erro ao salvar gastos do mês: ':'Error saving monthly expenses: ')+e.message);
+  }
+}
+
 // Monta um worksheet (AOA) da pivot de um projeto. Reusado pelos dois exports.
 function buildRubWorksheet(pid, execFilter){
   const L=lang==='pt';
-  const {months, allCats, pivot, planMap, ptrbMap}=buildRubPivot(pid, execFilter||'ALL');
-  const header=[L?'Categoria':'Category','ABA','PTR-B',L?'Plano Atual':'Curr. Plan','Total',...months];
+  const {months, allCats, pivot, planMap, ptrbMap, showCurrentPlan}=buildRubPivot(pid, execFilter||'ALL');
+  const header=[L?'Categoria':'Category','ABA','PTR-B',L?'Plano Atual':'Curr. Plan','Total','%',...months];
   const rows=[header];
   const monthTotals=months.map(()=>0);
-  let gTotal=0;
   allCats.forEach(cat=>{
     const aba=getCatABA(cat), ptrb=ptrbMap[cat]||0, plan=planMap[cat]||0;
-    let rowTotal=0;
     const monthVals=months.map(m=>(pivot[cat]||{})[m]||0);
-    monthVals.forEach((v,i)=>{rowTotal+=v;monthTotals[i]+=v;});
-    gTotal+=rowTotal;
-    rows.push([cat,aba,ptrb,plan,rowTotal,...monthVals]);
+    monthVals.forEach((v,i)=>{monthTotals[i]+=v;});
+    const excelRow=rows.length+1;
+    const firstMonthCol=7;
+    const lastMonthCol=firstMonthCol+months.length-1;
+    const totalFormula=months.length
+      ? `SUM(${colLetter(firstMonthCol)}${excelRow}:${colLetter(lastMonthCol)}${excelRow})`
+      : '0';
+    const pctFormula=showCurrentPlan
+      ? `IF(D${excelRow}=0,"",E${excelRow}/D${excelRow})`
+      : '""';
+    rows.push([cat,aba,ptrb,showCurrentPlan?plan:'',{f:totalFormula},{f:pctFormula},...monthVals]);
   });
-  rows.push(['TOTAL','',
-    Object.values(ptrbMap).reduce((s,v)=>s+v,0),
-    Object.values(planMap).reduce((s,v)=>s+v,0),
-    gTotal,...monthTotals]);
+  const totalRow=rows.length+1;
+  const lastDataRow=totalRow-1;
+  const totalRowValues=[
+    'TOTAL','',
+    {f:lastDataRow>=2?`SUM(C2:C${lastDataRow})`:'0'},
+    showCurrentPlan?{f:lastDataRow>=2?`SUM(D2:D${lastDataRow})`:'0'}:'',
+    {f:lastDataRow>=2?`SUM(E2:E${lastDataRow})`:'0'},
+    showCurrentPlan?{f:`IF(D${totalRow}=0,"",E${totalRow}/D${totalRow})`}:'',
+    ...monthTotals.map((_,i)=>({f:lastDataRow>=2?`SUM(${colLetter(7+i)}2:${colLetter(7+i)}${lastDataRow})`:'0'}))
+  ];
+  rows.push(totalRowValues);
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:35},{wch:6},{wch:14},{wch:14},{wch:14},...months.map(()=>({wch:14}))];
+  ws['!cols']=[{wch:35},{wch:8},{wch:16},{wch:16},{wch:16},{wch:10},...months.map(()=>({wch:16}))];
   ws['!freeze']={xSplit:6,ySplit:1};
+  ws['!autofilter']={ref:`A1:${colLetter(header.length)}${rows.length}`};
+  const moneyFmt='"R$" #,##0.00';
+  const pctFmt='0.0%';
+  for(let r=2;r<=rows.length;r++){
+    [3,4,5].forEach(c=>{const cell=ws[`${colLetter(c)}${r}`]; if(cell) cell.z=moneyFmt;});
+    const pctCell=ws[`F${r}`]; if(pctCell) pctCell.z=pctFmt;
+    for(let c=7;c<=header.length;c++){
+      const cell=ws[`${colLetter(c)}${r}`]; if(cell) cell.z=moneyFmt;
+    }
+  }
+  for(let c=1;c<=header.length;c++){
+    const cell=ws[`${colLetter(c)}1`];
+    if(cell) cell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'2D5C4E'}}};
+    const totalCell=ws[`${colLetter(c)}${rows.length}`];
+    if(totalCell) totalCell.s={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{fgColor:{rgb:'1A2420'}}};
+  }
   return ws;
 }
 
