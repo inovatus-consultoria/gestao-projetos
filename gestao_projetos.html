@@ -673,7 +673,11 @@ tr:hover td{background:var(--surface3);}
       </div>
       <div class="form-group">
         <label class="form-label" id="lbl-rub-gasto-month">Month</label>
-        <select class="form-select" id="rub-gasto-month" onchange="populateRubGastoValues()"></select>
+        <select class="form-select" id="rub-gasto-month-num" onchange="populateRubGastoValues()"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-rub-gasto-year">Year</label>
+        <select class="form-select" id="rub-gasto-year" onchange="populateRubGastoValues()"></select>
       </div>
     </div>
     <div class="table-card" style="box-shadow:none;margin-top:12px;">
@@ -2862,6 +2866,30 @@ function rubMonthLabel(month){
   const name = lang==='pt' ? monthName : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(parseInt(mo,10)||1)-1];
   return `${name.charAt(0).toUpperCase()+name.slice(1)} ${year}`;
 }
+function rubDateYear(dateLike){
+  const key=rubDateMonthKey(excelDate(dateLike)||dateLike);
+  return key ? parseInt(key.slice(0,4),10) : NaN;
+}
+function rubProjectYearOptions(pid){
+  const currentYear=new Date().getFullYear();
+  const proj=DATA.projetos.find(p=>p.Projeto===pid)||{};
+  const gastoYears=DATA.gastos
+    .filter(g=>(g.Projetos||g.Projeto)===pid)
+    .map(g=>parseInt(rubMonthKey(g).slice(0,4),10))
+    .filter(y=>Number.isFinite(y));
+  const startYear=rubDateYear(proj['Data de in\u00edcio ']||proj['Data de in\u00edcio'])||currentYear;
+  const endYear=rubDateYear(proj['Data final real']||proj['Data final'])||currentYear;
+  const minYear=Math.min(startYear,currentYear,...gastoYears);
+  const maxYear=Math.max(endYear,currentYear+2,...gastoYears);
+  const years=[];
+  for(let y=minYear;y<=maxYear;y++) years.push(y);
+  return years;
+}
+function rubSelectedGastoMonth(){
+  const month=document.getElementById('rub-gasto-month-num')?.value;
+  const year=document.getElementById('rub-gasto-year')?.value;
+  return year && month ? `${year}-${month}` : '';
+}
 function rubProjectMonthKeys(pid){
   const keys=new Set();
   DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>keys.add(rubMonthKey(g)));
@@ -3376,12 +3404,13 @@ function openRubGastoModal(){
   }
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
   const title=(proj?.['Título do projeto']||'').split(':')[0].trim();
-  const months=rubProjectMonthKeys(pid);
   const currentKey=rubDateMonthKey(new Date());
-  const selected=months.includes(currentKey)?currentKey:(months[months.length-1]||currentKey);
+  const [currentYear,currentMonth]=currentKey.split('-');
+  const yearOptions=rubProjectYearOptions(pid);
   document.getElementById('modal-rub-gasto-title').textContent=L?'Adicionar gastos mensais':'Add monthly expenses';
   document.getElementById('lbl-rub-gasto-project').textContent=L?'Projeto':'Project';
   document.getElementById('lbl-rub-gasto-executor').textContent='Executor';
+  document.getElementById('lbl-rub-gasto-year').textContent=L?'Ano':'Year';
   document.getElementById('lbl-rub-gasto-month').textContent=L?'Mês':'Month';
   document.getElementById('rub-gasto-th-cat').textContent=L?'Rubrica':'Category';
   document.getElementById('rub-gasto-th-value').textContent=L?'Valor (R$)':'Amount (R$)';
@@ -3390,8 +3419,14 @@ function openRubGastoModal(){
   document.getElementById('rub-gasto-project').value=pid;
   document.getElementById('rub-gasto-project-label').value=`${pid}${title?' — '+title:''}`;
   document.getElementById('rub-gasto-executor').value=executor;
-  const monthEl=document.getElementById('rub-gasto-month');
-  monthEl.innerHTML=months.map(m=>`<option value="${m}" ${m===selected?'selected':''}>${rubMonthLabel(m)}</option>`).join('');
+  const monthEl=document.getElementById('rub-gasto-month-num');
+  monthEl.innerHTML=Array.from({length:12},(_,i)=>{
+    const mo=String(i+1).padStart(2,'0');
+    const label=rubMonthLabel(`${currentYear}-${mo}`).replace(/\s+\d{4}$/,'');
+    return `<option value="${mo}" ${mo===currentMonth?'selected':''}>${mo} - ${label}</option>`;
+  }).join('');
+  const yearEl=document.getElementById('rub-gasto-year');
+  yearEl.innerHTML=yearOptions.map(y=>`<option value="${y}" ${String(y)===currentYear?'selected':''}>${y}</option>`).join('');
   populateRubGastoValues();
   document.getElementById('rub-gasto-modal').classList.add('show');
 }
@@ -3399,7 +3434,7 @@ function openRubGastoModal(){
 function populateRubGastoValues(){
   const pid=document.getElementById('rub-gasto-project')?.value;
   const exec=document.getElementById('rub-gasto-executor')?.value;
-  const month=document.getElementById('rub-gasto-month')?.value;
+  const month=rubSelectedGastoMonth();
   if(!pid||!exec||!month) return;
   const cats=rubEntryCategories(pid,exec);
   const tbody=document.getElementById('rub-gasto-tbody');
@@ -3421,7 +3456,7 @@ async function saveRubGastoModal(){
   const L=lang==='pt';
   const pid=document.getElementById('rub-gasto-project').value;
   const exec=document.getElementById('rub-gasto-executor').value;
-  const month=document.getElementById('rub-gasto-month').value;
+  const month=rubSelectedGastoMonth();
   if(!pid||!exec||!month) return;
   const inputs=[...document.querySelectorAll('.rub-gasto-input')];
   const changes=inputs.map(input=>{
