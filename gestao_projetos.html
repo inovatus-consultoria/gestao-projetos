@@ -4232,6 +4232,24 @@ function _rptSpacer(d, before=120, after=120){
   return new d.Paragraph({children:[new d.TextRun('')],spacing:{before,after}});
 }
 
+const RPT_HEADING_NUMBERING = 'report-headings';
+function _rptBlankLine(d){
+  return new d.Paragraph({children:[new d.TextRun({text:'',size:22,font:'Calibri'})],spacing:{before:0,after:0,line:280}});
+}
+function _rptNumberedHeading(d, text, level, spacing={}){
+  const heading=[d.HeadingLevel.HEADING_1,d.HeadingLevel.HEADING_2,d.HeadingLevel.HEADING_3][level];
+  const size=[28,26,22][level];
+  return new d.Paragraph({
+    heading,
+    numbering:{reference:RPT_HEADING_NUMBERING,level},
+    children:[new d.TextRun({text,bold:true,size,font:'Calibri'})],
+    spacing,
+  });
+}
+function _rptSubheading(d, text){
+  return [_rptBlankLine(d),_rptNumberedHeading(d,text,2,{before:0,after:0}),_rptBlankLine(d)];
+}
+
 // Multi-line text → array of Paragraphs (split on \n)
 function _rptTextParagraphs(d, text){
   if(!text) return [];
@@ -4253,9 +4271,6 @@ function _rptPct(value){
 }
 function _rptNoBreakText(value){
   return String(value||'').replace(/ /g,'\u00A0').replace(/-/g,'\u2011');
-}
-function _rptCompactSize(value){
-  const n=String(value||'').length; return n>38?14:n>28?16:18;
 }
 function _rptMoney(value){
   return 'R$ '+Number(value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -4309,21 +4324,24 @@ function _rptHeader(d, mesAno, refCode, totalW=9026){
   const cell=(children,w,shade)=>new d.TableCell({width:{size:w,type:d.WidthType.DXA},borders,shading:shade?{fill:shade,type:d.ShadingType.CLEAR}:undefined,margins:{top:80,bottom:80,left:100,right:100},children});
   const table=new d.Table({width:{size:totalW,type:d.WidthType.DXA},columnWidths:[leftW,rightW],rows:[new d.TableRow({children:[
     cell([p([run('KAROON ENERGY',true)]),p([run('Monthly Report - '+mesAno)])],leftW),
-    cell([p([run('Reference: ',true),run(refCode)]),p([run('Revision: ',true),run('0')]),p([run('Date: ',true),run(_rptDateToday())])],rightW,'F2F2F2')
+    cell([p([run('Reference: ',true),run(refCode)]),p([run('Revision: ',true),run('0')]),p([run('Date: ',true),run(_rptDateToday())]),p([
+      new d.TextRun({children:[d.PageNumber.CURRENT],bold:true,size:22,font:'Calibri',color:'000000'}),
+      run(' of ',true),
+      new d.TextRun({children:[d.PageNumber.TOTAL_PAGES],bold:true,size:22,font:'Calibri',color:'000000'})
+    ])],rightW,'F2F2F2')
   ]})]});
   return new d.Header({children:[table,new d.Paragraph({children:[new d.TextRun({text:'',size:22,font:'Calibri'})],spacing:{before:0,after:0,line:280}})]});
 }
 
 // ── Running footer (symbol + page number) ───────────
 function _rptFooter(d,totalW=9026){
-  const left=Math.floor(totalW/3),center=Math.floor(totalW/3),right=totalW-left-center;
   const none={style:d.BorderStyle.NONE,size:0,color:'FFFFFF'},borders={top:none,bottom:none,left:none,right:none};
-  const cell=(children,w,align)=>new d.TableCell({width:{size:w,type:d.WidthType.DXA},borders,margins:{top:0,bottom:0,left:0,right:0},children:[new d.Paragraph({children,alignment:align,spacing:{before:0,after:0}})]});
-  return new d.Footer({children:[new d.Table({width:{size:totalW,type:d.WidthType.DXA},columnWidths:[left,center,right],rows:[new d.TableRow({children:[
-    cell([],left,d.AlignmentType.LEFT),
-    cell([new d.TextRun({children:[d.PageNumber.CURRENT],size:18,font:'Calibri'}),new d.TextRun({text:' of ',size:18,font:'Calibri'}),new d.TextRun({children:[d.PageNumber.TOTAL_PAGES],size:18,font:'Calibri'})],center,d.AlignmentType.CENTER),
-    cell([new d.ImageRun({data:_b64toUint8(RPT_LOGO_SIMBOLO),transformation:{width:35,height:28},type:'jpg'})],right,d.AlignmentType.RIGHT)
-  ]})]})]});
+  const cell=new d.TableCell({width:{size:totalW,type:d.WidthType.DXA},borders,margins:{top:0,bottom:0,left:0,right:0},children:[new d.Paragraph({
+    children:[new d.ImageRun({data:_b64toUint8(RPT_LOGO_SIMBOLO),transformation:{width:24,height:19},type:'jpg'})],
+    alignment:d.AlignmentType.RIGHT,
+    spacing:{before:0,after:0}
+  })]});
+  return new d.Footer({children:[new d.Table({width:{size:totalW,type:d.WidthType.DXA},columnWidths:[totalW],rows:[new d.TableRow({children:[cell]})]})]});
 }
 
 // ── Cover page children ──────────────────────────────
@@ -4339,7 +4357,7 @@ function _rptCoverChildren(d, mesAno, preparedBy, authorisedBy){
   const row=(vals,head=false)=>new d.TableRow({children:vals.map((v,i)=>cell(v,widths[i],head))});
   const revision=new d.Table({width:{size:totalW,type:d.WidthType.DXA},columnWidths:widths,rows:[row(['Revision','Date','Revised Item','Reason for Revision'],true),row(['0',_rptDateToday(),'','For use by Karoon.']),row(['','','','']),row(['','','','']),row(['','','',''])]});
   const para=(text,bold=false,size=22,align=d.AlignmentType.LEFT,before=0,after=0)=>new d.Paragraph({alignment:align,children:[new d.TextRun({text,bold,size,font:'Calibri'})],spacing:{before,after}});
-  return [_rptSpacer(d,240,240),logos,_rptSpacer(d,540,420),para('MONTHLY REPORT',true,36,d.AlignmentType.CENTER,0,260),para(mesAno,false,28,d.AlignmentType.CENTER,0,560),_rptSpacer(d,0,440),para('Revision Control',true,22,d.AlignmentType.LEFT,0,180),para('Prepared By: '+(preparedBy||'Ricardo Nazareth'),true,20,d.AlignmentType.LEFT,0,120),para('Authorised By: '+(authorisedBy||'Yiannis Chanis'),true,20,d.AlignmentType.LEFT,0,220),revision];
+  return [_rptSpacer(d,240,240),logos,_rptSpacer(d,540,420),para('MONTHLY REPORT',true,36,d.AlignmentType.CENTER,0,260),para(mesAno,false,28,d.AlignmentType.CENTER,0,0),...Array.from({length:5},()=>_rptBlankLine(d)),para('Revision Control',true,22,d.AlignmentType.LEFT,0,180),para('Prepared By: '+(preparedBy||'Ricardo Nazareth'),true,20,d.AlignmentType.LEFT,0,120),para('Authorised By: '+(authorisedBy||'Yiannis Chanis'),true,20,d.AlignmentType.LEFT,0,220),revision];
 }
 
 // ── Per-project sections ─────────────────────────────
@@ -4362,11 +4380,8 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
 
   // H2 heading
   children.push(_rptPageBreak(d));
-  children.push(new d.Paragraph({
-    heading: d.HeadingLevel.HEADING_2,
-    children:[new d.TextRun({text:`Project ${pnum}`,bold:true,size:28,font:'Calibri'})],
-    spacing:{before:240,after:160},
-  }));
+  const shortTitle=projectShortTitle(proj);
+  children.push(_rptNumberedHeading(d,`Project ${pnum}${shortTitle?' \u2013 '+shortTitle:''}`,1,{before:240,after:160}));
 
   // Basic info block
   const infoLines = [
@@ -4382,11 +4397,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   });  children.push(_rptSpacer(d,120,0));
 
   // ── H3: Time Status ───────────────────────────────
-  children.push(new d.Paragraph({
-    heading:d.HeadingLevel.HEADING_3,
-    children:[new d.TextRun({text:'Time Status',bold:true,size:22,font:'Calibri'})],
-    spacing:{before:200,after:100},
-  }));
+  children.push(..._rptSubheading(d,'Time Status'));
   if(atv.Status_Temp){
     _rptTextParagraphs(d, atv.Status_Temp).forEach(p=>children.push(p));
   }
@@ -4422,11 +4433,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   }
 
   // ── H3: Cost Status ───────────────────────────────
-  children.push(new d.Paragraph({
-    heading:d.HeadingLevel.HEADING_3,
-    children:[new d.TextRun({text:'Cost Status',bold:true,size:22,font:'Calibri'})],
-    spacing:{before:200,after:100},
-  }));
+  children.push(..._rptSubheading(d,'Cost Status'));
   if(atv.Status_Custo){
     _rptTextParagraphs(d, atv.Status_Custo).forEach(p=>children.push(p));
   }
@@ -4434,6 +4441,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   const income=_rptIncomeTotals(pid,mesAno);
   children.push(new d.Paragraph({children:[new d.TextRun({text:'Accumulated income: ',bold:true,size:22,font:'Calibri'}),new d.TextRun({text:_rptMoney(income.accumulated),size:22,font:'Calibri'})],spacing:{before:120,after:40}}));
   children.push(new d.Paragraph({children:[new d.TextRun({text:'Income used: ',bold:true,size:22,font:'Calibri'}),new d.TextRun({text:_rptMoney(income.used),size:22,font:'Calibri'})],spacing:{before:40,after:120}}));
+  children.push(_rptBlankLine(d));
   // Cost table
   const planMap = currentPlanMap(pid);
   const gastosMap = {};
@@ -4466,7 +4474,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
           const fmtR = v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
           const aba = planRow.Codigo_ABA||getCatABA(cat)||'';
           return new d.TableRow({height:{value:567,rule:d.HeightRule.EXACT},children:[
-            _rptBodyCell(d,_rptNoBreakText(_rptCategory(cat)),c1,{size:_rptCompactSize(_rptCategory(cat)),verticalCenter:true}),_rptBodyCell(d,aba,c2,{center:true,verticalCenter:true}),
+            _rptBodyCell(d,_rptCategory(cat),c1,{size:18,verticalCenter:true}),_rptBodyCell(d,aba,c2,{center:true,verticalCenter:true}),
             _rptBodyCell(d,fmtR(ptrb),c3,{center:true,verticalCenter:true}),_rptBodyCell(d,fmtR(plan),c4,{center:true,verticalCenter:true}),
             _rptBodyCell(d,fmtR(actual),c5,{center:true,verticalCenter:true}),_rptBodyCell(d,_rptPct(plan?actual/plan:NaN),c6,{center:true,verticalCenter:true}),
           ]});
@@ -4542,29 +4550,17 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   }
 
   // ── H3: Key activities this period ───────────────
-  children.push(new d.Paragraph({
-    heading:d.HeadingLevel.HEADING_3,
-    children:[new d.TextRun({text:'Key activities this period',bold:true,size:22,font:'Calibri'})],
-    spacing:{before:200,after:100},
-  }));
+  children.push(..._rptSubheading(d,'Key activities this period'));
   const atvAtual = _rptActivityParagraphs(d, atv.Atividades_Atual);
   if(atvAtual.length) atvAtual.forEach(p=>children.push(p));
 
   // ── H3: Key activities next period ───────────────
-  children.push(new d.Paragraph({
-    heading:d.HeadingLevel.HEADING_3,
-    children:[new d.TextRun({text:'Key activities next period',bold:true,size:22,font:'Calibri'})],
-    spacing:{before:200,after:100},
-  }));
+  children.push(..._rptSubheading(d,'Key activities next period'));
   const atvFutura = _rptActivityParagraphs(d, atv.Atividades_Futura);
   if(atvFutura.length) atvFutura.forEach(p=>children.push(p));
 
   // ── H3: Areas of concern ─────────────────────────
-  children.push(new d.Paragraph({
-    heading:d.HeadingLevel.HEADING_3,
-    children:[new d.TextRun({text:'Areas of Concern',bold:true,size:22,font:'Calibri'})],
-    spacing:{before:200,after:100},
-  }));
+  children.push(..._rptSubheading(d,'Areas of Concern'));
   const atvRiscos = _rptTextParagraphs(d, atv.Riscos_Preocupacoes);
   if(atvRiscos.length) atvRiscos.forEach(p=>children.push(p));
 
@@ -4576,7 +4572,7 @@ function _rptPortfolioChildren(d, projetos, tableCounter){
   const money=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   const rows=projetos.map(p=>{const e=getExec(p.Projeto);return [_rptProjectNumber(p.Projeto),projectShortTitle(p),_rptStatus(p.Status_Projeto),p.Executor||'',_rptField(p,['N\u00famero ANP','Numero ANP','ANP']),money(e.plan),money(e.actual),_rptPct(e.pct),_rptPct(getTimePct(p)),FMTD(_rptField(p,['Data de in\u00edcio ','Data de inicio','Start Date'])),FMTD(_rptField(p,['Data final real','Actual End']))];});
   const tc=tableCounter[0]++;
-  return [new d.Paragraph({heading:d.HeadingLevel.HEADING_1,children:[new d.TextRun({text:'Project Portfolio',bold:true,size:28,font:'Calibri'})],spacing:{before:120,after:180}}),_rptCaption(d,`Table ${tc}: Project Portfolio.`),new d.Table({width:{size:totalW,type:d.WidthType.DXA},layout:d.TableLayoutType.FIXED,columnWidths:widths,rows:[new d.TableRow({tableHeader:true,children:heads.map((h,i)=>_rptHdrCell(d,h,widths[i],{center:i!==1}))}),...rows.map(vals=>new d.TableRow({children:vals.map((v,i)=>_rptBodyCell(d,v,widths[i],{center:i!==1}))}))]})];
+  return [_rptNumberedHeading(d,'Project Portfolio',0,{before:120,after:180}),_rptCaption(d,`Table ${tc}: Project Portfolio.`),new d.Table({width:{size:100,type:d.WidthType.PERCENTAGE},layout:d.TableLayoutType.AUTOFIT,columnWidths:widths,rows:[new d.TableRow({tableHeader:true,children:heads.map((h,i)=>_rptHdrCell(d,h,widths[i],{center:i!==1}))}),...rows.map(vals=>new d.TableRow({children:vals.map((v,i)=>_rptBodyCell(d,v,widths[i],{center:i!==1}))}))]})];
 }
 // ── Date helpers ─────────────────────────────────────
 function _rptDateToday(){
@@ -4606,16 +4602,24 @@ async function gerarRelatorio(mesAno, projetosIncluidos){
   const d=_rptGetDocx(),tableCounter=[1];
   const projetos=(DATA.projetos||[]).filter(p=>!projetosIncluidos||projetosIncluidos.includes(p.Projeto)).sort((a,b)=>String(a.Projeto||'').localeCompare(String(b.Projeto||'')));
   const refCode='RDI-RPT-001',portraitFooter=_rptFooter(d,9026),landscapeFooter=_rptFooter(d,13958);
-  const portrait={properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440,header:709,footer:408}}},headers:{default:_rptHeader(d,mesAno,refCode,9026)},footers:{default:portraitFooter}};
-  const landscape={properties:{page:{size:{width:16838,height:11906,orientation:d.PageOrientation.LANDSCAPE},margin:{top:1440,right:1440,bottom:1440,left:1440,header:709,footer:408}}},headers:{default:_rptHeader(d,mesAno,refCode,13958)},footers:{default:landscapeFooter}};
-  const toc=[new d.Paragraph({heading:d.HeadingLevel.HEADING_1,children:[new d.TextRun({text:'Summary',bold:true,size:28,font:'Calibri'})],spacing:{before:240,after:240}}),new d.TableOfContents('Table of Contents',{hyperlink:true,headingStyleRange:'1-2'})];
-  const exec=[_rptPageBreak(d),new d.Paragraph({heading:d.HeadingLevel.HEADING_1,children:[new d.TextRun({text:'Executive Summary',bold:true,size:28,font:'Calibri'})],spacing:{before:240,after:200}})];
+  const portrait={properties:{type:d.SectionType.NEXT_PAGE,page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440,header:709,footer:408}}},headers:{default:_rptHeader(d,mesAno,refCode,9026)},footers:{default:portraitFooter}};
+  const landscape={properties:{type:d.SectionType.NEXT_PAGE,page:{size:{width:11906,height:16838,orientation:d.PageOrientation.LANDSCAPE},margin:{top:1440,right:1440,bottom:1440,left:1440,header:709,footer:408}}},headers:{default:_rptHeader(d,mesAno,refCode,13958)},footers:{default:landscapeFooter}};
+  const toc=[new d.Paragraph({children:[new d.TextRun({text:'Summary',bold:true,size:28,font:'Calibri'})],spacing:{before:240,after:240},outlineLevel:9}),new d.TableOfContents('Table of Contents',{hyperlink:true,headingStyleRange:'1-2'})];
+  const exec=[_rptPageBreak(d),_rptNumberedHeading(d,'Executive Summary',0,{before:240,after:200})];
   const mesISO=_rptMesISO(mesAno);
-  projetos.forEach(p=>{const atv=(DATA.atividades||[]).find(a=>a.Projeto===p.Projeto&&a.Datas===mesISO)||{};if(!atv.Sumario_executivo)return;exec.push(new d.Paragraph({children:[new d.TextRun({text:`Project ${_rptProjectNumber(p.Projeto)} - ${_rptField(p,['T\u00edtulo do projeto','Titulo','Title'])}: `,bold:true,size:22,font:'Calibri'})],spacing:{before:160,after:40}}));_rptTextParagraphs(d,atv.Sumario_executivo).forEach(x=>exec.push(x));});
+  projetos.forEach(p=>{const atv=(DATA.atividades||[]).find(a=>a.Projeto===p.Projeto&&a.Datas===mesISO)||{};if(!atv.Sumario_executivo)return;exec.push(new d.Paragraph({children:[new d.TextRun({text:`Project ${_rptProjectNumber(p.Projeto)} \u2013 ${projectShortTitle(p)}: `,bold:true,size:22,font:'Calibri'})],spacing:{before:160,after:40}}));_rptTextParagraphs(d,atv.Sumario_executivo).forEach(x=>exec.push(x));});
   if(exec.length===2) exec.push(new d.Paragraph({children:[new d.TextRun({text:'[Executive summary to be completed]',italics:true,size:22,font:'Calibri'})]}));
-  const projectChildren=[new d.Paragraph({heading:d.HeadingLevel.HEADING_1,children:[new d.TextRun({text:'RD&I Projects - Monitoring and Control',bold:true,size:28,font:'Calibri'})],spacing:{before:120,after:100}})];
+  const projectChildren=[_rptNumberedHeading(d,'RD&I Projects - Monitoring and Control',0,{before:120,after:100})];
   projetos.forEach((p,i)=>{const items=_rptProjectSection(d,p,tableCounter,mesAno);if(i===0&&items[0])items.shift();items.forEach(x=>projectChildren.push(x));});
-  const doc=new d.Document({styles:{default:{document:{run:{font:'Calibri',size:22}},heading1:{run:{font:'Calibri',size:28,bold:true},paragraph:{spacing:{before:240,after:200,line:360},outlineLevel:0}},heading2:{run:{font:'Calibri',size:26,bold:true},paragraph:{spacing:{before:200,after:160,line:360},outlineLevel:1}},heading3:{run:{font:'Calibri',size:22,bold:true},paragraph:{spacing:{before:160,after:80,line:360},outlineLevel:2}}}},sections:[{...portrait,children:_rptCoverChildren(d,mesAno,'Ricardo Nazareth','Yiannis Chanis')},{...portrait,children:[...toc,...exec]},{...landscape,children:_rptPortfolioChildren(d,projetos,tableCounter)},{...portrait,children:projectChildren}]});
+  const doc=new d.Document({
+    numbering:{config:[{reference:RPT_HEADING_NUMBERING,levels:[
+      {level:0,format:d.LevelFormat.DECIMAL,text:'%1.',suffix:d.LevelSuffix.SPACE,alignment:d.AlignmentType.LEFT,style:{paragraph:{indent:{left:0,hanging:0}}}},
+      {level:1,format:d.LevelFormat.DECIMAL,text:'%1.%2.',suffix:d.LevelSuffix.SPACE,alignment:d.AlignmentType.LEFT,style:{paragraph:{indent:{left:0,hanging:0}}}},
+      {level:2,format:d.LevelFormat.DECIMAL,text:'%1.%2.%3.',suffix:d.LevelSuffix.SPACE,alignment:d.AlignmentType.LEFT,style:{paragraph:{indent:{left:0,hanging:0}}}},
+    ]}]},
+    styles:{default:{document:{run:{font:'Calibri',size:22}},heading1:{run:{font:'Calibri',size:28,bold:true},paragraph:{spacing:{before:240,after:200,line:360},outlineLevel:0}},heading2:{run:{font:'Calibri',size:26,bold:true},paragraph:{spacing:{before:200,after:160,line:360},outlineLevel:1}},heading3:{run:{font:'Calibri',size:22,bold:true},paragraph:{spacing:{before:160,after:80,line:360},outlineLevel:2}}}},
+    sections:[{...portrait,properties:{...portrait.properties,type:undefined},children:_rptCoverChildren(d,mesAno,'Ricardo Nazareth','Yiannis Chanis')},{...portrait,children:[...toc,...exec]},{...landscape,children:_rptPortfolioChildren(d,projetos,tableCounter)},{...portrait,children:projectChildren}]
+  });
   const blob=await d.Packer.toBlob(doc),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Inovatus-Monthly-Report-${mesAno.replace(/\s+/g,'-')}.docx`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
 }
 
@@ -4624,6 +4628,28 @@ async function gerarRelatorio(mesAno, projetosIncluidos){
 // ===================== ATIVIDADES =====================
 
 let _atividadesDirty = false;
+const ATIVIDADE_TEXT_FIELDS = ['Sumario_executivo','Status_Custo','Status_Temp','Atividades_Atual','Atividades_Futura','Riscos_Preocupacoes'];
+
+function _atvProjectLabel(p, isPt=(lang==='pt')){
+  const title=projectShortTitle(p);
+  return `${isPt?'Projeto':'Project'} ${_rptProjectNumber(p?.Projeto)}${title?' \u2013 '+title:''}`;
+}
+
+function _atvHasMonthlyData(projectId, date){
+  const rec=(DATA.atividades||[]).find(a=>a.Projeto===projectId&&a.Datas===date);
+  return !!rec && ATIVIDADE_TEXT_FIELDS.some(field=>String(rec[field]||'').trim()!=='');
+}
+
+function renderAtividadeCoverage(){
+  const box=document.getElementById('atv-coverage'); if(!box)return;
+  const L=lang==='pt',date=_getAtvDate();
+  const projects=(DATA.projetos||[]).slice().sort((a,b)=>String(a.Projeto||'').localeCompare(String(b.Projeto||'')));
+  const rows=projects.map(p=>{
+    const ok=_atvHasMonthlyData(p.Projeto,date);
+    return `<tr><td style="padding:6px 8px;border-top:1px solid var(--border);font-size:12px">${escapeHtml(_atvProjectLabel(p,L))}</td><td style="padding:6px 8px;border-top:1px solid var(--border);text-align:center;font-size:14px;color:${ok?'#2F855A':'var(--muted)'}" title="${ok?(L?'Dados preenchidos':'Data entered'):(L?'Sem dados preenchidos':'No data entered')}">${ok?'&#10003;':'&#8212;'}</td></tr>`;
+  }).join('');
+  box.innerHTML=`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">${L?'Valida\u00e7\u00e3o da compet\u00eancia':'Monthly submission status'}</div><div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;max-width:520px"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--surface-2)"><th style="padding:6px 8px;text-align:left;font-size:11px">${L?'Projeto':'Project'}</th><th style="padding:6px 8px;text-align:center;font-size:11px;width:72px">${L?'Dados':'Report'}</th></tr></thead><tbody>${rows||`<tr><td colspan="2" style="padding:8px;color:var(--muted);font-size:12px">${L?'Nenhum projeto':'No projects'}</td></tr>`}</tbody></table></div>`;
+}
 
 function refreshEnglishSpellcheck(el){
   if(!el) return;
@@ -4645,7 +4671,7 @@ function initEnglishSpellcheck(){
 function renderAtividades(){
   const container=document.getElementById('atividades-content'); if(!container)return;
   const L=lang==='pt', tx=(pt,en)=>L?pt:en;
-  const options=(DATA.projetos||[]).slice().sort((a,b)=>String(a.Projeto||'').localeCompare(String(b.Projeto||''))).map(p=>`<option value="${escapeHtml(p.Projeto)}">${escapeHtml(p.Projeto)} - ${escapeHtml(_rptField(p,['T\u00edtulo do projeto','Titulo','Title']))}</option>`).join('');
+  const options=(DATA.projetos||[]).slice().sort((a,b)=>String(a.Projeto||'').localeCompare(String(b.Projeto||''))).map(p=>`<option value="${escapeAttr(p.Projeto)}">${escapeHtml(_atvProjectLabel(p,L))}</option>`).join('');
   const field=(id,labelPt,labelEn,rows,phPt,phEn,helpPt='',helpEn='')=>`<div style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><label class="form-label" style="margin:0;font-size:12px">${tx(labelPt,labelEn)}</label><span style="font-size:11px;padding:2px 7px;background:rgba(56,178,172,.12);color:var(--accent);border-radius:4px">EN</span>${helpPt?`<span style="font-size:11px;color:var(--muted)">- ${tx(helpPt,helpEn)}</span>`:''}</div><textarea id="${id}" class="form-input" rows="${rows}" lang="en-US" spellcheck="true" style="width:100%;box-sizing:border-box;resize:vertical;font-family:inherit;font-size:13px" oninput="markAtividadesDirty()" placeholder="${tx(phPt,phEn)}"></textarea></div>`;
   const section=t=>`<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:12px">${t}</div>`;
   container.innerHTML=`
@@ -4659,7 +4685,8 @@ function renderAtividades(){
   <div style="margin-bottom:20px">${section(tx('Sum\u00e1rio executivo','Executive Summary'))}${field('atv-sumario','Sum\u00e1rio executivo','Executive summary',4,'Escreva em ingl\u00eas um par\u00e1grafo curto sobre o avan\u00e7o mensal.','Write a short paragraph in English summarising monthly progress.','ser\u00e1 compilado no sum\u00e1rio executivo do relat\u00f3rio','compiled in the report executive summary')}</div>
   <div style="margin-bottom:20px">${section(tx('Status do per\u00edodo','Period Status'))}${field('atv-status-temp','Status de prazo','Time status',3,'Descreva em ingl\u00eas a situa\u00e7\u00e3o do cronograma.','Describe the schedule status in English.','aparece antes da tabela de marcos','appears above the milestones table')}${field('atv-status-custo','Status de custo','Cost status',3,'Descreva em ingl\u00eas a situa\u00e7\u00e3o dos custos.','Describe the cost status in English.','aparece antes da tabela de custos','appears above the cost table')}</div>
   <div style="margin-bottom:20px">${section(tx('Atividades','Activities'))}${field('atv-ativ-atual','Principais atividades deste per\u00edodo','Key activities this period',5,'Liste em ingl\u00eas as principais atividades realizadas.','List the main activities carried out in English.')}${field('atv-ativ-futura','Principais atividades do pr\u00f3ximo per\u00edodo','Key activities next period',5,'Liste em ingl\u00eas as atividades previstas.','List the activities planned for the next period in English.')}${field('atv-riscos','Pontos de aten\u00e7\u00e3o','Areas of concern',4,'Descreva em ingl\u00eas riscos, impedimentos ou pontos de aten\u00e7\u00e3o.','Describe risks, blockers or concerns in English.')}</div>
-  <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding-top:14px;border-top:1px solid var(--border)"><span id="atv-unsaved-footer" style="display:none;align-items:center;gap:6px;margin-right:auto"><span style="width:8px;height:8px;border-radius:50%;background:#E08C1A"></span><span style="font-size:12px;color:#E08C1A">${tx('Altera\u00e7\u00f5es n\u00e3o salvas','Unsaved changes')}</span></span><button class="btn btn-secondary btn-sm" onclick="discardAtividade()">${tx('Descartar altera\u00e7\u00f5es','Discard changes')}</button><button class="btn btn-primary btn-sm" onclick="saveAtividade()">${tx('Salvar','Save')}</button></div>`;
+  <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding-top:14px;border-top:1px solid var(--border)"><span id="atv-unsaved-footer" style="display:none;align-items:center;gap:6px;margin-right:auto"><span style="width:8px;height:8px;border-radius:50%;background:#E08C1A"></span><span style="font-size:12px;color:#E08C1A">${tx('Altera\u00e7\u00f5es n\u00e3o salvas','Unsaved changes')}</span></span><button class="btn btn-secondary btn-sm" onclick="discardAtividade()">${tx('Descartar altera\u00e7\u00f5es','Discard changes')}</button><button class="btn btn-primary btn-sm" onclick="saveAtividade()">${tx('Salvar','Save')}</button></div>
+  <div id="atv-coverage" style="margin-top:18px"></div>`;
   initEnglishSpellcheck(); populateAtvSelectors(); loadAtividade();
 }
 
@@ -4748,6 +4775,7 @@ function loadAtividade(){
   set('atv-ativ-futura',     rec ? rec.Atividades_Futura   : '');
   set('atv-riscos',          rec ? rec.Riscos_Preocupacoes : '');
   clearAtividadesDirty();
+  renderAtividadeCoverage();
 }
 
 function discardAtividade(){
@@ -4783,6 +4811,7 @@ async function saveAtividade(){
     await rewriteAtividadesSheetFromMemory();
     clearAtividadesDirty();
     updateAtividadeHistory();
+    renderAtividadeCoverage();
     alert(lang==='pt'?'Registro salvo com sucesso.':'Record saved successfully.');
   } catch(e) {
     DATA.atividades = snapshot;
