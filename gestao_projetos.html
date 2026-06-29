@@ -601,6 +601,15 @@ tr:hover td{background:var(--surface3);}
           <option value="Completed" id="ms-opt-completed">Completed</option>
           <option value="Suspended" id="ms-opt-suspended">Suspended</option>
         </select>
+        <select class="form-select" id="ms-date-filter" onchange="toggleMilestoneDateInputs(true)" style="max-width:190px;">
+          <option value="ALL">Periodo: todos</option>
+          <option value="NEXT3">Proximos 3 meses</option>
+          <option value="MONTH">Mes especifico</option>
+          <option value="CUSTOM">Intervalo personalizado</option>
+        </select>
+        <input type="month" class="form-input" id="ms-month-filter" onchange="renderMilestones()" style="max-width:150px;display:none;">
+        <input type="date" class="form-input" id="ms-date-from" onchange="renderMilestones()" style="max-width:150px;display:none;">
+        <input type="date" class="form-input" id="ms-date-to" onchange="renderMilestones()" style="max-width:150px;display:none;">
         <input type="text" class="form-input" id="ms-search" placeholder="Search..." oninput="renderMilestones()" style="max-width:200px;">
       </div>
 
@@ -848,6 +857,16 @@ tr:hover td{background:var(--surface3);}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);">
       <div style="font-size:13px;color:var(--ink3);">Total: <strong id="sm-total-display">R$ 0</strong></div>
     </div>
+    <div style="margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);">
+        <input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()">
+        <span>Adicionar uso de rendimento</span>
+      </label>
+      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;">
+        <label class="form-label">Valor do rendimento utilizado (R$)</label>
+        <input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0">
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveSM()">Save SM</button>
@@ -966,7 +985,7 @@ tr:hover td{background:var(--surface3);}
       </div>
       <div class="form-group">
         <label class="form-label" id="lbl-sol-tipo">Tipo</label>
-        <select class="form-select" id="sol-tipo">
+        <select class="form-select" id="sol-tipo" onchange="syncSolIncomeUsageFields()">
           <option value="SM">SM / SolicitaÃ§Ã£o de mudanÃ§a</option>
           <option value="DV">DV / Despesa de viagem</option>
           <option value="DE">DE / Despesa especial</option>
@@ -1003,6 +1022,11 @@ tr:hover td{background:var(--surface3);}
     <div class="form-group">
       <label class="form-label" id="lbl-sol-valor">Valor (R$)</label>
       <input class="form-input" type="number" id="sol-valor" min="0" step="0.01">
+    </div>
+    <div class="form-group" id="sol-income-group" style="display:none;">
+      <label class="form-label" id="lbl-sol-income">Uso de rendimento (R$)</label>
+      <input class="form-input" type="number" id="sol-income-usage" min="0" step="0.01" placeholder="0">
+      <div class="fs-12 color-ink3" style="margin-top:4px;">Informe 0 ou deixe vazio para remover o uso de rendimento desta SM.</div>
     </div>
     <div class="form-group">
       <label class="form-label" id="lbl-sol-obs">ObservaÃ§Ãµes</label>
@@ -1314,6 +1338,7 @@ const FMTK = v => {
   if(Math.abs(v)>=1e3) return 'R$'+(v/1e3).toFixed(0)+'K';
   return FMT.format(v);
 };
+const FMTINT = v => new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0}).format(parseFloat(v)||0);
 const FMTFULL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 const EMPTY = '-';
 const SEP = ' - ';
@@ -1506,6 +1531,32 @@ function cleanMojibakeText(v){
     .replace(/Ã‡/g,'C').replace(/Ã‰/g,'E')
     .replace(/Âº/g,'o').replace(/Âª/g,'a').replace(/Â/g,'')
     .replace(/â/g,'');
+}
+
+function normLooseText(v){
+  return cleanMojibakeText(v)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/gi,' ')
+    .trim()
+    .toLowerCase();
+}
+
+function milestoneDescription(m){
+  const key=Object.keys(m||{}).find(k=>normLooseText(k)==='descricao');
+  return (key&&m[key]) || m.Descricao || m.ID || EMPTY;
+}
+
+function sanitizeSmNumber(v){
+  return String(v||'').trim();
+}
+
+function sameSmNumber(a,b){
+  const aa=sanitizeSmNumber(a), bb=sanitizeSmNumber(b);
+  if(!aa||!bb) return false;
+  if(aa.toLowerCase()===bb.toLowerCase()) return true;
+  const na=smNumber(aa), nb=smNumber(bb);
+  return !isNaN(na) && !isNaN(nb) && na===nb;
 }
 
 function sanitizeVisibleMojibake(root=document.body){
@@ -2467,8 +2518,8 @@ function openProject(pid){
 
 // D1: uma solicitaÃ§Ã£o (SM/DV/DE) Ã© "ativa" se nÃ£o estÃ¡ em estado terminal
 function isSolicitacaoAtiva(s){
-  const st=String(s.Status||'').trim().toLowerCase();
-  const terminais=['rejeitada','rejeitado','cancelada','cancelado','concluÃ­do','concluido','concluÃ­da','concluida'];
+  const st=normLooseText(s?.Status||'');
+  const terminais=['rejeitada','rejeitado','cancelada','cancelado','aprovada','aprovado','approved','concluido','concluida','completed','complete'];
   return !terminais.includes(st);
 }
 
@@ -2542,6 +2593,11 @@ function renderProjectDetail(pid){
   const projMarcos = DATA.marcos.filter(m=>m.Projeto===pid).map(m=>({...m,_bucket:milestoneDateBucket(m)}));
   const msOverdue   = projMarcos.filter(m=>m._bucket==='Overdue');
   const msUpcoming  = projMarcos.filter(m=>m._bucket==='Upcoming');
+  const msUpcomingList = msUpcoming.slice().sort((a,b)=>{
+    const da=parseMilestoneDate(a['Data prevista / Data de entrega']);
+    const db=parseMilestoneDate(b['Data prevista / Data de entrega']);
+    return (da?da.getTime():Infinity)-(db?db.getTime():Infinity);
+  });
   const msCompleted = projMarcos.filter(m=>isMilestoneCompleted(m.Status));
   const msPlanned   = projMarcos.filter(m=>!isMilestoneCompleted(m.Status) && m._bucket!=='Overdue' && m._bucket!=='Upcoming');
 
@@ -2666,9 +2722,14 @@ function renderProjectDetail(pid){
         <div style="text-align:center;padding:10px 6px;background:var(--green-light);border-radius:8px;">
           <div style="font-size:22px;font-weight:600;color:var(--green);">${msCompleted.length}</div>
           <div style="font-size:10px;color:var(--green);margin-top:2px;">${L?'ConcluÃ­dos':'Completed'}</div>
-        </div>
-      </div>
+        </div>      </div>
       <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px;">${L?'Marcos proximos':'Upcoming milestones'}: ${msUpcomingList.length}</div>
+        ${msUpcomingList.length
+          ? `<ul style="margin:0 0 12px 16px;padding:0;font-size:12px;color:var(--ink2);line-height:1.45;">${msUpcomingList.map(m=>`<li><span class="fw-600">${escapeHtml(milestoneDescription(m))}</span> - ${L?'previsao':'forecast'}: ${FMTD(m['Data prevista / Data de entrega'])}</li>`).join('')}</ul>`
+          : `<div class="empty-state fs-12" style="padding:8px;margin-bottom:12px;">${L?'Nenhum marco proximo identificado.':'No upcoming milestones identified.'}</div>`}
+      </div>
+      <div style="margin-top:0;border-top:1px solid var(--border);padding-top:12px;">
         <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px;">${L?'Avisos':'Alerts'} ${projAlerts.length?`(${projAlerts.length})`:''}</div>
         ${projAlerts.length
           ? projAlerts.map(a=>`<div class="alert-box ${a.cls}" style="margin-bottom:6px;font-size:12px;">${escapeHtml(a.msg)}</div>`).join('')
@@ -2805,22 +2866,22 @@ function renderProjectDetail(pid){
                       ref = prevMatch ? parseFloat(prevMatch.Valor||0) : ptrbRow;
                     }
                     const changed = v!==null && Math.abs(v-ref)>0.005;
-                    return `<td class="text-right ${changed?'cell-sm-changed':''}">${v!==null?FMTK(v):'â€”'}</td>`;
+                    return `<td class="text-right ${changed?'cell-sm-changed':''}">${v!==null?FMTINT(v):'â€”'}</td>`;
                   }).join('');
                   return `<tr>
                     <td class="fs-12">${cat}</td>
                     <td class="fs-12 fw-600 color-ink3">${aba}</td>
-                    <td class="text-right fw-600">${FMTK(ptrbRow)}</td>
+                    <td class="text-right fw-600">${FMTINT(ptrbRow)}</td>
                     ${cells}
                   </tr>`;
                 }).join('');
               })()}
               <tr style="background:var(--surface2);font-weight:600;">
                 <td colspan="2">TOTAL</td>
-                <td class="text-right">${FMTK(ptrb)}</td>
+                <td class="text-right">${FMTINT(ptrb)}</td>
                 ${smNums.map(sn=>{
                   const tot=projSMs.filter(s=>s['SM#']===sn).reduce((a,s)=>a+parseFloat(s.Valor||0),0);
-                  return `<td class="text-right" style="background:var(--accent);color:#fff;">${FMTK(tot)}</td>`;
+                  return `<td class="text-right" style="background:var(--accent);color:#fff;">${FMTINT(tot)}</td>`;
                 }).join('')}
               </tr>
             </tbody>
@@ -2871,11 +2932,11 @@ function renderProjectDetail(pid){
             <td class="fw-600 fs-12">${u.SM||'â€”'}</td>
             <td class="fs-12">${u.Descricao||'â€”'}</td>
             <td class="fs-12 color-ink3">${FMTD(u.Data)}</td>
-            <td class="text-right fw-600 color-amber">${FMTK(parseFloat(u.Valor_Utilizado||0))}</td>
+            <td class="text-right fw-600 color-amber">${FMTINT(parseFloat(u.Valor_Utilizado||0))}</td>
           </tr>`).join('')}
           <tr style="background:var(--surface2);font-weight:600;">
             <td colspan="3">TOTAL</td>
-            <td class="text-right color-amber">${FMTK(usoTotal)}</td>
+            <td class="text-right color-amber">${FMTINT(usoTotal)}</td>
           </tr>
         </tbody>
       </table>
@@ -2949,14 +3010,60 @@ function renderProjectDetail(pid){
 }
 
 // ===================== RENDER â€” MILESTONES =====================
+function parseDateInputLocal(v){
+  if(!v) return null;
+  const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return null;
+  return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+}
+
+function toggleMilestoneDateInputs(shouldRender=false){
+  const mode=document.getElementById('ms-date-filter')?.value||'ALL';
+  const month=document.getElementById('ms-month-filter');
+  const from=document.getElementById('ms-date-from');
+  const to=document.getElementById('ms-date-to');
+  if(month) month.style.display=mode==='MONTH'?'block':'none';
+  if(from) from.style.display=mode==='CUSTOM'?'block':'none';
+  if(to) to.style.display=mode==='CUSTOM'?'block':'none';
+  if(shouldRender) renderMilestones();
+}
+
+function milestoneForecastMatchesDateFilter(m){
+  const mode=document.getElementById('ms-date-filter')?.value||'ALL';
+  if(mode==='ALL') return true;
+  const forecast=parseMilestoneDate(m['Data prevista / Data de entrega']);
+  if(!forecast || isNaN(forecast.getTime())) return false;
+  forecast.setHours(0,0,0,0);
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(mode==='NEXT3'){
+    const end=new Date(today); end.setMonth(end.getMonth()+3);
+    return forecast>=today && forecast<=end;
+  }
+  if(mode==='MONTH'){
+    const ym=document.getElementById('ms-month-filter')?.value||'';
+    if(!ym) return true;
+    return `${forecast.getFullYear()}-${String(forecast.getMonth()+1).padStart(2,'0')}`===ym;
+  }
+  if(mode==='CUSTOM'){
+    const from=parseDateInputLocal(document.getElementById('ms-date-from')?.value||'');
+    const to=parseDateInputLocal(document.getElementById('ms-date-to')?.value||'');
+    if(from && forecast<from) return false;
+    if(to && forecast>to) return false;
+    return true;
+  }
+  return true;
+}
+
 function renderMilestones(){
   const pFilter=document.getElementById('ms-project-filter').value;
   const sFilter=document.getElementById('ms-status-filter').value;
   const search=(document.getElementById('ms-search').value||'').toLowerCase();
+  toggleMilestoneDateInputs(false);
 
   let marcos=DATA.marcos.slice();
   if(pFilter!=='ALL') marcos=marcos.filter(m=>m.Projeto===pFilter);
   if(sFilter!=='ALL') marcos=marcos.filter(m=>String(m.Status||'').trim()===sFilter);
+  marcos=marcos.filter(m=>milestoneForecastMatchesDateFilter(m));
   if(search) marcos=marcos.filter(m=>(m['DescriÃ§Ã£o']||'').toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
 
   // popula o filtro de status com os valores reais da planilha (uma vez)
@@ -3464,7 +3571,7 @@ function renderRubricas(){
       <span class="rub-save-badge" id="rub-change-count">0 ${L?'alteraÃ§Ãµes pendentes':'pending changes'}</span>
       <div style="display:flex;gap:10px;">
         <button class="btn btn-secondary btn-sm" onclick="cancelRubEdits()">${L?'Cancelar':'Cancel'}</button>
-        <button class="btn btn-primary btn-sm" onclick="saveRubEdits()">${L?'Salvar alteraÃ§Ãµes':'Save changes'}</button>
+        <button class="btn btn-primary btn-sm" onclick="saveRubEdits()">${L?'Salvar alterações':'Save changes'}</button>
       </div>
     </div>`;
 
@@ -4953,6 +5060,65 @@ function setSMType(type){ smTypeFilter = type; renderSMs(); }
 
 // D4: reescreve a sheet Solicitacoes preservando a ordem/colunas reais do Excel.
 // Mapeia cada coluna do header para o valor correspondente do objeto em memÃ³ria.
+function usoRendimentoCellFor(header, r){
+  const h=normLooseText(header).replace(/ /g,'');
+  if(h==='projeto') return r.Projeto||'';
+  if(h==='executor') return r.Executor||'';
+  if(h==='numerosm'||h==='sm'||h==='numeroitem'||h==='numero') return r.SM||r.Numero_SM||'';
+  if(h==='valorutilizado'||h==='valor') return parseFloat(r.Valor_Utilizado||0)||0;
+  if(h==='descricao'||h==='observacoes'||h==='obs') return r.Descricao||'';
+  if(h==='data') return r.Data?(isoToExcelSerial(r.Data)||''):'';
+  return r[header]||'';
+}
+async function rewriteUsoRendimentoSheet(){
+  const headers=(DATA._headers&&DATA._headers.Uso_Rendimento&&DATA._headers.Uso_Rendimento.length)
+    ? DATA._headers.Uso_Rendimento
+    : ['Projeto','Executor','Numero_SM','Valor_Utilizado','Descricao'];
+  const dataRows=(DATA.uso_rendimento||[]).map(r=>headers.map(h=>usoRendimentoCellFor(h,r)));
+  await rewriteExcelSheet('Uso_Rendimento', headers, dataRows);
+}
+function usoRendimentoIndexForSM(pid, numero){
+  return (DATA.uso_rendimento||[]).findIndex(u=>u.Projeto===pid && sameSmNumber(u.SM||u.Numero_SM, numero));
+}
+function getUsoRendimentoForSM(pid, numero){
+  const idx=usoRendimentoIndexForSM(pid, numero);
+  return idx>=0 ? DATA.uso_rendimento[idx] : null;
+}
+function replaceUsoRendimentoForSM(oldPid, oldNumero, newRec){
+  DATA.uso_rendimento=DATA.uso_rendimento||[];
+  DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!(u.Projeto===oldPid && sameSmNumber(u.SM||u.Numero_SM, oldNumero)));
+  if(newRec){
+    DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!(u.Projeto===newRec.Projeto && sameSmNumber(u.SM||u.Numero_SM, newRec.SM||newRec.Numero_SM)));
+    DATA.uso_rendimento.push(newRec);
+  }
+}
+function projectExecutorForUso(pid){
+  const selected=document.getElementById('sm-new-cat-executor')?.value||'';
+  if(selected) return selected;
+  const executors=(typeof rubProjectExecutors==='function') ? rubProjectExecutors(pid).filter(Boolean) : [];
+  if(executors.length===1) return executors[0];
+  const p=(DATA.projetos||[]).find(x=>x.Projeto===pid);
+  return p?.Executor||'';
+}
+function syncSolIncomeUsageFields(value){
+  const tipo=document.getElementById('sol-tipo')?.value||'';
+  const group=document.getElementById('sol-income-group');
+  const input=document.getElementById('sol-income-usage');
+  const show=/^sm$/i.test(tipo);
+  if(group) group.style.display=show?'block':'none';
+  if(input){
+    if(value!==undefined) input.value=value||'';
+    if(!show) input.value='';
+  }
+}
+function toggleSMIncomeUsage(){
+  const checked=!!document.getElementById('sm-income-enabled')?.checked;
+  const field=document.getElementById('sm-income-field');
+  const input=document.getElementById('sm-income-value');
+  if(field) field.style.display=checked?'block':'none';
+  if(!checked && input) input.value='';
+}
+
 function solicitacaoCellFor(header, s){
   const h=String(header||'').trim().toLowerCase();
   if(h==='projeto') return s.Projeto||'';
@@ -5019,6 +5185,7 @@ function openSolModal(type){
   document.getElementById('sol-data-apr').value='';
   document.getElementById('sol-valor').value='';
   document.getElementById('sol-obs').value='';
+  syncSolIncomeUsageFields('');
   document.getElementById('sol-modal').classList.add('show');
   sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
@@ -5044,6 +5211,8 @@ function openSolEditModal(idx){
   document.getElementById('sol-data-apr').value=(String(s.Data_Aprovacao||'').split('T')[0]);
   document.getElementById('sol-valor').value=s.Valor||'';
   document.getElementById('sol-obs').value=s.Observacoes||'';
+  const uso=getUsoRendimentoForSM(s.Projeto||'', s.Numero||s['SM#']||'');
+  syncSolIncomeUsageFields(uso?uso.Valor_Utilizado:'');
   document.getElementById('sol-modal').classList.add('show');
   sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
@@ -5059,48 +5228,44 @@ async function saveSolModal(){
   const dataApr=document.getElementById('sol-data-apr').value;
   const valor=parseFloat(document.getElementById('sol-valor').value)||0;
   const obs=document.getElementById('sol-obs').value.trim();
+  const isSM=/^sm$/i.test(tipo);
+  const usoValor=isSM ? (parseFloat(document.getElementById('sol-income-usage')?.value)||0) : 0;
 
-  if(!pid||!numero){ alert(L?'Preencha Projeto e NÃºmero/CÃ³digo.':'Fill in Project and Number/Code.'); return; }
-
-  const ptrbLines=collectProjectPtrbLines();
-  const ptrbSum=ptrbLines.reduce((s,x)=>s+x.valor,0);
-  if(valor>0 && !executor){
-    alert(L?'Informe o executor antes de cadastrar o PTR-B por rubrica.':'Fill in the executor before adding PTR-B by category.');
-    return;
-  }
-  if(valor>0 && !ptrbLines.length){
-    alert(L?'Informe pelo menos uma rubrica de PTR-B para este projeto.':'Enter at least one PTR-B category for this project.');
-    return;
-  }
-  if(Math.abs(ptrbSum-valor)>=0.005){
-    alert(L?`A soma das rubricas (${FMT.format(ptrbSum)}) deve ser igual ao Valor PTR-B do projeto (${FMT.format(valor)}).`
-           :`Category total (${FMT.format(ptrbSum)}) must match the project PTR-B value (${FMT.format(valor)}).`);
-    return;
-  }
+  if(!pid||!numero){ alert(L?'Preencha Projeto e Numero/Codigo.':'Fill in Project and Number/Code.'); return; }
 
   const novo={
     Projeto:pid, 'SM#':numero, Numero:numero, Numero_Item:numero, Tipo:tipo,
     Data_Submissao:dataSub||'', Data_Aprovacao:dataApr||'', Status:status, Observacoes:obs, Valor:valor
   };
 
-  // aplica em memÃ³ria (snapshot para rollback)
-  const snapshot=JSON.parse(JSON.stringify(DATA.solicitacoes||[]));
+  const oldSol=(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]) ? DATA.solicitacoes[editingSolIdx] : null;
+  const snapshotSolic=JSON.parse(JSON.stringify(DATA.solicitacoes||[]));
+  const snapshotUso=JSON.parse(JSON.stringify(DATA.uso_rendimento||[]));
   if(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]){
     DATA.solicitacoes[editingSolIdx]=novo;
   } else {
     DATA.solicitacoes.push(novo);
   }
+  if(isSM){
+    const usoRec=usoValor>0 ? {
+      Projeto:pid, Executor:projectExecutorForUso(pid), SM:numero, Numero_SM:numero,
+      Valor_Utilizado:usoValor, Descricao:obs||`Uso de rendimento ${numero}`
+    } : null;
+    replaceUsoRendimentoForSM(oldSol?.Projeto||pid, oldSol?.Numero||oldSol?.['SM#']||numero, usoRec);
+  }
 
   showLoading(L?'Salvando registro no Excel...':'Saving record to Excel...');
   try{
     await rewriteSolicitacoesSheet();
+    if(isSM) await rewriteUsoRendimentoSheet();
     hideLoading();
     closeModal('sol-modal');
     editingSolIdx=null;
     renderCurrentPage();
     alert(L?'Registro salvo com sucesso!':'Record saved successfully!');
   }catch(e){
-    DATA.solicitacoes=snapshot; // rollback
+    DATA.solicitacoes=snapshotSolic;
+    DATA.uso_rendimento=snapshotUso;
     hideLoading();
     console.error('saveSolModal error:',e);
     alert((L?'Erro ao salvar registro: ':'Error saving record: ')+e.message);
@@ -5418,6 +5583,11 @@ function openSMModal(pid){
   if(smNum) smNum.value='';
   if(smDate) smDate.value='';
   if(smStatus) smStatus.value='Pendente';
+  const incomeEnabled=document.getElementById('sm-income-enabled');
+  const incomeValue=document.getElementById('sm-income-value');
+  if(incomeEnabled) incomeEnabled.checked=false;
+  if(incomeValue) incomeValue.value='';
+  toggleSMIncomeUsage();
   const sp=document.getElementById('sm-project');
   if(sp && pid) sp.value=pid;
   onSMProjectChange();
@@ -5570,8 +5740,11 @@ async function saveSM(){
   const smNum = document.getElementById('sm-number').value.trim();
   const dataSubmissao = document.getElementById('sm-date-submissao').value;
   const status = document.getElementById('sm-status').value;
+  const useIncome = !!document.getElementById('sm-income-enabled')?.checked;
+  const incomeValue = useIncome ? (parseFloat(document.getElementById('sm-income-value')?.value)||0) : 0;
 
-  if(!pid || !smNum){ alert('Preencha Projeto e NÃºmero da SM.'); return; }
+  if(!pid || !smNum){ alert('Preencha Projeto e Numero da SM.'); return; }
+  if(useIncome && incomeValue<=0){ alert('Informe o valor do rendimento utilizado.'); return; }
 
   const inputs = document.querySelectorAll('#sm-categories-table input[data-cat]');
   const linhas = [];
@@ -5600,6 +5773,16 @@ async function saveSM(){
     Valor_PTRB:0,
     Plano_Atual:0,
   }));
+  const usoRec=incomeValue>0 ? {
+    Projeto:pid, Executor:projectExecutorForUso(pid), SM:smNum, Numero_SM:smNum,
+    Valor_Utilizado:incomeValue, Descricao:`Uso de rendimento ${smNum}`
+  } : null;
+  const snapshot={
+    plano:JSON.parse(JSON.stringify(DATA.plano||[])),
+    solicitacoes:JSON.parse(JSON.stringify(DATA.solicitacoes||[])),
+    sms:JSON.parse(JSON.stringify(DATA.sms||[])),
+    uso_rendimento:JSON.parse(JSON.stringify(DATA.uso_rendimento||[])),
+  };
 
   showLoading('Saving SM...');
   try {
@@ -5627,12 +5810,25 @@ async function saveSM(){
       DATA.sms.push({ Projeto: pid, 'SM#': smNum, Categoria_despesa: linha.cat, Valor: linha.valor });
     }
 
+    if(usoRec){
+      const usoHeaders=(DATA._headers&&DATA._headers.Uso_Rendimento&&DATA._headers.Uso_Rendimento.length)
+        ? DATA._headers.Uso_Rendimento
+        : ['Projeto','Executor','Numero_SM','Valor_Utilizado','Descricao'];
+      await appendExcelRow('Uso_Rendimento', usoHeaders.map(h=>usoRendimentoCellFor(h,usoRec)));
+      DATA.uso_rendimento.push(usoRec);
+    }
+
     applySMOverrides();
     closeModal('sm-modal');
     hideLoading();
     renderCurrentPage();
     alert('SM saved successfully!');
   } catch(e) {
+    // Excel appends before a failure can remain in the workbook; rollback keeps the UI memory consistent.
+    DATA.plano=snapshot.plano;
+    DATA.solicitacoes=snapshot.solicitacoes;
+    DATA.sms=snapshot.sms;
+    DATA.uso_rendimento=snapshot.uso_rendimento;
     hideLoading();
     alert('Error saving SM: ' + e.message);
   }
