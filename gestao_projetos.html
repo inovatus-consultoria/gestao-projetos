@@ -968,6 +968,7 @@ tr:hover td{background:var(--surface3);}
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="deleteCurrentProject()" id="btn-pm-delete" style="display:none;margin-right:auto;color:var(--red);border-color:var(--red);">Delete Project</button>
       <button class="btn btn-secondary" onclick="closeModal('project-modal')" id="btn-pm-cancel">Cancel</button>
       <button class="btn btn-primary" onclick="submitProjectModal()" id="btn-pm-save">Save Project</button>
     </div>
@@ -1238,7 +1239,7 @@ const T = {
     pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor',
     pm_pmanager:'Project Manager',pm_gestor:'Gestor',pm_status:'Status',
     pm_inicio:'Start *',pm_fim:'End *',pm_fimreal:'Actual End',pm_duracao:'Duration (months)',
-    pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',
+    pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',pm_delete:'Delete Project',
   },
   pt:{
     portfolio:'VisÃ£o Geral do PortfÃ³lio',sub_portfolio:'10 projetos RD&I Â· ClÃ¡usula ANP ',
@@ -1275,7 +1276,7 @@ const T = {
     pm_codigo:'CÃ³digo *',pm_anp:'NÂº ANP',pm_titulo:'TÃ­tulo *',pm_executor:'Executor',
     pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
     pm_inicio:'InÃ­cio *',pm_fim:'Fim *',pm_fimreal:'Fim real',pm_duracao:'DuraÃ§Ã£o (meses)',
-    pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',
+    pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',pm_delete:'Excluir Projeto',
   }
 };
 function t(k){return cleanMojibakeText((T[lang]||T.en)[k]||k);}
@@ -1323,7 +1324,7 @@ function applyTranslations(){
     ['lbl-pm-executor','pm_executor'],['lbl-pm-pmanager','pm_pmanager'],['lbl-pm-gestor','pm_gestor'],
     ['lbl-pm-status','pm_status'],['lbl-pm-inicio','pm_inicio'],['lbl-pm-fim','pm_fim'],
     ['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
-    ['btn-pm-save','pm_save'],['btn-pm-cancel','cancel'],
+    ['btn-pm-save','pm_save'],['btn-pm-cancel','cancel'],['btn-pm-delete','pm_delete'],
   ];
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
   const msSearch=document.getElementById('ms-search');
@@ -1510,6 +1511,9 @@ async function rewritePlanoSheetFromMemory(){
 
 function cleanMojibakeText(v){
   return String(v??'')
+    .replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â/g,'-')
+    .replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ|ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â/g,'"')
+    .replace(/ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“|ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢/g,"'")
     .replace(/\u00e2\u20ac[\u201c\u201d\u02dc\u2122]/g,'-')
     .replace(/Ã¢â‚¬â€/g,'-')
     .replace(/â€“|â€”|â€˜|â€™|â€œ|â€/g,'-')
@@ -1976,13 +1980,18 @@ async function appendExcelRow(sheet, values){
 }
 
 async function rewriteExcelSheet(sheet, headers, dataRows){
-  // Reescreve toda a sheet: header na linha 1, dados a partir da linha 2
-  // Usado quando a ediÃ§Ã£o pode mudar/remover linhas existentes
+  // Reescreve toda a sheet: header na linha 1, dados a partir da linha 2.
+  // Se a nova versao tiver menos linhas, limpa a cauda antiga para nao deixar registros orfaos.
+  const previousRows = await excelGetUsedRowCount(sheet);
   const allRows = [headers, ...dataRows];
   const nCols   = headers.length;
   const nRows   = allRows.length;
   const addr    = `A1:${colLetter(nCols)}${nRows}`;
   await excelPatchRange(sheet, addr, allRows);
+  if(previousRows > nRows){
+    const blanks = Array.from({length:previousRows-nRows},()=>Array(nCols).fill(''));
+    await excelPatchRange(sheet, `A${nRows+1}:${colLetter(nCols)}${previousRows}`, blanks);
+  }
 }
 
 // loadAllListItems removido â€” versÃ£o Excel usa excelApiBase() diretamente
@@ -2515,6 +2524,11 @@ function openProject(pid){
   document.getElementById('project-selector').value=pid;
   navigate('project');
 }
+function goToRubricasForProject(pid){
+  navigate('rubricas');
+  const sel=document.getElementById('rub-project-filter');
+  if(sel){ sel.value=pid; renderRubricas(); }
+}
 
 // D1: uma solicitaÃ§Ã£o (SM/DV/DE) Ã© "ativa" se nÃ£o estÃ¡ em estado terminal
 function isSolicitacaoAtiva(s){
@@ -2776,7 +2790,7 @@ function renderProjectDetail(pid){
   <!-- â”€â”€ SECTION: Financial â”€â”€ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
     <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'ExecuÃ§Ã£o Financeira':'Financial Execution'}</div>
-    <button class="btn btn-primary btn-sm" onclick="openGastoModal('${pid}')">+ ${L?'Novo Gasto':'New Expense'}</button>
+    <button class="btn btn-primary btn-sm" onclick="goToRubricasForProject('${pid}')">+ ${L?'Novo Gasto':'New Expense'}</button>
   </div>
 
   <div class="card" style="margin-bottom:16px;">
@@ -3007,6 +3021,7 @@ function renderProjectDetail(pid){
       }
     });
   }
+  sanitizeVisibleMojibake(content);
 }
 
 // ===================== RENDER â€” MILESTONES =====================
@@ -5077,6 +5092,21 @@ async function rewriteUsoRendimentoSheet(){
   const dataRows=(DATA.uso_rendimento||[]).map(r=>headers.map(h=>usoRendimentoCellFor(h,r)));
   await rewriteExcelSheet('Uso_Rendimento', headers, dataRows);
 }
+function smItemCellFor(header, s){
+  const h=normLooseText(header).replace(/[ _]/g,'').toLowerCase();
+  if(h==='projeto') return s.Projeto||'';
+  if(h==='numerosm'||h==='sm#'||h==='sm'||h==='numero') return s['SM#']||s.Numero_SM||s.Numero||'';
+  if(h==='categoria'||h==='categoriadespesa') return s.Categoria_despesa||s.Categoria||'';
+  if(h==='valor') return parseFloat(s.Valor||0)||0;
+  return s[header]||'';
+}
+async function rewriteSMItensSheetFromMemory(){
+  const headers=(DATA._headers&&DATA._headers.SM_Itens&&DATA._headers.SM_Itens.length)
+    ? DATA._headers.SM_Itens
+    : ['Projeto','Numero_SM','Categoria','Valor'];
+  const dataRows=(DATA.sms||[]).map(s=>headers.map(h=>smItemCellFor(h,s)));
+  await rewriteExcelSheet('SM_Itens', headers, dataRows);
+}
 function usoRendimentoIndexForSM(pid, numero){
   return (DATA.uso_rendimento||[]).findIndex(u=>u.Projeto===pid && sameSmNumber(u.SM||u.Numero_SM, numero));
 }
@@ -5339,6 +5369,7 @@ function openProjectModal(){
   const gestor=document.getElementById('pm-gestor'); if(gestor) gestor.value='Yiannis';
   const status=document.getElementById('pm-status'); if(status) status.value='Em andamento';
   const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=false;
+  const del=document.getElementById('btn-pm-delete'); if(del) del.style.display='none';
   const title=document.getElementById('modal-project-title');
   if(title) title.textContent = lang==='pt'?'Novo Projeto':'New Project';
   populateProjectPtrbTable();
@@ -5365,6 +5396,7 @@ function openProjectEditModal(pid){
   setV('pm-duracao', p['DuraÃ§Ã£o (meses)']||p.Duracao_Meses||'');
   setV('pm-valor', p['Planned Value (R$)']||p.Valor_PTRB||'');
   const cod=document.getElementById('pm-codigo'); if(cod) cod.disabled=true; // cÃ³digo Ã© chave: nÃ£o editÃ¡vel
+  const del=document.getElementById('btn-pm-delete'); if(del){ del.style.display='inline-flex'; del.textContent=lang==='pt'?'Excluir Projeto':'Delete Project'; }
   const title=document.getElementById('modal-project-title');
   if(title) title.textContent = lang==='pt'?'Editar Projeto':'Edit Project';
   populateProjectPtrbTable();
@@ -5438,6 +5470,80 @@ async function saveProjectEdits(){
     hideLoading();
     console.error('saveProjectEdits error:',e);
     alert((L?'Erro ao salvar alteraÃ§Ãµes: ':'Error saving changes: ')+e.message);
+  }
+}
+
+function projectDeleteSnapshot(){
+  const keys=['projetos','plano','gastos','marcos','solicitacoes','sms','rendimento','uso_rendimento','atividades'];
+  return Object.fromEntries(keys.map(k=>[k,JSON.parse(JSON.stringify(DATA[k]||[]))]));
+}
+function restoreProjectDeleteSnapshot(snapshot){
+  Object.keys(snapshot).forEach(k=>{ DATA[k]=snapshot[k]; });
+}
+async function deleteCurrentProject(){
+  const L=lang==='pt';
+  const pid=editingProjectId || document.getElementById('pm-codigo')?.value || '';
+  const p=(DATA.projetos||[]).find(x=>x.Projeto===pid);
+  if(!p) return;
+  if((rubPending&&rubPending.size) || (rubIncomePending&&rubIncomePending.size)){
+    alert(L?'Salve ou cancele as alteracoes pendentes em Rubricas antes de excluir projeto.':'Save or cancel pending Budget Line changes before deleting a project.');
+    return;
+  }
+  const required=['Projetos','Plano_Orcamentario','Gastos','Marcos','Solicitacoes','SM_Itens','Rendimento','Uso_Rendimento','Atividades'];
+  const loadErrors=required.filter(s=>window.EXCEL_LOAD_REPORT?.[s]?.status==='ERROR');
+  if(loadErrors.length){
+    alert((L?'Nao e seguro excluir porque estas sheets tiveram erro de carga: ':'Deletion is blocked because these sheets failed to load: ')+loadErrors.join(', '));
+    return;
+  }
+  const label=projectOptionLabel(p);
+  const typed=prompt((L?'Para confirmar a exclusao definitiva de ':'To permanently delete ')+label+(L?', digite o codigo do projeto:':', type the project code:'), '');
+  if(String(typed||'').trim()!==pid) return;
+
+  const snapshot=projectDeleteSnapshot();
+  const written=[];
+  const tasks=[
+    ['Projetos', rewriteProjetosSheet],
+    ['Plano_Orcamentario', rewritePlanoSheetFromMemory],
+    ['Gastos', rewriteGastosSheetFromMemory],
+    ['Marcos', rewriteMarcosSheet],
+    ['Solicitacoes', rewriteSolicitacoesSheet],
+    ['SM_Itens', rewriteSMItensSheetFromMemory],
+    ['Rendimento', rewriteRendimentoSheetFromMemory],
+    ['Uso_Rendimento', rewriteUsoRendimentoSheet],
+    ['Atividades', rewriteAtividadesSheetFromMemory],
+  ];
+
+  DATA.projetos=(DATA.projetos||[]).filter(r=>r.Projeto!==pid);
+  DATA.plano=(DATA.plano||[]).filter(r=>r.Projeto!==pid);
+  DATA.gastos=(DATA.gastos||[]).filter(r=>(r.Projeto||r.Projetos)!==pid);
+  DATA.marcos=(DATA.marcos||[]).filter(r=>r.Projeto!==pid);
+  DATA.solicitacoes=(DATA.solicitacoes||[]).filter(r=>r.Projeto!==pid);
+  DATA.sms=(DATA.sms||[]).filter(r=>r.Projeto!==pid);
+  DATA.rendimento=(DATA.rendimento||[]).filter(r=>r.Projeto!==pid);
+  DATA.uso_rendimento=(DATA.uso_rendimento||[]).filter(r=>r.Projeto!==pid);
+  DATA.atividades=(DATA.atividades||[]).filter(r=>r.Projeto!==pid);
+
+  showLoading(L?'Excluindo projeto no Excel...':'Deleting project in Excel...');
+  try{
+    for(const [sheet,fn] of tasks){ await fn(); written.push([sheet,fn]); }
+    hideLoading();
+    closeModal('project-modal');
+    editingProjectId=null;
+    populateDropdowns();
+    repopulateProjectDropdowns();
+    navigate('portfolio');
+    alert(L?'Projeto excluido com sucesso.':'Project deleted successfully.');
+  }catch(e){
+    restoreProjectDeleteSnapshot(snapshot);
+    const compensation=[];
+    for(const [sheet,fn] of written){
+      try{ await fn(); }catch(ce){ compensation.push(sheet); console.error('Delete compensation failed:',sheet,ce); }
+    }
+    hideLoading();
+    renderCurrentPage();
+    const suffix=compensation.length?(L?` Rollback falhou em: ${compensation.join(', ')}.`:` Rollback failed for: ${compensation.join(', ')}.`):'';
+    console.error('deleteCurrentProject error:',e);
+    alert((L?'Erro ao excluir projeto: ':'Error deleting project: ')+e.message+suffix);
   }
 }
 
