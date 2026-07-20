@@ -119,8 +119,8 @@ input,select,textarea{font-family:'DM Sans',sans-serif;}
 .sidebar-version{font-size:9px;color:rgba(255,255,255,0.2);text-align:center;margin-top:8px;}
 
 /* ===================== MAIN CONTENT ===================== */
-#main-content{margin-left:var(--sidebar);flex:1;min-height:100vh;overflow-x:auto;}
-.page{display:none;padding:32px 36px;animation:fadeIn .2s ease;}
+#main-content{margin-left:var(--sidebar);flex:1;min-width:0;min-height:100vh;overflow-x:hidden;}
+.page{display:none;min-width:0;max-width:100%;padding:32px 36px;animation:fadeIn .2s ease;}
 .page.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
@@ -134,6 +134,17 @@ input,select,textarea{font-family:'DM Sans',sans-serif;}
 .client-logo-header{width:86px;height:34px;object-fit:contain;display:block;flex:0 0 auto;}
 .project-objective-card textarea{min-height:72px;resize:vertical;}
 .print-footer-logos{display:none;}
+.portfolio-milestone-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;}
+.portfolio-milestone-grid>.card{min-width:0;height:100%;}
+.project-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:20px;}
+.project-summary-card{min-width:0;}
+.project-objective-card{margin-bottom:20px;}
+.project-objective-actions{display:flex;align-items:flex-start;gap:12px;}
+.project-objective-actions textarea{flex:1;min-width:0;}
+.milestone-row{cursor:pointer;}
+.milestone-row .inline-control{cursor:default;}
+.milestone-extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.print-project-heading{display:none;}
 
 /* ===================== LANG TOGGLE ===================== */
 .lang-toggle{
@@ -167,7 +178,7 @@ input,select,textarea{font-family:'DM Sans',sans-serif;}
 .table-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);}
 .table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
 .table-title{font-size:15px;font-weight:600;color:var(--ink);}
-.table-scroll{overflow-x:auto;}
+.table-scroll{min-width:0;max-width:100%;overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{
   padding:10px 14px;text-align:left;background:var(--surface2);
@@ -291,6 +302,42 @@ tr:hover td{background:var(--surface3);}
   #sidebar{transform:translateX(-220px);}
   .section-grid.cols-2,.section-grid.cols-3{grid-template-columns:1fr;}
   .page{padding:20px;}
+  .portfolio-milestone-grid,.milestone-extra-grid{grid-template-columns:1fr;}
+}
+
+@page{size:A4 portrait;margin:12mm 10mm 16mm;}
+@media print{
+  html,body{width:100%;height:auto;background:#fff!important;overflow:visible!important;}
+  body{font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #login-screen,#sidebar,.loading-overlay,.modal-overlay,.page:not(#page-project),#page-project>.page-header,.no-print{display:none!important;}
+  #app{display:block!important;}
+  #main-content{margin:0!important;width:100%!important;min-width:0!important;overflow:visible!important;}
+  #page-project{display:block!important;padding:0!important;animation:none!important;width:100%!important;min-width:0!important;overflow:visible!important;}
+  #project-detail-content{width:100%!important;min-width:0!important;overflow:visible!important;padding-bottom:18mm;}
+  .print-project-heading{display:flex!important;align-items:center;justify-content:space-between;margin-bottom:7mm;padding-bottom:3mm;border-bottom:1px solid #cfd8d5;}
+  .print-project-heading h1{font-family:'DM Sans',sans-serif;font-size:20pt;margin:0;color:#18241f;}
+  .print-project-heading span{font-size:10pt;color:#60736c;}
+  .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3mm!important;margin-bottom:5mm!important;}
+  .kpi-card{min-width:0!important;padding:3.5mm!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid;}
+  .project-summary-grid{grid-template-columns:repeat(auto-fit,minmax(32mm,1fr))!important;gap:3mm!important;}
+  .section-grid.cols-2,.section-grid.cols-3{grid-template-columns:1fr!important;}
+  .card,.table-card{box-shadow:none!important;min-width:0!important;}
+  .card{break-inside:avoid;page-break-inside:avoid;}
+  .table-card{overflow:visible!important;}
+  .table-scroll{overflow:visible!important;width:100%!important;}
+  table{width:100%!important;table-layout:auto;font-size:8.5pt;}
+  thead{display:table-header-group;}
+  tr{break-inside:avoid;page-break-inside:avoid;}
+  th,td{padding:2mm 2.2mm!important;white-space:normal!important;overflow-wrap:anywhere;}
+  .form-input,.form-select,textarea{border:0!important;background:transparent!important;padding:0!important;box-shadow:none!important;color:#18241f!important;}
+  textarea{resize:none!important;overflow:visible!important;min-height:0!important;}
+  .chart-wrap,.chart-wrap.tall{height:72mm!important;break-inside:avoid;page-break-inside:avoid;}
+  canvas{max-width:100%!important;}
+  .print-page-break{break-before:page;page-break-before:always;}
+  .print-section-heading{break-after:avoid;page-break-after:avoid;}
+  .print-keep{break-inside:avoid;page-break-inside:avoid;}
+  .print-footer-logos{display:flex!important;position:fixed;left:10mm;right:10mm;bottom:4mm;height:8mm;align-items:center;justify-content:space-between;border-top:1px solid #d9e0dd;padding-top:2mm;background:#fff;z-index:1000;}
+  .print-footer-logos img{display:block!important;max-height:6mm!important;max-width:34mm!important;object-fit:contain;}
 }
 
 /* ===================== MISC ===================== */
@@ -538,7 +585,7 @@ tr:hover td{background:var(--surface3);}
       </div>
 
       <!-- Milestone panel -->
-      <div class="section-grid cols-2 mt-16" style="margin-top:20px;">
+      <div class="section-grid cols-2 mt-16 portfolio-milestone-grid" style="margin-top:20px;">
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -590,7 +637,7 @@ tr:hover td{background:var(--surface3);}
           <div class="page-subtitle" id="sub-milestones">All 127 deliverables and milestones</div>
         </div>
         <div class="page-header-right">
-          <button class="btn btn-secondary btn-sm" onclick="addMilestone()" id="btn-add-milestone">+ Marco</button>
+          <button class="btn btn-secondary btn-sm" onclick="addMilestone()" id="btn-add-milestone">Adicionar Marco</button>
           <button class="btn btn-primary btn-sm" onclick="saveMilestones()" id="btn-save-milestones">Save Changes</button>
         </div>
       </div>
@@ -706,6 +753,44 @@ tr:hover td{background:var(--surface3);}
   </main>
 </div>
 
+<!-- ===================== MODAL: MILESTONE ===================== -->
+<div class="modal-overlay" id="milestone-modal">
+  <div class="modal" style="max-width:760px;">
+    <h2 class="modal-title" id="milestone-modal-title">Marco</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-project">Projeto *</label>
+        <select class="form-select" id="ms-modal-project"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-code">ID / Codigo *</label>
+        <input class="form-input" id="ms-modal-code" type="text">
+      </div>
+      <div class="form-group" style="grid-column:1/-1;">
+        <label class="form-label" id="lbl-ms-modal-desc">Descricao *</label>
+        <textarea class="form-input" id="ms-modal-desc" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-baseline">Baseline *</label>
+        <input class="form-input" id="ms-modal-baseline" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-forecast">Previsao *</label>
+        <input class="form-input" id="ms-modal-forecast" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-status">Status *</label>
+        <select class="form-select" id="ms-modal-status"></select>
+      </div>
+    </div>
+    <div id="milestone-extra-fields" class="milestone-extra-grid" style="margin-top:14px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="btn-ms-modal-delete" type="button" onclick="deleteMilestoneFromModal()" style="display:none;margin-right:auto;">Excluir</button>
+      <button class="btn btn-secondary" type="button" onclick="closeMilestoneModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btn-ms-modal-apply" type="button" onclick="applyMilestoneModal()">Aplicar alteracoes</button>
+    </div>
+  </div>
+</div>
 <!-- ===================== MODAL: ADD MONTHLY RUBRICAS ===================== -->
 <div class="modal-overlay" id="rub-gasto-modal">
   <div class="modal" style="max-width:820px;">
@@ -1208,6 +1293,9 @@ let DATA = {
   prestacoes:[]
 };
 let milestonesChanged = false;
+let milestoneLocalSeq = 0;
+let editingMilestoneKey = null;
+let milestoneModalExtraHeaders = [];
 
 // ===================== I18N =====================
 const T = {
@@ -1300,6 +1388,8 @@ function setLang(l){
   renderCurrentPage();
 }
 
+const KAROON_LOGO_DATA='data:image/webp;base64,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';
+
 function ensureClientLogos(){
   document.querySelectorAll('.page-header').forEach(pageHeader=>{
     let header=pageHeader.querySelector('.page-header-right');
@@ -1308,27 +1398,69 @@ function ensureClientLogos(){
       header.className='page-header-right';
       pageHeader.appendChild(header);
     }
-    if(header.querySelector('.client-logo-header')) return;
-    const img=document.createElement('img');
-    img.className='client-logo-header';
-    img.src='Karoon-Logo.webp';
-    img.alt='Karoon Energy';
-    header.appendChild(img);
+    let img=header.querySelector('.client-logo-header');
+    if(!img){
+      img=document.createElement('img');
+      img.className='client-logo-header';
+      img.alt='Karoon Energy';
+      header.appendChild(img);
+    }
+    img.src=KAROON_LOGO_DATA;
   });
 }
 function ensureProjectPrintFooter(){
   const container=document.getElementById('project-detail-content');
-  if(!container || container.querySelector('.print-footer-logos')) return;
-  const sidebarLogo=document.querySelector('.sidebar-logo img');
-  const inovatusSrc=sidebarLogo?sidebarLogo.src:'';
-  const footer=document.createElement('div');
-  footer.className='print-footer-logos';
-  footer.innerHTML=`<img src="Karoon-Logo.webp" alt="Karoon Energy">${inovatusSrc?`<img src="${inovatusSrc}" alt="Inovatus">`:''}`;
-  container.appendChild(footer);
+  if(!container) return;
+  let footer=container.querySelector('.print-footer-logos');
+  if(!footer){
+    const sidebarLogo=document.querySelector('.sidebar-logo img');
+    const inovatusSrc=sidebarLogo?sidebarLogo.src:'';
+    footer=document.createElement('div');
+    footer.className='print-footer-logos';
+    footer.innerHTML='<img src="'+KAROON_LOGO_DATA+'" alt="Karoon Energy">'+(inovatusSrc?'<img src="'+inovatusSrc+'" alt="Inovatus">':'');
+    container.appendChild(footer);
+  }
+}
+function prepareProjectPrint(){
+  ensureProjectPrintFooter();
+  const content=document.getElementById('project-detail-content');
+  if(!content) return;
+  let heading=content.querySelector('.print-project-heading');
+  if(!heading){
+    heading=document.createElement('div');
+    heading.className='print-project-heading';
+    heading.innerHTML='<h1></h1><span></span>';
+    content.prepend(heading);
+  }
+  const selector=document.getElementById('project-selector');
+  const selected=selector&&selector.options[selector.selectedIndex];
+  heading.querySelector('h1').textContent=selected?selected.textContent:'Projeto';
+  heading.querySelector('span').textContent=lang==='pt'?'Resumo do projeto':'Project summary';
+  content.querySelectorAll('textarea').forEach(el=>{
+    if(el.dataset.printHeight===undefined) el.dataset.printHeight=el.style.height||'';
+    el.style.height=Math.max(el.scrollHeight,72)+'px';
+  });
+  Object.values(chartInstances||{}).forEach(chart=>{
+    if(chart&&typeof chart.resize==='function') chart.resize();
+    if(chart&&typeof chart.update==='function') chart.update('none');
+  });
+}
+function cleanupProjectPrint(){
+  document.querySelectorAll('#project-detail-content textarea').forEach(el=>{
+    if(el.dataset.printHeight!==undefined){
+      el.style.height=el.dataset.printHeight;
+      delete el.dataset.printHeight;
+    }
+  });
+  Object.values(chartInstances||{}).forEach(chart=>{if(chart&&typeof chart.resize==='function') chart.resize();});
 }
 function printProjectPage(){
-  ensureProjectPrintFooter();
-  window.print();
+  prepareProjectPrint();
+  window.setTimeout(()=>window.print(),50);
+}
+if(typeof window.addEventListener==='function'){
+  window.addEventListener('beforeprint',prepareProjectPrint);
+  window.addEventListener('afterprint',cleanupProjectPrint);
 }
 function applyTranslations(){
   const els = [
@@ -1366,6 +1498,9 @@ function applyTranslations(){
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
   const msSearch=document.getElementById('ms-search');
   if(msSearch)msSearch.placeholder=t('search');
+  const addMilestoneBtn=document.getElementById('btn-add-milestone');
+  if(addMilestoneBtn)addMilestoneBtn.textContent=lang==='pt'?'Adicionar Marco':'Add Milestone';
+  ensureClientLogos();
   sanitizeVisibleMojibake();
 }
 
@@ -1398,35 +1533,39 @@ function normalizeProjectId(id){
 // Reconhece um marco concluÃ­do. A planilha pode gravar "Completo", "ConcluÃ­do",
 // "Concluido", "Completed" (com/sem acento) â€” todos contam como concluÃ­do.
 function isMilestoneCompleted(status){
-  const s=String(status||'').trim().toLowerCase();
-  return ['completo','concluÃ­do','concluido','concluÃ­da','concluida','completed','complete'].includes(s);
+  const s=normLooseText(status).replace(/[\s_-]+/g,'');
+  return ['completo','concluido','concluida','completed','complete'].includes(s);
 }
-
-// A1/A2: classificaÃ§Ã£o POR JANELA DE DATA â€” usada apenas nos painÃ©is do PortfÃ³lio
-// (atrasados / prÃ³ximos 60 dias). NÃƒO Ã© o status do marco; o status real vem da planilha.
-// Marco concluÃ­do NUNCA Ã© atrasado/prÃ³ximo: tem prioridade sobre a janela de data.
+function milestoneForecastValue(marco){
+  return marco?.['Data prevista / Data de entrega']??marco?.Data_Prevista??marco?.Forecast??'';
+}
 function milestoneDateBucket(marco){
-  if(isMilestoneCompleted(marco.Status)) return 'Completed';
-  const dp = marco['Data prevista / Data de entrega'];
-  if(!dp || String(dp).toLowerCase()==='suspended') return 'Suspended';
-  const date = parseMilestoneDate(dp);
-  if(!date || isNaN(date.getTime())) return 'Planned';
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d60 = new Date(today); d60.setDate(d60.getDate()+60);
-  if(date < today) return 'Overdue';
-  if(date <= d60) return 'Upcoming';
+  if(isMilestoneCompleted(marco?.Status)) return 'Completed';
+  const dp=milestoneForecastValue(marco);
+  const normalizedStatus=normLooseText(marco?.Status);
+  if(!dp||String(dp).trim().toLowerCase()==='suspended'||normalizedStatus==='suspenso'||normalizedStatus==='suspended') return 'Suspended';
+  const date=parseMilestoneDate(dp);
+  if(!date||isNaN(date.getTime())) return 'Planned';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d60=new Date(today); d60.setDate(d60.getDate()+60);
+  if(date<today) return 'Overdue';
+  if(date<=d60) return 'Upcoming';
   return 'Planned';
 }
-
-// Normaliza a data prevista para um Date confiÃ¡vel (aceita ISO 'YYYY-MM-DD' ou jÃ¡-Date)
 function parseMilestoneDate(dp){
-  if(!dp) return null;
-  if(dp instanceof Date) return dp;
-  const s = String(dp).split('T')[0];
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if(m) return new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
+  if(dp===null||dp===undefined||dp==='') return null;
+  if(dp instanceof Date) return new Date(dp.getFullYear(),dp.getMonth(),dp.getDate());
+  if(typeof dp==='number'){
+    const iso=excelDate(dp);
+    return iso?parseMilestoneDate(iso):null;
+  }
+  const s=String(dp).trim().split('T')[0];
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+  m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(m) return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));
+  const d=new Date(s);
+  return isNaN(d.getTime())?null:d;
 }
 
 // A2: status do marco Ã© LIDO da planilha (coluna Status). Mantido como veio.
@@ -1906,16 +2045,27 @@ function normalizeGasto(r){
     Valor             : parseFloat(r.Valor)||0,
   };
 }
-function normalizeMarco(r){
-  const status = String(r.Status||'');
+function normalizeMarco(r,excelRow){
+  const status=String(r.Status||'');
+  const codigo=String(r.Codigo||r.ID||'');
+  const descricao=r.Descricao||r['Descrição']||'';
+  const baseline=excelDate(r.Data_Baseline||r['Data Base']);
+  const prevista=excelDate(r.Data_Prevista||r['Data prevista / Data de entrega']);
   return {
-    Projeto                           : r.Projeto||'',
-    ID                                : r.Codigo||'',
-    'DescriÃ§Ã£o'                       : r.Descricao||'',
-    'Data Base'                       : excelDate(r.Data_Baseline),
-    'Data prevista / Data de entrega' : excelDate(r.Data_Prevista),
-    Status                            : status,
-    _userStatus                       : status,
+    ...r,
+    Projeto:r.Projeto||'',
+    ID:codigo,
+    Codigo:codigo,
+    'Descrição':descricao,
+    Descricao:descricao,
+    'Data Base':baseline,
+    Data_Baseline:baseline,
+    'Data prevista / Data de entrega':prevista,
+    Data_Prevista:prevista,
+    Status:status,
+    _userStatus:status,
+    _localKey:r._localKey||('ms-'+(++milestoneLocalSeq)),
+    _excelRow:excelRow||r._excelRow||null,
   };
 }
 function normalizeSolicitacao(r){
@@ -2177,11 +2327,12 @@ async function carregarExcel(){
       DATA._headers = DATA._headers || {};
       DATA._headers[sheet] = headers.slice();
       DATA[cfg.key] = rows.slice(1)
-        .filter(row=>row.some(v=>v!==null&&v!==''))
-        .map(row=>{
+        .map((row,rowIndex)=>({row,excelRow:rowIndex+2}))
+        .filter(item=>item.row.some(v=>v!==null&&v!==''))
+        .map(item=>{
           const obj={};
-          headers.forEach((h,i)=>{ obj[h]=row[i]??''; });
-          return cfg.norm(obj);
+          headers.forEach((h,i)=>{ obj[h]=item.row[i]??''; });
+          return cfg.norm(obj,item.excelRow);
         });
       window.EXCEL_LOAD_REPORT[sheet]={status:'OK',count:DATA[cfg.key].length};
       console.log(`âœ“ ${sheet}:`,DATA[cfg.key].length,'linhas');
@@ -2636,6 +2787,31 @@ function buildProjectAlerts(pid){
 
 // ===================== RENDER â€” PROJECT DETAIL =====================
 function selectProject(pid){ renderProjectDetail(pid); }
+async function saveProjectObjective(pid){
+  const project=DATA.projetos.find(p=>p.Projeto===pid);
+  const input=document.getElementById('project-objective-text');
+  if(!project||!input) return;
+  const nextValue=input.value.trim();
+  const previousObjective=project.Objetivo_Projeto;
+  const previousLabel=project['Objetivo do Projeto'];
+  project.Objetivo_Projeto=nextValue;
+  project['Objetivo do Projeto']=nextValue;
+  showLoading(lang==='pt'?'Salvando objetivo do projeto...':'Saving project objective...');
+  try{
+    await rewriteProjetosSheet();
+    hideLoading();
+    renderProjectDetail(pid);
+    alert(lang==='pt'?'Objetivo salvo com sucesso!':'Objective saved successfully!');
+  }catch(e){
+    project.Objetivo_Projeto=previousObjective;
+    project['Objetivo do Projeto']=previousLabel;
+    hideLoading();
+    console.error('saveProjectObjective error:',e);
+    alert((lang==='pt'?'Erro ao salvar objetivo: ':'Error saving objective: ')+e.message);
+    renderProjectDetail(pid);
+  }
+}
+
 function renderProjectDetail(pid){
   if(!pid) pid = document.getElementById('project-selector').value;
   if(!pid && DATA.projetos.length) pid = DATA.projetos[0].Projeto;
@@ -2722,7 +2898,7 @@ function renderProjectDetail(pid){
   content.innerHTML = `
 
   <!-- â”€â”€ SECTION: KPIs â”€â”€ -->
-  <div class="kpi-grid" style="grid-template-columns:repeat(6,1fr);margin-bottom:20px;">
+  <div class="kpi-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:20px;">
     <div class="kpi-card">
       <div class="kpi-label">PTR-B</div>
       <div class="kpi-value" style="font-size:20px;">${FMTK(ptrb)}</div>
@@ -2743,18 +2919,39 @@ function renderProjectDetail(pid){
       <div class="kpi-label">${L?'Tempo decorrido':'Time elapsed'}</div>
       <div class="kpi-value" style="font-size:20px;">${PCT(timePct)}</div>
     </div>
-    <div class="kpi-card ${msOverdue.length?'red':''}">
-      <div class="kpi-label">${L?'Marcos Atrasados':'Overdue Milestones'}</div>
-      <div class="kpi-value" style="font-size:20px;">${msOverdue.length}</div>
+  </div>
+
+  <div class="card project-objective-card print-keep">
+    <div class="card-title">${L?'Objetivo do Projeto':'Project Objective'}</div>
+    <div class="project-objective-actions">
+      <textarea class="form-input" id="project-objective-text" rows="3" placeholder="${L?'Descreva o objetivo principal do projeto...':'Describe the main project objective...'}">${escapeHtml(projetoObjective(proj))}</textarea>
+      <button class="btn btn-primary btn-sm no-print" type="button" onclick="saveProjectObjective('${pid}')">${L?'Salvar':'Save'}</button>
     </div>
   </div>
+
+  <div class="project-summary-grid print-keep">
+    <div class="kpi-card project-summary-card">
+      <div class="kpi-label">${L?'Avisos':'Alerts'}</div>
+      <div class="kpi-value" style="font-size:20px;">${projAlerts.length}</div>
+    </div>
+    <div class="kpi-card project-summary-card ${msUpcoming.length?'amber':''}">
+      <div class="kpi-label">${L?'Marcos Próximos':'Upcoming Milestones'}</div>
+      <div class="kpi-value" style="font-size:20px;">${msUpcoming.length}</div>
+    </div>
+    <div class="kpi-card project-summary-card">
+      <div class="kpi-label">${L?'Marcos Total':'Total Milestones'}</div>
+      <div class="kpi-value" style="font-size:20px;">${projMarcos.length}</div>
+    </div>
+    ${msOverdue.length?'<div class="kpi-card project-summary-card red"><div class="kpi-label">'+(L?'Marcos Atrasados':'Overdue Milestones')+'</div><div class="kpi-value" style="font-size:20px;">'+msOverdue.length+'</div></div>':''}
+  </div>
+
 
   <!-- â”€â”€ SECTION: General Info + Milestone summary â”€â”€ -->
   <div class="section-grid cols-2" style="margin-bottom:20px;">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div class="card-title" style="margin-bottom:0;">${L?'InformaÃ§Ãµes Gerais':'General Info'}</div>
-        <button class="btn btn-secondary btn-sm" onclick="openProjectEditModal('${pid}')">${L?'Editar':'Edit'}</button>
+        <button class="btn btn-secondary btn-sm no-print" onclick="openProjectEditModal('${pid}')">${L?'Editar':'Edit'}</button>
       </div>
       <table style="width:100%;font-size:13px;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:var(--ink3);width:130px;">Executor</td><td class="fw-600">${proj.Executor||'â€”'}</td></tr>
@@ -2770,23 +2967,6 @@ function renderProjectDetail(pid){
     </div>
     <div class="card">
       <div class="card-title">${L?'Marcos':'Milestones'} (${projMarcos.length})</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:0;">
-        <div style="text-align:center;padding:10px 6px;background:var(--red-light);border-radius:8px;">
-          <div style="font-size:22px;font-weight:600;color:var(--red);">${msOverdue.length}</div>
-          <div style="font-size:10px;color:var(--red);margin-top:2px;">${L?'Atrasados':'Overdue'}</div>
-        </div>
-        <div style="text-align:center;padding:10px 6px;background:var(--amber-light);border-radius:8px;">
-          <div style="font-size:22px;font-weight:600;color:var(--amber);">${msUpcoming.length}</div>
-          <div style="font-size:10px;color:var(--amber);margin-top:2px;">${L?'PrÃ³ximos':'Upcoming'}</div>
-        </div>
-        <div style="text-align:center;padding:10px 6px;background:var(--blue-light);border-radius:8px;">
-          <div style="font-size:22px;font-weight:600;color:var(--blue);">${msPlanned.length}</div>
-          <div style="font-size:10px;color:var(--blue);margin-top:2px;">${L?'Planejados':'Planned'}</div>
-        </div>
-        <div style="text-align:center;padding:10px 6px;background:var(--green-light);border-radius:8px;">
-          <div style="font-size:22px;font-weight:600;color:var(--green);">${msCompleted.length}</div>
-          <div style="font-size:10px;color:var(--green);margin-top:2px;">${L?'ConcluÃ­dos':'Completed'}</div>
-        </div>      </div>
       <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
         <div style="font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:8px;">${L?'Marcos proximos':'Upcoming milestones'}: ${msUpcomingList.length}</div>
         ${msUpcomingList.length
@@ -2819,17 +2999,18 @@ function renderProjectDetail(pid){
         </tr></thead>
         <tbody>
           ${projMarcos.map(m=>{
-            const isSusp = String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
-            const origIdx = DATA.marcos.findIndex(om=>om.ID===m.ID&&om['DescriÃ§Ã£o']===m['DescriÃ§Ã£o']);
-            return `<tr>
-              <td class="fw-600 fs-12">${m.ID||'â€”'}</td>
-              <td style="max-width:300px;"><input class="form-input fs-12" style="padding:4px 8px;min-width:220px;" value="${escapeAttr(milestoneDescription(m)===EMPTY?'':milestoneDescription(m))}" onchange="updateMilestoneDescription(${origIdx},this.value)"></td>
+            const isSusp=String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
+            const origIdx=milestoneIndexByKey(m._localKey);
+            const key=escapeAttr(m._localKey);
+            return `<tr class="milestone-row" onclick="openMilestoneModal('edit','${key}')">
+              <td class="fw-600 fs-12">${escapeHtml(m.ID||EMPTY)}</td>
+              <td class="fs-12" style="max-width:300px;">${escapeHtml(milestoneDescription(m))}</td>
               <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
-              <td>${isSusp
+              <td><div class="inline-control" onclick="event.stopPropagation()">${isSusp
                 ? `<span class="badge badge-gray">${L?'Suspenso':'Suspended'}</span>`
-                : `<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${(m['Data prevista / Data de entrega']||'').split('T')[0]}" onchange="updateMilestoneDate(${origIdx},this.value)">`
-              }</td>
-              <td>${milestoneStatusSelect(m, origIdx)}</td>
+                : `<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${escapeAttr((m['Data prevista / Data de entrega']||'').split('T')[0])}" onchange="updateMilestoneDate(${origIdx},this.value)">`
+              }</div></td>
+              <td><div class="inline-control" onclick="event.stopPropagation()">${milestoneStatusSelect(m,origIdx)}</div></td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -2838,9 +3019,9 @@ function renderProjectDetail(pid){
   </div>
 
   <!-- â”€â”€ SECTION: Financial â”€â”€ -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'ExecuÃ§Ã£o Financeira':'Financial Execution'}</div>
-    <button class="btn btn-primary btn-sm" onclick="goToRubricasForProject('${pid}')">+ ${L?'Novo Gasto':'New Expense'}</button>
+  <div class="print-section-heading" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;">${L?'ExecuÃ§Ã£o Financeira':'Financial Execution'}</div>
+    <button class="btn btn-primary btn-sm no-print" onclick="goToRubricasForProject('${pid}')">+ ${L?'Novo Gasto':'New Expense'}</button>
   </div>
 
   <div class="card" style="margin-bottom:16px;">
@@ -2895,9 +3076,9 @@ function renderProjectDetail(pid){
   </div>
 
   <!-- â”€â”€ SECTION: SMs â”€â”€ -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-    <div style="font-family:'DM Serif Display',serif;font-size:18px;">${L?'SolicitaÃ§Ãµes de MudanÃ§a':'Change Requests (SM)'}</div>
-    <button class="btn btn-secondary btn-sm" onclick="openSMModal('${pid}')">+ ${L?'Nova SM':'New SM'}</button>
+  <div class="print-page-break" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;">${L?'SolicitaÃ§Ãµes de MudanÃ§a':'Change Requests (SM)'}</div>
+    <button class="btn btn-secondary btn-sm no-print" onclick="openSMModal('${pid}')">+ ${L?'Nova SM':'New SM'}</button>
   </div>
 
   ${projSMs.length===0
@@ -2955,7 +3136,7 @@ function renderProjectDetail(pid){
   }
 
   <!-- â”€â”€ SECTION: Rendimento â”€â”€ -->
-  <div style="font-family:'DM Serif Display',serif;font-size:18px;margin-bottom:12px;">${L?'Rendimento de Investimento':'Investment Income'}</div>
+  <div class="print-page-break" style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;margin-bottom:12px;">${L?'Rendimento de Investimento':'Investment Income'}</div>
 
   <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
     <div class="kpi-card">
@@ -3119,6 +3300,29 @@ function milestoneForecastMatchesDateFilter(m){
   return true;
 }
 
+function milestoneIndexByKey(key){
+  return DATA.marcos.findIndex(m=>m._localKey===key);
+}
+function milestoneCoreFieldForHeader(header){
+  const h=normLooseText(header).replace(/[\s_-]+/g,'');
+  if(h==='projeto'||h==='project') return 'project';
+  if(h==='codigo'||h==='id'||h==='code') return 'code';
+  if(h==='descricao'||h==='description') return 'description';
+  if(h==='database'||h==='databaseline'||h==='baseline') return 'baseline';
+  if(h==='dataprevista'||h==='forecast'||h==='deliverydate'||h==='datadeentrega') return 'forecast';
+  if(h==='status') return 'status';
+  return '';
+}
+function milestoneValueForHeader(m,header){
+  const core=milestoneCoreFieldForHeader(header);
+  if(core==='project') return m.Projeto||'';
+  if(core==='code') return m.ID||m.Codigo||'';
+  if(core==='description') return milestoneDescription(m)===EMPTY?'':milestoneDescription(m);
+  if(core==='baseline') return m['Data Base']||m.Data_Baseline||'';
+  if(core==='forecast') return m['Data prevista / Data de entrega']||m.Data_Prevista||'';
+  if(core==='status') return m.Status||m._userStatus||'';
+  return m[header]??'';
+}
 function renderMilestones(){
   const pFilter=document.getElementById('ms-project-filter').value;
   const sFilter=document.getElementById('ms-status-filter').value;
@@ -3129,79 +3333,166 @@ function renderMilestones(){
   if(pFilter!=='ALL') marcos=marcos.filter(m=>m.Projeto===pFilter);
   if(sFilter!=='ALL') marcos=marcos.filter(m=>String(m.Status||'').trim()===sFilter);
   marcos=marcos.filter(m=>milestoneForecastMatchesDateFilter(m));
-  if(search) marcos=marcos.filter(m=>(m['DescriÃ§Ã£o']||'').toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
+  if(search) marcos=marcos.filter(m=>milestoneDescription(m).toLowerCase().includes(search)||(m.ID||'').toLowerCase().includes(search));
 
-  // popula o filtro de status com os valores reais da planilha (uma vez)
   const sf=document.getElementById('ms-status-filter');
-  if(sf && !sf.dataset.populated){
+  if(sf&&!sf.dataset.populated){
     const statuses=[...new Set(DATA.marcos.map(m=>String(m.Status||'').trim()).filter(Boolean))].sort();
-    const allLabel=lang==='pt'?'Todos os status':'All Statuses';
-    sf.innerHTML=`<option value="ALL">${allLabel}</option>`+statuses.map(s=>`<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join('');
+    sf.innerHTML='<option value="ALL">'+(lang==='pt'?'Todos os status':'All Statuses')+'</option>'+statuses.map(s=>'<option value="'+escapeAttr(s)+'">'+escapeHtml(s)+'</option>').join('');
     sf.dataset.populated='1';
     sf.value=sFilter;
   }
 
-  const thead=document.getElementById('milestones-thead');
-  thead.innerHTML=`<tr>
-    <th>${t('ms_id')}</th>
-    <th>${t('ms_project')}</th>
-    <th>${t('ms_desc')}</th>
-    <th>${t('ms_baseline')}</th>
-    <th>${t('ms_forecast')}</th>
-    <th>${t('ms_status')}</th>
-  </tr>`;
-
+  document.getElementById('milestones-thead').innerHTML='<tr><th>'+t('ms_id')+'</th><th>'+t('ms_project')+'</th><th>'+t('ms_desc')+'</th><th>'+t('ms_baseline')+'</th><th>'+t('ms_forecast')+'</th><th>'+t('ms_status')+'</th></tr>';
   const tbody=document.getElementById('milestones-tbody');
   tbody.innerHTML='';
   if(!marcos.length){
-    tbody.innerHTML=`<tr><td colspan="6" class="empty-state">${t('no_milestones')}</td></tr>`;
+    tbody.innerHTML='<tr><td colspan="6" class="empty-state">'+t('no_milestones')+'</td></tr>';
     return;
   }
-  marcos.forEach((m,i)=>{
-    const origIdx=DATA.marcos.findIndex(om=>om.ID===m.ID&&om['DescriÃ§Ã£o']===m['DescriÃ§Ã£o']);
+  marcos.forEach(m=>{
+    const origIdx=milestoneIndexByKey(m._localKey);
+    const key=escapeAttr(m._localKey);
     const isSuspended=String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
+    const forecastValue=m['Data prevista / Data de entrega']?String(m['Data prevista / Data de entrega']).split('T')[0]:'';
     const dateCell=isSuspended
-      ?`<span class="badge badge-gray">${t('suspended')}</span>`
-      :`<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="${m['Data prevista / Data de entrega']?m['Data prevista / Data de entrega'].split('T')[0]:''}" onchange="updateMilestoneDate(${origIdx},this.value)" ${isSuspended?'disabled':''}>`;
-
-    tbody.innerHTML+=`<tr>
-      <td class="fw-600 fs-12">${m.ID||'â€”'}</td>
-      <td class="fs-12">${m.Projeto}</td>
-      <td style="max-width:320px;"><div style="display:flex;gap:6px;align-items:center;"><input class="form-input fs-12" style="padding:4px 8px;min-width:220px;" value="${escapeAttr(milestoneDescription(m)===EMPTY?'':milestoneDescription(m))}" onchange="updateMilestoneDescription(${origIdx},this.value)"><button class="btn btn-secondary btn-sm" type="button" onclick="deleteMilestone(${origIdx})">${lang==='pt'?'Excluir':'Delete'}</button></div></td>
-      <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
-      <td>${dateCell}</td>
-      <td>${milestoneStatusSelect(m, origIdx)}</td>
-    </tr>`;
+      ? '<span class="badge badge-gray">'+t('suspended')+'</span>'
+      : '<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="'+escapeAttr(forecastValue)+'" onchange="updateMilestoneDate('+origIdx+',this.value)">';
+    tbody.innerHTML+='<tr class="milestone-row" onclick="openMilestoneModal(\'edit\',\''+key+'\')">'
+      +'<td class="fw-600 fs-12">'+escapeHtml(m.ID||EMPTY)+'</td>'
+      +'<td class="fs-12">'+escapeHtml(m.Projeto||EMPTY)+'</td>'
+      +'<td class="fs-12" style="max-width:320px;">'+escapeHtml(milestoneDescription(m))+'</td>'
+      +'<td class="fs-12 color-ink3">'+FMTD(m['Data Base'])+'</td>'
+      +'<td><div class="inline-control" onclick="event.stopPropagation()">'+dateCell+'</div></td>'
+      +'<td><div class="inline-control" onclick="event.stopPropagation()">'+milestoneStatusSelect(m,origIdx)+'</div></td>'
+      +'</tr>';
   });
 }
+function milestoneModalStatuses(current){
+  const defaults=lang==='pt'?['Planejado','Em andamento','Concluído','Suspenso']:['Planned','In progress','Completed','Suspended'];
+  return [...new Set(defaults.concat(DATA.marcos.map(m=>String(m.Status||'').trim()),current||'').filter(Boolean))];
+}
+function openMilestoneModal(mode,keyOrProject){
+  const editing=mode==='edit';
+  const idx=editing?milestoneIndexByKey(keyOrProject):-1;
+  const record=idx>=0?DATA.marcos[idx]:null;
+  if(editing&&!record) return;
+  editingMilestoneKey=record?record._localKey:null;
 
+  const projectSelect=document.getElementById('ms-modal-project');
+  projectSelect.innerHTML=DATA.projetos.map(p=>'<option value="'+escapeAttr(p.Projeto)+'">'+escapeHtml(projectLabel(p))+'</option>').join('');
+  const filteredProject=document.getElementById('ms-project-filter')?.value;
+  const selectedProject=record?.Projeto||(keyOrProject&&mode==='create'?keyOrProject:'')||(filteredProject&&filteredProject!=='ALL'?filteredProject:'')||document.getElementById('project-selector')?.value||DATA.projetos[0]?.Projeto||'';
+  projectSelect.value=selectedProject;
+
+  document.getElementById('ms-modal-code').value=record?.ID||record?.Codigo||'';
+  document.getElementById('ms-modal-desc').value=record?(milestoneDescription(record)===EMPTY?'':milestoneDescription(record)):'';
+  document.getElementById('ms-modal-baseline').value=record?.['Data Base']||'';
+  const forecast=record?.['Data prevista / Data de entrega']||'';
+  document.getElementById('ms-modal-forecast').value=String(forecast).toLowerCase()==='suspended'?'':forecast;
+  const statusSelect=document.getElementById('ms-modal-status');
+  const currentStatus=record?.Status||(lang==='pt'?'Planejado':'Planned');
+  statusSelect.innerHTML=milestoneModalStatuses(currentStatus).map(s=>'<option value="'+escapeAttr(s)+'">'+escapeHtml(s)+'</option>').join('');
+  statusSelect.value=currentStatus;
+
+  const headers=(DATA._headers&&DATA._headers.Marcos)||['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Status'];
+  milestoneModalExtraHeaders=headers.filter(h=>!milestoneCoreFieldForHeader(h));
+  const extra=document.getElementById('milestone-extra-fields');
+  extra.innerHTML=milestoneModalExtraHeaders.map((header,i)=>{
+    const isDate=/data|date/.test(normLooseText(header));
+    let value=record?milestoneValueForHeader(record,header):'';
+    if(isDate&&value) value=excelDate(value);
+    return '<div class="form-group"><label class="form-label">'+escapeHtml(header)+'</label><input class="form-input" data-ms-extra-index="'+i+'" type="'+(isDate?'date':'text')+'" value="'+escapeAttr(value)+'"></div>';
+  }).join('');
+  extra.style.display=milestoneModalExtraHeaders.length?'grid':'none';
+
+  const labels={
+    'lbl-ms-modal-project':lang==='pt'?'Projeto *':'Project *',
+    'lbl-ms-modal-code':lang==='pt'?'ID / Código *':'ID / Code *',
+    'lbl-ms-modal-desc':lang==='pt'?'Descrição *':'Description *',
+    'lbl-ms-modal-baseline':'Baseline *',
+    'lbl-ms-modal-forecast':lang==='pt'?'Previsão *':'Forecast *',
+    'lbl-ms-modal-status':'Status *',
+  };
+  Object.entries(labels).forEach(([id,label])=>{const el=document.getElementById(id);if(el)el.textContent=label;});
+  document.getElementById('milestone-modal-title').textContent=editing?(lang==='pt'?'Editar Marco':'Edit Milestone'):(lang==='pt'?'Adicionar Marco':'Add Milestone');
+  document.getElementById('btn-ms-modal-delete').style.display=editing?'inline-flex':'none';
+  document.getElementById('btn-ms-modal-delete').textContent=lang==='pt'?'Excluir':'Delete';
+  document.getElementById('btn-ms-modal-apply').textContent=lang==='pt'?'Aplicar alterações':'Apply changes';
+  document.getElementById('milestone-modal').classList.add('show');
+  sanitizeVisibleMojibake(document.getElementById('milestone-modal'));
+}
+function closeMilestoneModal(){
+  document.getElementById('milestone-modal').classList.remove('show');
+  editingMilestoneKey=null;
+}
+function applyMilestoneModal(){
+  const L=lang==='pt';
+  const project=document.getElementById('ms-modal-project').value.trim();
+  const code=document.getElementById('ms-modal-code').value.trim();
+  const description=document.getElementById('ms-modal-desc').value.trim();
+  const baseline=document.getElementById('ms-modal-baseline').value;
+  const forecast=document.getElementById('ms-modal-forecast').value;
+  const status=document.getElementById('ms-modal-status').value.trim();
+  if(!project||!code||!description||!baseline||!forecast||!status){
+    alert(L?'Preencha Projeto, ID, Descrição, Baseline, Previsão e Status.':'Fill Project, ID, Description, Baseline, Forecast and Status.');
+    return;
+  }
+  const duplicate=DATA.marcos.some(m=>m._localKey!==editingMilestoneKey&&m.Projeto===project&&String(m.ID||m.Codigo||'').trim().toLowerCase()===code.toLowerCase());
+  if(duplicate){
+    alert(L?'Já existe um marco com este ID neste projeto.':'A milestone with this ID already exists in this project.');
+    return;
+  }
+  const idx=editingMilestoneKey?milestoneIndexByKey(editingMilestoneKey):-1;
+  const next=idx>=0?{...DATA.marcos[idx]}:{_localKey:'ms-'+(++milestoneLocalSeq)};
+  next.Projeto=project;
+  next.ID=code;
+  next.Codigo=code;
+  next['Descrição']=description;
+  next.Descricao=description;
+  next['Data Base']=baseline;
+  next.Data_Baseline=baseline;
+  next['Data prevista / Data de entrega']=forecast;
+  next.Data_Prevista=forecast;
+  next.Status=status;
+  next._userStatus=status;
+  document.querySelectorAll('#milestone-extra-fields [data-ms-extra-index]').forEach(input=>{
+    const header=milestoneModalExtraHeaders[Number(input.dataset.msExtraIndex)];
+    if(header) next[header]=input.value;
+  });
+  if(idx>=0) DATA.marcos[idx]=next; else DATA.marcos.push(next);
+  milestonesChanged=true;
+  closeMilestoneModal();
+  renderMilestones();
+  const pid=document.getElementById('project-selector')?.value;
+  if(pid&&currentPage==='project') renderProjectDetail(pid);
+}
+function deleteMilestoneFromModal(){
+  const idx=milestoneIndexByKey(editingMilestoneKey);
+  if(idx<0) return;
+  if(!confirm(lang==='pt'?'Excluir este marco? A exclusão será efetivada ao salvar as alterações.':'Delete this milestone? Deletion is applied when changes are saved.')) return;
+  DATA.marcos.splice(idx,1);
+  milestonesChanged=true;
+  closeMilestoneModal();
+  renderMilestones();
+  const pid=document.getElementById('project-selector')?.value;
+  if(pid&&currentPage==='project') renderProjectDetail(pid);
+}
 function updateMilestoneDescription(idx,val){
-  if(idx<0||idx>=DATA.marcos.length)return;
+  if(idx<0||idx>=DATA.marcos.length) return;
   DATA.marcos[idx]['Descrição']=val;
   DATA.marcos[idx].Descricao=val;
   milestonesChanged=true;
 }
 function deleteMilestone(idx){
-  if(idx<0||idx>=DATA.marcos.length)return;
-  const L=lang==='pt';
-  if(!confirm(L?'Excluir este marco?':'Delete this milestone?')) return;
-  DATA.marcos.splice(idx,1);
-  milestonesChanged=true;
-  renderMilestones();
-  if(currentPage==='project') renderProjectDetail(document.getElementById('project-selector')?.value);
+  if(idx<0||idx>=DATA.marcos.length) return;
+  editingMilestoneKey=DATA.marcos[idx]._localKey;
+  deleteMilestoneFromModal();
 }
 function addMilestone(){
-  const L=lang==='pt';
-  const pFilter=document.getElementById('ms-project-filter')?.value||'ALL';
-  const project=(pFilter!=='ALL'?pFilter:(document.getElementById('project-selector')?.value||DATA.projetos[0]?.Projeto||''));
-  if(!project){ alert(L?'Selecione um projeto.':'Select a project.'); return; }
-  const codigo=prompt(L?'Codigo do marco:':'Milestone code:','');
-  if(!codigo) return;
-  const desc=prompt(L?'Descricao do marco:':'Milestone description:','')||'';
-  const prevista=prompt(L?'Data prevista (AAAA-MM-DD):':'Forecast date (YYYY-MM-DD):','')||'';
-  DATA.marcos.push({Projeto:project,ID:codigo,Codigo:codigo,'Descrição':desc,Descricao:desc,'Data Base':'','Data prevista / Data de entrega':prevista,Status:'Planejado',_userStatus:'Planejado'});
-  milestonesChanged=true;
-  renderMilestones();
+  const filtered=document.getElementById('ms-project-filter')?.value;
+  const project=filtered&&filtered!=='ALL'?filtered:(document.getElementById('project-selector')?.value||'');
+  openMilestoneModal('create',project);
 }
 function updateMilestoneDate(idx,val){
   if(idx<0||idx>=DATA.marcos.length)return;
@@ -3209,18 +3500,43 @@ function updateMilestoneDate(idx,val){
   milestonesChanged=true;
 }
 // A2: alterar status grava imediatamente na planilha (sem cÃ¡lculo automÃ¡tico)
+function excelColumnLetter(index){
+  let n=index+1;
+  let out='';
+  while(n>0){
+    const rem=(n-1)%26;
+    out=String.fromCharCode(65+rem)+out;
+    n=Math.floor((n-1)/26);
+  }
+  return out;
+}
 async function updateMilestoneStatus(idx,val){
-  if(idx<0||idx>=DATA.marcos.length)return;
+  if(idx<0||idx>=DATA.marcos.length) return;
   const m=DATA.marcos[idx];
-  const old=m.Status, oldU=m._userStatus;
-  m.Status=val; m._userStatus=val;
+  const old=m.Status,oldU=m._userStatus;
+  m.Status=val;
+  m._userStatus=val;
+  if(!m._excelRow){
+    milestonesChanged=true;
+    renderCurrentPage();
+    return;
+  }
+  const headers=(DATA._headers&&DATA._headers.Marcos)||[];
+  const statusIndex=headers.findIndex(h=>milestoneCoreFieldForHeader(h)==='status');
+  if(statusIndex<0){
+    m.Status=old;
+    m._userStatus=oldU;
+    alert(lang==='pt'?'A coluna Status não foi encontrada na aba Marcos.':'Status column was not found in the Milestones sheet.');
+    return;
+  }
   showLoading(lang==='pt'?'Salvando status do marco...':'Saving milestone status...');
   try{
-    await rewriteMarcosSheet();
+    await excelPatchRange('Marcos',excelColumnLetter(statusIndex)+m._excelRow,[[val]]);
     hideLoading();
     renderCurrentPage();
   }catch(e){
-    m.Status=old; m._userStatus=oldU; // rollback
+    m.Status=old;
+    m._userStatus=oldU;
     hideLoading();
     console.error('updateMilestoneStatus error:',e);
     alert((lang==='pt'?'Erro ao salvar status do marco: ':'Error saving milestone status: ')+e.message);
@@ -3239,7 +3555,9 @@ function marcoCellFor(header,m){
     return isoToExcelSerial(m['Data prevista / Data de entrega'])||'';
   }
   if(h==='status') return m.Status||m._userStatus||'';
-  return m[header]||'';
+  const raw=m[header]??'';
+  if(raw&&/data|date/.test(normLooseText(header))&&/^\d{4}-\d{2}-\d{2}/.test(String(raw))) return isoToExcelSerial(String(raw).slice(0,10))||raw;
+  return raw;
 }
 async function rewriteMarcosSheet(){
   const headers=(DATA._headers&&DATA._headers.Marcos&&DATA._headers.Marcos.length)
@@ -3253,6 +3571,7 @@ async function saveMilestones(){
   showLoading(lang==='pt'?'Salvando marcos no Excel...':'Saving milestones to Excel...');
   try{
     await rewriteMarcosSheet();
+    DATA.marcos.forEach((m,i)=>{m._excelRow=i+2;});
     milestonesChanged=false;
     hideLoading();
     alert(lang==='pt'?'Marcos salvos com sucesso!':'Milestones saved successfully!');
