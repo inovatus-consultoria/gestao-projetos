@@ -2022,7 +2022,7 @@ async function generateProjectPdf(pid,options={}){
       [L?'No ANP':'ANP No.',proj['NÃºmero ANP']||proj.Numero_ANP||'-'],
       [L?'Gerente':'Project Manager',proj['Project Manager']||proj.Project_Manager||'-'],
       ['Gestor',proj.Gestor||'-'],
-      [L?'Inicio':'Start',projectPdfDate(proj['Data de inÃ­cio ']||proj['Data de inÃ­cio'])],
+      [L?'Inicio':'Start',projectPdfDate(projectStartValue(proj))],
       [L?'Fim':'End',projectPdfDate(proj['Data final'])],
       [L?'Fim real':'Actual end',projectPdfDate(proj['Data final real'])],
       [L?'Duracao':'Duration',(proj['DuraÃ§Ã£o (meses)']||proj.Duracao_Meses||'-')+' '+(L?'meses':'months')],
@@ -2383,6 +2383,23 @@ async function updateProjectStatus(pid, newStatus){
 function projetoObjective(p){
   return p?.Objetivo_Projeto || p?.['Objetivo do Projeto'] || p?.Objective || '';
 }
+function projectStartValue(project){
+  if(!project) return '';
+  const aliases=['Data_Inicio','Data de início ','Data de início','Data de inÃ­cio ','Data de inÃ­cio','Data de inicio','Data inicial','Inicio','Start Date','Start'];
+  for(const key of aliases){
+    const value=project[key];
+    if(value!==undefined && value!==null && String(value).trim()!=='') return value;
+  }
+  const wanted=new Set(aliases.map(key=>normLooseText(key).replace(/\s+/g,'_')));
+  const found=Object.keys(project).find(key=>wanted.has(normLooseText(key).replace(/\s+/g,'_')));
+  return found ? project[found] : '';
+}
+function projectStartIso(project){
+  return excelDate(projectStartValue(project));
+}
+function projectStartDate(project){
+  return parseMilestoneDate(projectStartValue(project));
+}
 function projetoCellFor(header,p){
   const h=normLooseText(header).replace(/\s+/g,'_');
   if(h==='codigo'||h==='projeto') return p.Projeto||'';
@@ -2391,7 +2408,7 @@ function projetoCellFor(header,p){
   if(h==='numero_anp'||h==='anp') return p.Numero_ANP||p['Número ANP']||p['Numero ANP raw']||'';
   if(h==='project_manager'||h==='gerente'||h==='manager') return p.Project_Manager||p['Project Manager']||'';
   if(h==='gestor') return p.Gestor||'';
-  if(h==='data_inicio'||h==='inicio'||h==='start') return isoToExcelSerial(p['Data de início ']||p['Data de início'])||'';
+  if(h==='data_inicio'||h==='data_de_inicio'||h==='data_inicial'||h==='inicio'||h==='start_date'||h==='start') return isoToExcelSerial(projectStartValue(p))||'';
   if(h==='data_fim'||h==='fim'||h==='end') return isoToExcelSerial(p['Data final'])||'';
   if(h==='data_fim_real'||h==='fim_real'||h==='actual_end') return p['Data final real'] ? (isoToExcelSerial(p['Data final real'])||'') : '';
   if(h==='duracao_meses'||h==='duracao'||h==='duration_months') return p.Duracao_Meses||p['Duração (meses)']||'';
@@ -2562,10 +2579,10 @@ function getExec(pid){
 }
 
 function getTimePct(proj){
-  const start=new Date(proj['Data de inÃ­cio ']||proj['Data de inÃ­cio']);
-  const end=new Date(proj['Data final real']);
-  const today=new Date();
-  if(isNaN(start)||isNaN(end))return 0;
+  const start=projectStartDate(proj);
+  const end=parseMilestoneDate(proj?.['Data final real']||proj?.Data_Fim_Real||proj?.['Data final']||proj?.Data_Fim);
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(!start||!end||end<=start)return 0;
   return Math.max(0,Math.min(1,(today-start)/(end-start)));
 }
 
@@ -2733,6 +2750,7 @@ function mesFromDate(iso){
 // r = objeto com chaves = headers da planilha (nomes reais, nÃ£o field_N)
 
 function normalizeProjeto(r){
+  const start=projectStartIso(r);
   return {
     Projeto             : r.Codigo||'',
     'TÃ­tulo do projeto' : r.Titulo||'',
@@ -2740,7 +2758,8 @@ function normalizeProjeto(r){
     'NÃºmero ANP'        : r.Numero_ANP||'',
     'Project Manager'   : r.Project_Manager||'',
     Gestor              : r.Gestor||'',
-    'Data de inÃ­cio '   : excelDate(r.Data_Inicio),
+    Data_Inicio         : start,
+    'Data de inÃ­cio '   : start,
     'Data final'        : excelDate(r.Data_Fim),
     'Data final real'   : excelDate(r.Data_Fim_Real),
     Data_Fim_Real       : excelDate(r.Data_Fim_Real),
@@ -3270,7 +3289,7 @@ function renderPortfolio(){
         <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,timePct*100).toFixed(0)}%;background:var(--ink3)"></div></div>
         <span class="fs-12 color-ink3">${PCT(timePct)}</span>
       </div></td>
-      <td class="fs-12 color-ink3">${FMTD(p['Data de inÃ­cio ']||p['Data de inÃ­cio'])}</td>
+      <td class="fs-12 color-ink3">${FMTD(projectStartValue(p))}</td>
       <td class="fs-12 color-ink3">${FMTD(p['Data final real'])}</td>
     </tr>`;
   });
@@ -3318,12 +3337,12 @@ function renderGantt(projs){
 
   // coleta projetos com datas vÃ¡lidas
   const items=projs.map(p=>{
-    const start=new Date(p['Data de inÃ­cio ']||p['Data de inÃ­cio']);
-    const end=new Date(p['Data final']);
-    const realRaw=p['Data final real'];
-    const real=realRaw?new Date(realRaw):null;
-    return {p,start,end,real:(real&&!isNaN(real))?real:null};
-  }).filter(it=>!isNaN(it.start)&&!isNaN(it.end));
+    const start=projectStartDate(p);
+    const end=parseMilestoneDate(p['Data final']||p.Data_Fim);
+    const realRaw=p['Data final real']||p.Data_Fim_Real;
+    const real=realRaw?parseMilestoneDate(realRaw):null;
+    return {p,start,end,real};
+  }).filter(it=>it.start&&it.end);
 
   if(!items.length){
     el.innerHTML=`<div class="empty-state fs-12">${L?'Sem datas de projeto para exibir.':'No project dates to display.'}</div>`;
@@ -3698,7 +3717,7 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);">NÂº ANP</td><td class="fw-600">${proj['NÃºmero ANP']||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Gerente':'Project Manager'}</td><td>${proj['Project Manager']||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'â€”'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start'}</td><td>${FMTD(proj['Data de inÃ­cio ']||proj['Data de inÃ­cio'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start'}</td><td>${FMTD(projectStartValue(proj))}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim':'End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
         ${proj['Data final real'] ? `<tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End'}</td><td>${FMTD(proj['Data final real'])}</td></tr>` : ''}
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'DuraÃ§Ã£o':'Duration'}</td><td>${proj['DuraÃ§Ã£o (meses)']||'â€”'} ${L?'meses':'months'}</td></tr>
@@ -4411,7 +4430,7 @@ function rubProjectYearOptions(pid){
     .filter(r=>r.Projeto===pid)
     .map(r=>parseInt(rendimentoMonthKey(r).slice(0,4),10))
     .filter(y=>Number.isFinite(y));
-  const startYear=rubDateYear(proj['Data de in\u00edcio ']||proj['Data de in\u00edcio'])||currentYear;
+  const startYear=rubDateYear(projectStartValue(proj))||currentYear;
   const endYear=rubDateYear(proj['Data final real']||proj['Data final'])||currentYear;
   const minYear=Math.min(startYear,currentYear,...gastoYears,...rendimentoYears);
   const maxYear=Math.max(endYear,currentYear+2,...gastoYears,...rendimentoYears);
@@ -4429,7 +4448,7 @@ function rubProjectMonthKeys(pid){
   DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).forEach(g=>keys.add(rubMonthKey(g)));
   (DATA.rendimento||[]).filter(r=>r.Projeto===pid).forEach(r=>keys.add(rendimentoMonthKey(r)));
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
-  const startKey=rubDateMonthKey(proj?.['Data de inÃ­cio ']||proj?.['Data de inÃ­cio']);
+  const startKey=rubDateMonthKey(projectStartValue(proj));
   const todayKey=rubDateMonthKey(new Date());
   if(startKey && todayKey){
     let [y,m]=startKey.split('-').map(n=>parseInt(n,10));
@@ -5635,7 +5654,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   const title = _rptField(proj,['T\u00edtulo do projeto','Titulo do projeto','Titulo','Title']);
   const executor = proj.Executor||'';
   const valor = proj.Valor_PTRB||proj['Planned Value (R$)']||0;
-  const inicio = FMTD(_rptField(proj,['Data de in\u00edcio ','Data de in\u00edcio','Data de inicio','Start Date']));
+  const inicio = FMTD(projectStartValue(proj));
   const fim = FMTD(proj['Data final real']||proj['Data final']||'');
   const duracao = proj.Duracao_Meses||proj['Dura\u00e7\u00e3o (meses)']||'';
   const pm = _rptField(proj,['Project_Manager','Project Manager','Gestor','Manager']);
@@ -5839,7 +5858,7 @@ function _rptPortfolioChildren(d, projetos, tableCounter){
   const widths=[700,3100,1150,950,1150,1700,1400,800,800,1050,1158],totalW=widths.reduce((a,b)=>a+b,0);
   const heads=['Project','Title','Status','Executor','ANP','Current Budget','Actuals','Exec%','Time%','Start','Actual End'];
   const money=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const rows=projetos.map(p=>{const e=getExec(p.Projeto);return [_rptProjectNumber(p.Projeto),projectShortTitle(p),_rptStatus(p.Status_Projeto),p.Executor||'',_rptField(p,['N\u00famero ANP','Numero ANP','ANP']),money(e.plan),money(e.actual),_rptPct(e.pct),_rptPct(getTimePct(p)),FMTD(_rptField(p,['Data de in\u00edcio ','Data de inicio','Start Date'])),FMTD(_rptField(p,['Data final real','Actual End']))];});
+  const rows=projetos.map(p=>{const e=getExec(p.Projeto);return [_rptProjectNumber(p.Projeto),projectShortTitle(p),_rptStatus(p.Status_Projeto),p.Executor||'',_rptField(p,['N\u00famero ANP','Numero ANP','ANP']),money(e.plan),money(e.actual),_rptPct(e.pct),_rptPct(getTimePct(p)),FMTD(projectStartValue(p)),FMTD(_rptField(p,['Data final real','Actual End']))];});
   const tc=tableCounter[0]++;
   return [_rptNumberedHeading(d,'Project Portfolio',0,{before:120,after:180}),_rptCaption(d,`Table ${tc}: Project Portfolio.`),new d.Table({width:{size:100,type:d.WidthType.PERCENTAGE},layout:d.TableLayoutType.AUTOFIT,columnWidths:widths,rows:[new d.TableRow({tableHeader:true,children:heads.map((h,i)=>_rptHdrCell(d,h,widths[i],{center:i!==1}))}),...rows.map(vals=>new d.TableRow({children:vals.map((v,i)=>_rptBodyCell(d,v,widths[i],{center:i!==1}))}))]})];
 }
@@ -6578,7 +6597,7 @@ function openProjectEditModal(pid){
   setV('pm-pmanager', p['Project Manager']||p.Project_Manager||'');
   setV('pm-gestor', p.Gestor||'Yiannis');
   setV('pm-status', p.Status_Projeto||'Em andamento');
-  setV('pm-inicio', (String(p['Data de inÃ­cio ']||p['Data de inÃ­cio']||'').split('T')[0]));
+  setV('pm-inicio', (String(projectStartValue(p)||'').split('T')[0]));
   setV('pm-fim', (String(p['Data final']||'').split('T')[0]));
   setV('pm-fimreal', (String(p['Data final real']||'').split('T')[0]));
   setV('pm-duracao', p['DuraÃ§Ã£o (meses)']||p.Duracao_Meses||'');
