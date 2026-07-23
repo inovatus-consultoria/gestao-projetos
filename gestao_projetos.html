@@ -1644,8 +1644,13 @@ function gestorProjects(){
   return DATA.projetos.filter(p=>(p.Gestor||'')===gestorFilter);
 }
 
+function projectTitle(p){
+  if(!p) return '';
+  return p.Titulo||p['T\u00edtulo do projeto']||p['TÃ­tulo do projeto']||p['Titulo do projeto']||'';
+}
+
 function projectShortTitle(p){
-  return String((p&&p['TÃ­tulo do projeto'])||p?.Titulo||'').split(':')[0].trim();
+  return String(projectTitle(p)).split(':')[0].trim();
 }
 
 function projectOptionLabel(p){
@@ -2403,7 +2408,7 @@ function projectStartDate(project){
 function projetoCellFor(header,p){
   const h=normLooseText(header).replace(/\s+/g,'_');
   if(h==='codigo'||h==='projeto') return p.Projeto||'';
-  if(h==='titulo'||h==='title') return p['Título do projeto']||p.Titulo||'';
+  if(h==='titulo'||h==='title') return projectTitle(p);
   if(h==='executor') return p.Executor||'';
   if(h==='numero_anp'||h==='anp') return p.Numero_ANP||p['Número ANP']||p['Numero ANP raw']||'';
   if(h==='project_manager'||h==='gerente'||h==='manager') return p.Project_Manager||p['Project Manager']||'';
@@ -2753,6 +2758,7 @@ function normalizeProjeto(r){
   const start=projectStartIso(r);
   return {
     Projeto             : r.Codigo||'',
+    Titulo              : r.Titulo||'',
     'TÃ­tulo do projeto' : r.Titulo||'',
     Executor            : r.Executor||'',
     'NÃºmero ANP'        : r.Numero_ANP||'',
@@ -4398,9 +4404,11 @@ function rubMonthFromKey(month){
   return {year, mo, monthName:Object.entries(MONTHS_PT).find(([k,v])=>v===parseInt(mo,10))?.[0]||'janeiro'};
 }
 function rubMonthKey(g){
-  const rawMonth = g.MÃªs || g['MÃªs'] || g['MÃƒÂªs'];
   const fromDate = rubDateMonthKey(g.Data);
-  if(!rawMonth && fromDate) return fromDate;
+  // Data Ã© a fonte de verdade da competÃªncia. Evita que "marÃ§o" com
+  // codificaÃ§Ã£o divergente seja convertido para uma coluna incorreta.
+  if(fromDate) return fromDate;
+  const rawMonth = g.MÃªs || g['MÃªs'] || g['MÃƒÂªs'];
   const mo=MONTHS_PT[String(rawMonth||'').toLowerCase()]||1;
   return `${g.Ano||'2024'}-${String(mo).padStart(2,'0')}`;
 }
@@ -4582,12 +4590,34 @@ function renderRubReadonlyTable(pid){
   </tr>`;
   return `
     <div style="font-family:'DM Serif Display',serif;font-size:16px;margin:18px 0 8px;">${title}</div>
+    ${rubDuplicateWarning(pid,'ALL')}
     <div class="pivot-outer" style="margin-bottom:8px;">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
         <tbody>${rows}${totalRow}${incomeRow}</tbody>
       </table>
     </div>`;
+}
+
+function rubConflictingDuplicateGroups(pid,execFilter='ALL'){
+  const groups=new Map();
+  DATA.gastos.filter(g=>{
+    if((g.Projetos||g.Projeto)!==pid) return false;
+    return !execFilter || execFilter==='ALL' || g.Executor===execFilter;
+  }).forEach(g=>{
+    const month=rubMonthKey(g),executor=String(g.Executor||''),category=String(g.Categoria_despesa||'Outros');
+    const key=[month,executor,category].join('\u0001');
+    if(!groups.has(key)) groups.set(key,{month,executor,category,values:[]});
+    groups.get(key).values.push(parseFloat(g.Valor)||0);
+  });
+  return [...groups.values()].filter(group=>group.values.length>1 && new Set(group.values.map(v=>v.toFixed(2))).size>1);
+}
+function rubDuplicateWarning(pid,execFilter){
+  const groups=rubConflictingDuplicateGroups(pid,execFilter);
+  if(!groups.length) return '';
+  const L=lang==='pt',sample=groups.slice(0,3).map(g=>`${escapeHtml(rubMonthLabel(g.month))} · ${escapeHtml(g.executor||'-')} · ${escapeHtml(g.category)}`).join(' &nbsp;|&nbsp; ');
+  const more=groups.length>3?` +${groups.length-3}`:'';
+  return `<div class="alert-box alert-amber" style="margin:8px 0;font-size:11px;padding:7px 10px;">⚠ ${L?'Possivel duplicidade com valores diferentes':'Possible duplicate entries with different values'} (${groups.length}): ${sample}${more}</div>`;
 }
 
 function renderRubricas(){
@@ -4741,6 +4771,7 @@ function renderRubricas(){
 
   document.getElementById('rubricas-content').innerHTML = `
     ${readOnlyNote}
+    ${rubDuplicateWarning(pFilter,execFilter)}
     <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
@@ -6589,7 +6620,7 @@ function openProjectEditModal(pid){
   const setV=(id,v)=>{const el=document.getElementById(id); if(el) el.value=v??'';};
   setV('pm-codigo', p.Projeto);
   setV('pm-anp', p['NÃºmero ANP']||p.Numero_ANP||'');
-  setV('pm-titulo', p['TÃ­tulo do projeto']||'');
+  setV('pm-titulo', projectTitle(p));
   const executorParts=String(p.Executor||'').split(/\s*\/\s*/).filter(Boolean);
   setV('pm-executor', executorParts[0]||'');
   setV('pm-executor2', executorParts[1]||'');
@@ -6650,6 +6681,7 @@ async function saveProjectEdits(){
   // snapshot para rollback
   const snap=JSON.parse(JSON.stringify(p));
   Object.assign(p,{
+    Titulo:titulo,
     'TÃ­tulo do projeto':titulo,
     Executor:executor,
     'NÃºmero ANP':anp, Numero_ANP:anp,
@@ -6803,6 +6835,7 @@ async function saveNewProject(){
 
   const novo={
     Projeto:codigo,
+    Titulo:titulo,
     'Título do projeto':titulo,
     Executor:executor,
     'Número ANP':anp, Numero_ANP:anp, 'Numero ANP raw':anp,
