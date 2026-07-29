@@ -4469,7 +4469,20 @@ function catCompare(a,b){
 }
 // Ordenacao alfabetica dedicada a aba Budget Lines/Rubricas (linhas da pivot), a pedido do usuario (29/07).
 // Nao substitui catCompare: SM modal, Por Categoria ANP e PDFs continuam pela ordem das abas do Excel.
+// 29/07: o pedido original era ordenar pelo CODIGO ABA (nao pelo nome da categoria) em ordem alfabetica.
+// Um localeCompare puro no codigo (string) falha porque varios codigos tem letra+numero (N1/N2, T1/T2/T3,
+// G1/G2) - comparacao de texto simples intercala mal (ex.: "N10" < "N2" como string). Separamos o prefixo
+// de letra do sufixo numerico: agrupa por letra (ordem alfabetica) e, dentro do grupo, ordena o numero
+// como inteiro (N1 antes de N2, T1 antes de T2 antes de T3).
 function catCompareAlpha(a,b){
+  const parseAba=(cat)=>{
+    const code=String(getCatABA(cat)||'').trim().toUpperCase();
+    const m=code.match(/^([A-Z]*)(\d*)$/);
+    return m ? {letter:m[1], num:m[2]?parseInt(m[2],10):-1} : {letter:code, num:-1};
+  };
+  const pa=parseAba(a), pb=parseAba(b);
+  if(pa.letter!==pb.letter) return pa.letter.localeCompare(pb.letter);
+  if(pa.num!==pb.num) return pa.num-pb.num;
   return String(a||'').localeCompare(String(b||''),'pt',{sensitivity:'base'});
 }
 
