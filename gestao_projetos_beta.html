@@ -7060,7 +7060,12 @@ function smCategoryRowHtml(pid, cat, isNew=false){
   const catRef=(DATA.categorias||[]).find(c=>c.Categoria_despesa_PT===cat||c.Categoria_despesa_ENG===cat)||{};
   const aba=(planoRows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || catRef.Codigo_ABA || getCatABA(cat) || 'Ã¢â‚¬â€';
   const ptrb=planoRows.reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
-  const plan=planoRows.reduce((s,r)=>s+parseFloat(r.Plano_Atual||0),0);
+  // 29/07: NAO somar r.Plano_Atual por linha. applySMOverrides() grava o mesmo valor agregado
+  // (currentPlanMap) em CADA linha de Plano_Orcamentario da categoria - em projeto multi-executor
+  // isso significa N linhas com o mesmo total, e somar as N linhas multiplica o valor por N
+  // executores (era o "Plano Atual dobrando" no P004, que tem 2 executores). currentPlanMap() e a
+  // fonte unica de verdade; ler direto dali em vez de re-somar o espelho por linha.
+  const plan=(currentPlanMap(pid)||{})[cat]||0;
   return `<tr data-cat-row="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}">
     <td>${escapeHtml(cat)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">${lang==='pt'?'Nova':'New'}</span>`:''}</td>
     <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
