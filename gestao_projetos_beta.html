@@ -3002,6 +3002,23 @@ async function appendExcelRow(sheet, values){
   await excelPatchRange(sheet, addr, [values]);
 }
 
+// 29/07: appendExcelRow() chamado em loop (N linhas = N pares "ler usedRange, escrever") sofre corrida
+// no Excel Online: o usedRange nem sempre reflete o PATCH anterior a tempo da proxima leitura, entao duas
+// chamadas seguidas podem calcular a MESMA proxima linha e uma sobrescreve a outra - perda silenciosa de
+// linha, so visivel depois de recarregar (era o "categoria some depois do reload" na SM11 do P004). Uma
+// unica leitura + um unico PATCH cobrindo todas as linhas elimina a corrida. Usar sempre que for gravar
+// mais de uma linha nova na mesma operacao (ex.: SM com varias categorias, Plano_Orcamentario com varias
+// categorias novas).
+async function appendExcelRows(sheet, rowsValues){
+  if(!rowsValues || !rowsValues.length) return;
+  const rowCount = await excelGetUsedRowCount(sheet);
+  const startRow = rowCount + 1;
+  const endRow   = startRow + rowsValues.length - 1;
+  const nCols    = rowsValues.reduce((m,r)=>Math.max(m,r.length),0);
+  const addr     = `A${startRow}:${colLetter(nCols)}${endRow}`;
+  await excelPatchRange(sheet, addr, rowsValues);
+}
+
 async function rewriteExcelSheet(sheet, headers, dataRows){
   // Reescreve toda a sheet: header na linha 1, dados a partir da linha 2.
   // Se a nova versao tiver menos linhas, limpa a cauda antiga para nao deixar registros orfaos.
@@ -6980,8 +6997,10 @@ async function saveNewProject(){
     const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
       ? DATA._headers.Plano_Orcamentario
       : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
-    for(const linha of novoPlano){
-      await appendExcelRow('Plano_Orcamentario', planoHeaders.map(h=>planoCellFor(h,linha)));
+    // 29/07: mesmo fix do saveSM() - gravar todas as linhas de PTR-B por rubrica num unico PATCH em vez
+    // de um appendExcelRow por rubrica (loop sofria corrida no usedRange do Excel Online).
+    if(novoPlano.length){
+      await appendExcelRows('Plano_Orcamentario', novoPlano.map(linha=>planoHeaders.map(h=>planoCellFor(h,linha))));
     }
     DATA.plano.push(...novoPlano);
     hideLoading();
@@ -7226,9 +7245,11 @@ async function saveSM(){
     const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
       ? DATA._headers.Plano_Orcamentario
       : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
-    for(const row of newPlanoRows){
-      await appendExcelRow('Plano_Orcamentario', planoHeaders.map(h=>planoCellFor(h,row)));
-      DATA.plano.push(row);
+    // 29/07: gravar todas as linhas novas de uma vez (appendExcelRows), nao uma a uma em loop - loop de
+    // appendExcelRow sofria corrida no usedRange do Excel Online e perdia linha silenciosamente.
+    if(newPlanoRows.length){
+      await appendExcelRows('Plano_Orcamentario', newPlanoRows.map(row=>planoHeaders.map(h=>planoCellFor(h,row))));
+      newPlanoRows.forEach(row=>DATA.plano.push(row));
     }
 
     await appendExcelRow('Solicitacoes', [
@@ -7248,10 +7269,13 @@ async function saveSM(){
     const smItensHeaders=(DATA._headers&&DATA._headers.SM_Itens&&DATA._headers.SM_Itens.length)
       ? DATA._headers.SM_Itens
       : ['Projeto','Numero_SM','Categoria','Valor'];
-    for(const linha of linhas){
-      const smRow={ Projeto: pid, 'SM#': smNum, Categoria_despesa: linha.cat, Valor: linha.valor };
-      await appendExcelRow('SM_Itens', smItensHeaders.map(h=>smItemCellFor(h,smRow)));
-      DATA.sms.push(smRow);
+    // 29/07: mesmo motivo do Plano_Orcamentario acima - uma linha por await em loop perdia categoria
+    // silenciosamente por corrida no usedRange (bug reportado por Ricardo: categoria "sumia" so depois
+    // do reload). Agora grava todas as linhas da SM num unico PATCH.
+    const smRows=linhas.map(linha=>({ Projeto: pid, 'SM#': smNum, Categoria_despesa: linha.cat, Valor: linha.valor }));
+    if(smRows.length){
+      await appendExcelRows('SM_Itens', smRows.map(smRow=>smItensHeaders.map(h=>smItemCellFor(h,smRow))));
+      smRows.forEach(smRow=>DATA.sms.push(smRow));
     }
 
     if(usoRec){
