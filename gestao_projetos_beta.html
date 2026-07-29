@@ -4738,6 +4738,10 @@ function renderRubricas(){
     const blocks=projs.map(p=>renderRubReadonlyTable(p.Projeto)).filter(Boolean).join('');
     document.getElementById('rubricas-content').innerHTML = blocks ||
       `<div class="card empty-state" style="padding:48px;">${L?'Sem dados de rubricas.':'No budget line data.'}</div>`;
+    // 29/07: renderRubricas() pode ser chamada direto pelo onchange do filtro de executor, sem passar
+    // por navigate()/renderCurrentPage() (unico lugar que chamava sanitizeVisibleMojibake antes). Sem
+    // isso, placeholders "sem dado" (ex. o traco em col-plan/col-pct) ficavam com o mojibake cru na tela.
+    sanitizeVisibleMojibake(document.getElementById('rubricas-content'));
     window._rubState=null;
     return;
   }
@@ -4879,6 +4883,7 @@ function renderRubricas(){
         <button class="btn btn-primary btn-sm" onclick="saveRubEdits()">${L?'Salvar alterações':'Save changes'}</button>
       </div>
     </div>`;
+  sanitizeVisibleMojibake(document.getElementById('rubricas-content'));
 
   // Store months/cats for edit functions
   window._rubState = { months, allCats, pFilter, execFilter, hasMultiExec, canEdit, showCurrentPlan, planMap, ptrbMap };
@@ -7105,7 +7110,11 @@ function onSMProjectChange(){
   if(!table) return;
 
   const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid);
-  const cats=[...new Set(planoRows.map(r=>r.Categoria_despesa).filter(Boolean))].sort(catCompare);
+  // 29/07: unir com categorias que so existem em SM_Itens (ex.: categoria incluida numa SM antiga sem
+  // ter deixado linha-base em Plano_Orcamentario). Sem isso a categoria some do modal de Nova SM mesmo
+  // ja fazendo parte do historico do projeto (caso do P004 - "Equipamento Importado" a partir da SM10).
+  const smHistCats=(DATA.sms||[]).filter(s=>s.Projeto===pid).map(s=>s.Categoria_despesa).filter(Boolean);
+  const cats=[...new Set([...planoRows.map(r=>r.Categoria_despesa).filter(Boolean),...smHistCats])].sort(catCompare);
   const executors=rubProjectExecutors(pid);
   const execOptions=executors.map(e=>`<option value="${escapeAttr(e)}">${escapeHtml(e)}</option>`).join('');
   const newCatExecutor=executors.length>1
