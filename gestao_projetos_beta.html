@@ -2286,6 +2286,11 @@ function isMilestoneCompleted(status){
   const s=normLooseText(status).replace(/[\s_-]+/g,'');
   return ['completo','concluido','concluida','completed','complete'].includes(s);
 }
+function isMilestoneSuspended(marco){
+  const forecast=normLooseText(milestoneForecastValue(marco));
+  const status=normLooseText(marco?.Status||marco?._userStatus||'');
+  return ['suspenso','suspended'].includes(forecast)||['suspenso','suspended'].includes(status);
+}
 function milestoneForecastValue(marco){
   return marco?.['Data prevista / Data de entrega']??marco?.Data_Prevista??marco?.Forecast??'';
 }
@@ -2293,7 +2298,7 @@ function milestoneDateBucket(marco){
   if(isMilestoneCompleted(marco?.Status)) return 'Completed';
   const dp=milestoneForecastValue(marco);
   const normalizedStatus=normLooseText(marco?.Status);
-  if(!dp||String(dp).trim().toLowerCase()==='suspended'||normalizedStatus==='suspenso'||normalizedStatus==='suspended') return 'Suspended';
+  if(!dp||isMilestoneSuspended(marco)) return 'Suspended';
   const date=parseMilestoneDate(dp);
   if(!date||isNaN(date.getTime())) return 'Planned';
   const today=new Date(); today.setHours(0,0,0,0);
@@ -3025,6 +3030,14 @@ async function rewriteExcelSheet(sheet, headers, dataRows){
 function smNumber(raw){
   const num=parseInt(String(raw||'').replace(/\D/g,''),10);
   return Number.isFinite(num) ? num : NaN;
+}
+function solicitacaoNumberCompare(a,b){
+  const rawA=a?.Numero||a?.['SM#']||a?.Numero_Item||'';
+  const rawB=b?.Numero||b?.['SM#']||b?.Numero_Item||'';
+  const numA=smNumber(rawA),numB=smNumber(rawB);
+  if(Number.isFinite(numA)&&Number.isFinite(numB)&&numA!==numB) return numA-numB;
+  if(Number.isFinite(numA)!==Number.isFinite(numB)) return Number.isFinite(numA)?-1:1;
+  return String(rawA).localeCompare(String(rawB),undefined,{numeric:true,sensitivity:'base'});
 }
 
 function latestSMInfo(pid){
@@ -3880,10 +3893,10 @@ function renderProjectDetail(pid){
         </tr></thead>
         <tbody>
           ${projMarcos.map(m=>{
-            const isSusp=String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
+            const isSusp=isMilestoneSuspended(m);
             const origIdx=milestoneIndexByKey(m._localKey);
             const key=escapeAttr(m._localKey);
-            return `<tr class="milestone-row" onclick="openMilestoneModal('edit','${key}')">
+            return `<tr class="milestone-row"${isSusp?' style="background:var(--surface2);color:var(--ink3);"':''} onclick="openMilestoneModal('edit','${key}')">
               <td class="fw-600 fs-12">${escapeHtml(m.ID||EMPTY)}</td>
               <td class="fs-12" style="max-width:300px;">${escapeHtml(milestoneDescription(m))}</td>
               <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
@@ -4234,12 +4247,12 @@ function renderMilestones(){
   marcos.forEach(m=>{
     const origIdx=milestoneIndexByKey(m._localKey);
     const key=escapeAttr(m._localKey);
-    const isSuspended=String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended';
+    const isSuspended=isMilestoneSuspended(m);
     const forecastValue=m['Data prevista / Data de entrega']?String(m['Data prevista / Data de entrega']).split('T')[0]:'';
     const dateCell=isSuspended
       ? '<span class="badge badge-gray">'+t('suspended')+'</span>'
       : '<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="'+escapeAttr(forecastValue)+'" onchange="updateMilestoneDate('+origIdx+',this.value)">';
-    tbody.innerHTML+='<tr class="milestone-row" onclick="openMilestoneModal(\'edit\',\''+key+'\')">'
+    tbody.innerHTML+='<tr class="milestone-row"'+(isSuspended?' style="background:var(--surface2);color:var(--ink3);"':'')+' onclick="openMilestoneModal(\'edit\',\''+key+'\')">'
       +'<td class="fw-600 fs-12">'+escapeHtml(m.ID||EMPTY)+'</td>'
       +'<td class="fs-12">'+escapeHtml(m.Projeto||EMPTY)+'</td>'
       +'<td class="fs-12" style="max-width:320px;">'+escapeHtml(milestoneDescription(m))+'</td>'
@@ -5873,13 +5886,14 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
           _rptHdrCell(d,'Baseline',c3,{center:true}),_rptHdrCell(d,'Forecast',c4,{center:true}),_rptHdrCell(d,'Status',c5),
         ]}),
         ...marcos.map(m=>{
-          const status=_rptStatus(m.Status),completed=status==='Completed';
+          const status=_rptStatus(m.Status),completed=status==='Completed',suspended=isMilestoneSuspended(m);
+          const rowShading=suspended?'EEF0F2':undefined;
           return new d.TableRow({children:[
-            _rptBodyCell(d,_rptNoBreakText(m.ID),c1,{center:true}),
-            _rptBodyCell(d,_rptField(m,['Descri\u00e7\u00e3o','Descricao','Description']),c2),
-            _rptBodyCell(d,FMTD(m['Data Base']||''),c3,{center:true}),
-            _rptBodyCell(d,FMTD(m['Data prevista / Data de entrega']||''),c4,{center:true}),
-            _rptBodyCell(d,status,c5,{shading:completed?'D9EAD3':undefined}),
+            _rptBodyCell(d,_rptNoBreakText(m.ID),c1,{center:true,shading:rowShading}),
+            _rptBodyCell(d,_rptField(m,['Descri\u00e7\u00e3o','Descricao','Description']),c2,{shading:rowShading}),
+            _rptBodyCell(d,FMTD(m['Data Base']||''),c3,{center:true,shading:rowShading}),
+            _rptBodyCell(d,FMTD(m['Data prevista / Data de entrega']||''),c4,{center:true,shading:rowShading}),
+            _rptBodyCell(d,status,c5,{shading:completed?'D9EAD3':rowShading}),
           ]});
         })
       ]
@@ -5903,7 +5917,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
     const cat=g.Categoria_despesa||'';
     gastosMap[cat]=(gastosMap[cat]||0)+Number(g.Valor||0);
   });
-  const cats = Object.keys(planMap);
+  const cats = Object.keys(planMap).sort(catCompareAlpha);
   const tc2 = tableCounter[0]++;
   children.push(_rptCaption(d, `Table ${tc2}: Cost status of project ${pnum}.`));
   if(cats.length===0){
@@ -5912,23 +5926,22 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
     const cW=9026,c1=2800,c2=900,c3=1400,c4=1400,c5=1400,c6=1126;
     children.push(new d.Table({
       width:{size:cW,type:d.WidthType.DXA},
-      columnWidths:[c1,c2,c3,c4,c5,c6],
+      columnWidths:[c2,c1,c3,c4,c5,c6],
       rows:[
         new d.TableRow({tableHeader:true,children:[
-          _rptHdrCell(d,'Category',c1),_rptHdrCell(d,'ABA',c2,{center:true}),
+          _rptHdrCell(d,'ABA',c2,{center:true}),_rptHdrCell(d,'Category',c1),
           _rptHdrCell(d,'PTR-B (R$)',c3,{center:true}),_rptHdrCell(d,'Curr. Plan (R$)',c4,{center:true}),
           _rptHdrCell(d,'Actuals (R$)',c5,{center:true}),_rptHdrCell(d,'Exec%',c6,{center:true}),
         ]}),
-        ...cats.sort((a,b)=>catCompare(a,b)).map(cat=>{
+        ...cats.map(cat=>{
           const planRow = (DATA.plano||[]).find(p=>p.Projeto===pid&&p.Categoria_despesa===cat)||{};
           const ptrb = Number(planRow['Plano_PTR-B']||0);
           const plan = Number(planMap[cat]||0);
           const actual = Number(gastosMap[cat]||0);
-          const pct = plan>0 ? (actual/plan*100).toFixed(1)+'%' : '—';
           const fmtR = v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
           const aba = planRow.Codigo_ABA||getCatABA(cat)||'';
           return new d.TableRow({height:{value:567,rule:d.HeightRule.EXACT},children:[
-            _rptBodyCell(d,_rptCategory(cat),c1,{size:18,verticalCenter:true}),_rptBodyCell(d,aba,c2,{center:true,verticalCenter:true}),
+            _rptBodyCell(d,aba,c2,{center:true,verticalCenter:true}),_rptBodyCell(d,_rptCategory(cat),c1,{size:18,verticalCenter:true}),
             _rptBodyCell(d,fmtR(ptrb),c3,{center:true,verticalCenter:true}),_rptBodyCell(d,fmtR(plan),c4,{center:true,verticalCenter:true}),
             _rptBodyCell(d,fmtR(actual),c5,{center:true,verticalCenter:true}),_rptBodyCell(d,_rptPct(plan?actual/plan:NaN),c6,{center:true,verticalCenter:true}),
           ]});
@@ -5938,7 +5951,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   }
 
   // SM table
-  const sms = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='SM');
+  const sms = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='SM').sort(solicitacaoNumberCompare);
   if(sms.length>0){
     const tc=tableCounter[0]++;
     const sw=9026,s1=1000,s2=1500,s3=1500,s4=2000,s5=3026;
@@ -5960,7 +5973,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   }
 
   // DV table
-  const dvs = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='DV');
+  const dvs = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='DV').sort(solicitacaoNumberCompare);
   if(dvs.length>0){
     const tc=tableCounter[0]++;
     const dw=9026,d1=1000,d2=1500,d3=1500,d4=2000,d5=3026;
@@ -5982,7 +5995,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
   }
 
   // DE table
-  const des = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='DE');
+  const des = (DATA.solicitacoes||[]).filter(s=>s.Projeto===pid&&s.Tipo==='DE').sort(solicitacaoNumberCompare);
   if(des.length>0){
     const tc=tableCounter[0]++;
     const ew=9026,e1=1000,e2=1500,e3=1500,e4=2000,e5=3026;
@@ -6363,7 +6376,7 @@ function renderSMs(){
   const rows=(DATA.solicitacoes||[])
     .filter(s=>visibleProjs.includes(s.Projeto))
     .filter(s=>(s.Tipo||'SM')===smTypeFilter)
-    .sort((a,b)=>(a.Projeto||'').localeCompare(b.Projeto||'') || (a.Data_Submissao||'').localeCompare(b.Data_Submissao||''));
+    .sort((a,b)=>(a.Projeto||'').localeCompare(b.Projeto||'') || solicitacaoNumberCompare(a,b));
 
   const buttons = `
     <div style="display:flex;gap:8px;margin-bottom:20px;">
