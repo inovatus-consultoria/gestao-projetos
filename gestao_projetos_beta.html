@@ -876,7 +876,7 @@ tr:hover td{background:var(--surface3);}
       Entrar com Microsoft
     </button>
   </div>
-  <div class="login-version">Inovatus RD&amp;I - vB-XL - 28/05/2026</div>
+  <div class="login-version">Versão da ferramenta atualizada em 31/07/2026</div>
 </div>
 
 <!-- ===================== LOADING OVERLAY ===================== -->
@@ -943,7 +943,7 @@ tr:hover td{background:var(--surface3);}
         </div>
       </div>
       <button class="btn-logout" onclick="fazerLogout()">Logout (Excel)</button>
-      <div class="sidebar-version">Atualizado pela última vez em 20/07/2026</div>
+      <div class="sidebar-version">Versão da ferramenta atualizada em 31/07/2026</div>
     </div>
   </aside>
 
@@ -1331,64 +1331,38 @@ tr:hover td{background:var(--surface3);}
 
 <!-- ===================== MODAL: ADD SM ===================== -->
 <div class="modal-overlay" id="sm-modal">
-  <div class="modal" style="max-width:680px;">
-    <h2 class="modal-title" id="modal-sm-title">New Change Request (SM)</h2>
+  <div class="modal" style="max-width:1120px;width:min(96vw,1120px);">
+    <h2 class="modal-title" id="modal-sm-title">Nova Solicitação de Mudança (SM)</h2>
     <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">Project</label>
-        <select class="form-select" id="sm-project" onchange="onSMProjectChange()"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">SM #</label>
-        <input class="form-input" id="sm-number" placeholder="SM1, SM2...">
-      </div>
+      <div class="form-group"><label class="form-label">Projeto</label><select class="form-select" id="sm-project" onchange="smProjectChanged()"></select></div>
+      <div class="form-group"><label class="form-label">Nº da SM</label><input class="form-input" id="sm-number" placeholder="SM1, SM2..."></div>
     </div>
     <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">Submission Date</label>
-        <input class="form-input" type="date" id="sm-date-submissao">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Status</label>
-        <select class="form-select" id="sm-status">
-          <option value="Pendente">Pendente</option>
-          <option value="Em anÃ¡lise">Em anÃ¡lise</option>
-          <option value="Aprovada">Aprovada</option>
-          <option value="Rejeitada">Rejeitada</option>
-        </select>
-      </div>
+      <div class="form-group"><label class="form-label">Data de submissão</label><input class="form-input" type="date" id="sm-date-submissao"></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMApprovalDate()"><option value="Pendente">Pendente</option><option value="Em análise">Em análise</option><option value="Aprovada">Aprovada</option><option value="Rejeitada">Rejeitada</option></select></div>
     </div>
+    <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label">Data de aprovação</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
     <div style="margin-top:12px;">
-      <label class="form-label">Budget by Category (leave blank to skip)</label>
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:8px;">
+        <div><label class="form-label" style="margin-bottom:0;">Rubricas da SM</label><div class="fs-12 color-ink3" id="sm-plan-caption">Informe o novo valor de cada rubrica alterada.</div></div>
+        <div class="form-group" id="sm-executor-filter-wrap" style="display:none;margin:0;min-width:260px;"><label class="form-label">Executor</label><select class="form-select" id="sm-executor-filter" onchange="smExecutorChanged()"></select></div>
+      </div>
       <div id="sm-categories-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;"></div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
+    <div id="sm-add-category-controls" style="display:flex;gap:8px;align-items:end;margin-top:10px;">
+      <div class="form-group" style="flex:1;margin:0;"><label class="form-label" style="font-size:11px;">Adicionar rubrica ANP existente</label><select class="form-select" id="sm-add-cat-select"></select></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="sm-add-cat-btn" onclick="addSMCategoryRow()">Adicionar rubrica</button>
       <input type="file" id="sm-import-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="handleSMImportFile(this)">
-      <button type="button" class="btn btn-secondary btn-sm" onclick="openSMImportPicker()">Importar planilha SM</button>
-      <span style="font-size:11px;color:var(--ink3);">Importe a ferramenta SM v13 e confira os executores antes de aplicar.</span>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openSMImportPicker()">Importar SM</button>
     </div>
     <div id="sm-import-preview" style="display:none;margin-top:10px;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);">
-      <div style="font-size:13px;color:var(--ink3);">Total: <strong id="sm-total-display">R$ 0</strong></div>
-    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);"><div style="font-size:13px;color:var(--ink3);">Total do executor selecionado: <strong id="sm-total-display">R$ 0</strong></div></div>
     <div style="margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);">
-        <input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()">
-        <span>Adicionar uso de rendimento</span>
-      </label>
-      <div class="form-group" id="sm-income-executor-wrap" style="display:none;margin:10px 0 0;">
-        <label class="form-label">Executor do rendimento utilizado</label>
-        <select class="form-select" id="sm-income-executor"></select>
-      </div>
-      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;">
-        <label class="form-label">Valor do rendimento utilizado (R$)</label>
-        <input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0">
-      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);"><input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()"><span>Adicionar uso de rendimento</span></label>
+      <div class="fs-12 color-ink3" id="sm-income-executor-note" style="display:none;margin-top:7px;"></div>
+      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Valor do rendimento utilizado (R$)</label><input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSM()">Save SM</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancelar</button><button class="btn btn-primary" onclick="saveSM()">Salvar SM</button></div>
   </div>
 </div>
 
@@ -1551,7 +1525,7 @@ tr:hover td{background:var(--surface3);}
         <input class="form-input" type="date" id="sol-data-apr">
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group" id="sol-valor-group">
       <label class="form-label" id="lbl-sol-valor">Valor (R$)</label>
       <input class="form-input" type="number" id="sol-valor" min="0" step="0.01">
     </div>
@@ -1564,6 +1538,7 @@ tr:hover td{background:var(--surface3);}
       <label class="form-label" id="lbl-sol-obs">ObservaÃ§Ãµes</label>
       <input class="form-input" id="sol-obs">
     </div>
+    <div id="sol-sm-items-editor" style="display:none;margin-top:14px;"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('sol-modal')">Cancelar</button>
       <button class="btn btn-primary" onclick="saveSolModal()" id="btn-sol-save">Salvar</button>
@@ -6494,7 +6469,7 @@ function replaceUsoRendimentoForSM(oldPid, oldNumero, newRec){
   }
 }
 function projectExecutorForUso(pid){
-  const selected=document.getElementById('sm-income-executor')?.value||'';
+  const selected=document.getElementById('sm-executor-filter')?.value||'';
   if(selected) return selected;
   const executors=(typeof rubProjectExecutors==='function') ? rubProjectExecutors(pid).filter(Boolean) : [];
   if(executors.length===1) return executors[0];
@@ -6503,14 +6478,14 @@ function projectExecutorForUso(pid){
 }
 function syncSolIncomeUsageFields(value){
   const tipo=document.getElementById('sol-tipo')?.value||'';
-  const group=document.getElementById('sol-income-group');
-  const input=document.getElementById('sol-income-usage');
-  const show=/^sm$/i.test(tipo);
-  if(group) group.style.display=show?'block':'none';
-  if(input){
-    if(value!==undefined) input.value=value||'';
-    if(!show) input.value='';
-  }
+  const incomeGroup=document.getElementById('sol-income-group');
+  const incomeInput=document.getElementById('sol-income-usage');
+  const valueGroup=document.getElementById('sol-valor-group');
+  const isSM=/^sm$/i.test(tipo);
+  if(incomeGroup) incomeGroup.style.display=isSM?'block':'none';
+  if(valueGroup) valueGroup.style.display=isSM?'none':'block';
+  if(incomeInput){ if(value!==undefined)incomeInput.value=value||''; if(!isSM)incomeInput.value=''; }
+  if(!isSM) renderSolSMItemsEditor(null);
 }
 function toggleSMIncomeUsage(){
   const checked=!!document.getElementById('sm-income-enabled')?.checked;
@@ -6581,27 +6556,37 @@ async function handleSMImportFile(input){
     const smNumberLabel=String(capaSheet['F3']?.v||'').trim();
     const requestedSm=smNumber(smNumberLabel);
     if(!smNumberLabel||Number.isNaN(requestedSm)) throw new Error('Não foi possível identificar a SM atual em Capa!F3.');
-    const history=XLSX.utils.sheet_to_json(historicoSheet,{header:1,defval:''});
-    const header=history[2]||[];
-    const smColumn=header.findIndex(value=>smNumber(value)===requestedSm);
+    const range=XLSX.utils.decode_range(historicoSheet['!ref']);
+    const smColumn=(()=>{
+      for(const headerRow of [3,32,61]){
+        for(let col=range.s.c;col<=range.e.c;col++){
+          const value=historicoSheet[XLSX.utils.encode_cell({c:col,r:headerRow-1})]?.v;
+          if(smNumber(value)===requestedSm) return col;
+        }
+      }
+      return -1;
+    })();
     if(smColumn<0) throw new Error(`A coluna ${smNumberLabel} não foi encontrada no Histórico.`);
+    const valueAt=(row,col)=>historicoSheet[XLSX.utils.encode_cell({c:col,r:row-1})]?.v;
     const sourceExecutors=[String(capaSheet['C7']?.v||'').trim(),String(capaSheet['C8']?.v||'').trim()].filter(Boolean);
     if(!sourceExecutors.length) throw new Error('Nenhum executor foi encontrado em Capa!C7/C8.');
-    const blocks=[32,61];
+    const blocks=[33,62];
     const groups=sourceExecutors.map((sourceExecutor,index)=>{
       const start=blocks[index];
       const rows=[];
       for(let offset=0;offset<22;offset++){
-        const record=history[start+offset]||[];
-        const category=smImportResolveCategory(pid,record[2],record[3]);
-        if(!category) throw new Error(`Rubrica não reconhecida pelo painel: ${record[3]||record[2]||'(vazia)'}.`);
-        const value=Number(record[smColumn]);
+        const row=start+offset;
+        const aba=valueAt(row,2);
+        const label=valueAt(row,3);
+        const category=smImportResolveCategory(pid,aba,label);
+        if(!category) throw new Error(`Rubrica não reconhecida pelo painel: ${label||aba||'(vazia)'}.`);
+        const value=Number(valueAt(row,smColumn));
         if(!Number.isFinite(value)) throw new Error(`Valor inválido no Histórico para ${sourceExecutor} / ${category}.`);
-        rows.push({category,aba:String(record[2]||''),value});
+        rows.push({category,aba:String(aba||''),value});
       }
       return {sourceExecutor,rows};
     });
-    const totalRows=(history.slice(3,25)||[]).map(record=>Number(record[smColumn])||0);
+    const totalRows=Array.from({length:22},(_,index)=>Number(valueAt(4+index,smColumn))||0);
     const splitRows=Array.from({length:22},(_,index)=>groups.reduce((sum,group)=>sum+(group.rows[index]?.value||0),0));
     const divergence=totalRows.findIndex((value,index)=>Math.abs(value-splitRows[index])>0.01);
     if(divergence>=0) throw new Error(`O Histórico não fecha por executor na rubrica ${groups[0].rows[divergence].category}. Revise a ferramenta SM antes de importar.`);
@@ -6646,19 +6631,17 @@ function applySMImport(){
     if(!group||!executor){ alert(lang==='pt'?'Vincule todos os executores extraídos antes de aplicar.':'Map every extracted executor before applying.'); return; }
     mappings[group.sourceExecutor]=executor;
   }
-  const importedRows=smImportedPayload.groups.flatMap(group=>group.rows.map(row=>({category:row.category,executor:mappings[group.sourceExecutor],value:row.value})));
-  const tbody=document.getElementById('sm-cat-tbody');
-  if(!tbody) return;
+  smDraftItems.clear();
+  smImportedPayload.groups.forEach(group=>group.rows.forEach(row=>{
+    const executor=mappings[group.sourceExecutor];
+    smDraftItems.set(smDraftKey(row.category,executor),{cat:row.category,executor,valor:row.value});
+  }));
   document.getElementById('sm-number').value=smImportedPayload.smNumber;
-  tbody.innerHTML=importedRows.map(row=>smCategoryRowHtml(pid,row.category,!((DATA.plano||[]).some(plan=>plan.Projeto===pid&&plan.Categoria_despesa===row.category)),row.executor)).join('');
-  [...tbody.querySelectorAll('tr[data-cat-row]')].forEach((row,index)=>{
-    const imported=importedRows[index];
-    row.querySelector('[data-executor]').value=imported.executor;
-    row.querySelector('input[data-cat]').value=String(imported.value);
-  });
   smImportRememberMap(pid,mappings);
-  refreshSMAddCategoryOptions();
-  updateSMTotal();
+  const firstExecutor=Object.values(mappings)[0]||'';
+  onSMProjectChange();
+  const selector=document.getElementById('sm-executor-filter');
+  if(selector&&firstExecutor){ selector.value=firstExecutor; onSMProjectChange(); }
   clearSMImportPreview();
 }
 
@@ -6729,11 +6712,23 @@ function openSolModal(type){
   document.getElementById('sol-valor').value='';
   document.getElementById('sol-obs').value='';
   syncSolIncomeUsageFields('');
+  renderSolSMItemsEditor(null);
   document.getElementById('sol-modal').classList.add('show');
   sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
 
 // D4: editar uma solicitaÃ§Ã£o existente (qualquer tipo)
+function renderSolSMItemsEditor(s){
+  const container=document.getElementById('sol-sm-items-editor');
+  if(!container) return;
+  if(!s||!/^sm$/i.test(String(s.Tipo||'SM'))){ container.style.display='none'; container.innerHTML=''; return; }
+  const pid=s.Projeto||'', number=s.Numero||s['SM#']||'';
+  const items=(DATA.sms||[]).filter(item=>item.Projeto===pid&&sameSmNumber(item['SM#']||item.Numero_SM||item.Numero,number));
+  container.style.display='block';
+  if(!items.length){ container.innerHTML=`<div class="alert-box alert-amber" style="margin:0;">${lang==='pt'?'Esta SM não possui rubricas cadastradas no painel.':'This SM has no budget lines registered in the panel.'}</div>`; return; }
+  container.innerHTML=`<div class="table-card" style="box-shadow:none;"><div class="table-header"><div class="table-title">${lang==='pt'?'Rubricas cadastradas nesta SM':'Budget lines registered in this SM'}</div></div><div class="table-scroll"><table style="font-size:12px;"><thead><tr><th>ABA</th><th>${lang==='pt'?'Categoria':'Category'}</th><th>${lang==='pt'?'Executor':'Executor'}</th><th class="text-right">${lang==='pt'?'Valor informado':'Registered value'}</th></tr></thead><tbody>${items.map(item=>{const index=DATA.sms.indexOf(item);return `<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(getCatABA(item.Categoria_despesa)||'-')}</td><td>${escapeHtml(item.Categoria_despesa||'')}</td><td>${escapeHtml(item.Executor|| (lang==='pt'?'Não informado':'Not informed'))}</td><td><input type="number" min="0" step="0.01" class="form-input" data-sol-sm-item="${index}" value="${escapeAttr(item.Valor||0)}" style="min-width:150px;text-align:right;"></td></tr>`;}).join('')}</tbody></table></div></div>`;
+}
+
 function openSolEditModal(idx){
   const s=DATA.solicitacoes[idx];
   if(!s) return;
@@ -6756,6 +6751,7 @@ function openSolEditModal(idx){
   document.getElementById('sol-obs').value=s.Observacoes||'';
   const uso=getUsoRendimentoForSM(s.Projeto||'', s.Numero||s['SM#']||'');
   syncSolIncomeUsageFields(uso?uso.Valor_Utilizado:'');
+  renderSolSMItemsEditor(s);
   document.getElementById('sol-modal').classList.add('show');
   sanitizeVisibleMojibake(document.getElementById('sol-modal'));
 }
@@ -6763,55 +6759,27 @@ function openSolEditModal(idx){
 // D3/D4: salvar criaÃ§Ã£o/ediÃ§Ã£o â†’ persiste reescrevendo a sheet Solicitacoes
 async function saveSolModal(){
   const L=lang==='pt';
-  const pid=document.getElementById('sol-projeto').value;
-  const tipo=document.getElementById('sol-tipo').value;
-  const numero=document.getElementById('sol-numero').value.trim();
-  const status=document.getElementById('sol-status').value;
-  const dataSub=document.getElementById('sol-data-sub').value;
-  const dataApr=document.getElementById('sol-data-apr').value;
-  const valor=parseFloat(document.getElementById('sol-valor').value)||0;
-  const obs=document.getElementById('sol-obs').value.trim();
-  const isSM=/^sm$/i.test(tipo);
-  const usoValor=isSM ? (parseFloat(document.getElementById('sol-income-usage')?.value)||0) : 0;
-
-  if(!pid||!numero){ alert(L?'Preencha Projeto e Numero/Codigo.':'Fill in Project and Number/Code.'); return; }
-
-  const novo={
-    Projeto:pid, 'SM#':numero, Numero:numero, Numero_Item:numero, Tipo:tipo,
-    Data_Submissao:dataSub||'', Data_Aprovacao:dataApr||'', Status:status, Observacoes:obs, Valor:valor
-  };
-
-  const oldSol=(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]) ? DATA.solicitacoes[editingSolIdx] : null;
-  const snapshotSolic=JSON.parse(JSON.stringify(DATA.solicitacoes||[]));
-  const snapshotUso=JSON.parse(JSON.stringify(DATA.uso_rendimento||[]));
-  if(editingSolIdx!==null && DATA.solicitacoes[editingSolIdx]){
-    DATA.solicitacoes[editingSolIdx]=novo;
-  } else {
-    DATA.solicitacoes.push(novo);
-  }
+  const pid=document.getElementById('sol-projeto').value, tipo=document.getElementById('sol-tipo').value, numero=document.getElementById('sol-numero').value.trim(), status=document.getElementById('sol-status').value, dataSub=document.getElementById('sol-data-sub').value, dataApr=document.getElementById('sol-data-apr').value, valor=parseFloat(document.getElementById('sol-valor').value)||0, obs=document.getElementById('sol-obs').value.trim();
+  const isSM=/^sm$/i.test(tipo), usoValor=isSM?(parseFloat(document.getElementById('sol-income-usage')?.value)||0):0;
+  if(!pid||!numero){alert(L?'Preencha Projeto e Numero/Codigo.':'Fill in Project and Number/Code.');return;}
+  const editedItems=isSM?[...document.querySelectorAll('#sol-sm-items-editor input[data-sol-sm-item]')].map(input=>({index:Number(input.dataset.solSmItem),value:parseFloat(input.value)})):[];
+  if(editedItems.some(item=>!Number.isInteger(item.index)||!Number.isFinite(item.value)||item.value<0)){alert(L?'Revise os valores das rubricas da SM.':'Review the SM budget-line values.');return;}
+  const novo={Projeto:pid,'SM#':numero,Numero:numero,Numero_Item:numero,Tipo:tipo,Data_Submissao:dataSub||'',Data_Aprovacao:dataApr||'',Status:status,Observacoes:obs,Valor:valor};
+  const oldSol=(editingSolIdx!==null&&DATA.solicitacoes[editingSolIdx])?DATA.solicitacoes[editingSolIdx]:null;
+  const snapshotSolic=JSON.parse(JSON.stringify(DATA.solicitacoes||[])), snapshotUso=JSON.parse(JSON.stringify(DATA.uso_rendimento||[])), snapshotSms=JSON.parse(JSON.stringify(DATA.sms||[]));
+  if(editingSolIdx!==null&&DATA.solicitacoes[editingSolIdx])DATA.solicitacoes[editingSolIdx]=novo;else DATA.solicitacoes.push(novo);
   if(isSM){
-    const usoRec=usoValor>0 ? {
-      Projeto:pid, Executor:projectExecutorForUso(pid), SM:numero, Numero_SM:numero,
-      Valor_Utilizado:usoValor, Descricao:obs||`Uso de rendimento ${numero}`
-    } : null;
-    replaceUsoRendimentoForSM(oldSol?.Projeto||pid, oldSol?.Numero||oldSol?.['SM#']||numero, usoRec);
+    editedItems.forEach(item=>{const row=DATA.sms[item.index];if(row){row.Projeto=pid;row['SM#']=numero;row.Valor=item.value;}});
+    const usoRec=usoValor>0?{Projeto:pid,Executor:projectExecutorForUso(pid),SM:numero,Numero_SM:numero,Valor_Utilizado:usoValor,Descricao:obs||`Uso de rendimento ${numero}`} : null;
+    replaceUsoRendimentoForSM(oldSol?.Projeto||pid,oldSol?.Numero||oldSol?.['SM#']||numero,usoRec);
   }
-
   showLoading(L?'Salvando registro no Excel...':'Saving record to Excel...');
   try{
     await rewriteSolicitacoesSheet();
-    if(isSM) await rewriteUsoRendimentoSheet();
-    hideLoading();
-    closeModal('sol-modal');
-    editingSolIdx=null;
-    renderCurrentPage();
-    alert(L?'Registro salvo com sucesso!':'Record saved successfully!');
-  }catch(e){
-    DATA.solicitacoes=snapshotSolic;
-    DATA.uso_rendimento=snapshotUso;
-    hideLoading();
-    console.error('saveSolModal error:',e);
-    alert((L?'Erro ao salvar registro: ':'Error saving record: ')+e.message);
+    if(isSM){await rewriteSMItensSheetFromMemory();await rewriteUsoRendimentoSheet();applySMOverrides();}
+    hideLoading();closeModal('sol-modal');editingSolIdx=null;renderCurrentPage();alert(L?'Registro salvo com sucesso!':'Record saved successfully!');
+  }catch(error){
+    DATA.solicitacoes=snapshotSolic;DATA.uso_rendimento=snapshotUso;DATA.sms=snapshotSms;hideLoading();console.error('saveSolModal error:',error);alert((L?'Erro ao salvar registro: ':'Error saving record: ')+(error?.message||error));
   }
 }
 
@@ -7242,266 +7210,110 @@ async function saveGasto(){
 }
 
 // ===================== MODAL: SM =====================
+const SM_MONEY_FULL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+let smDraftItems=new Map();
+function smDraftKey(category,executor){ return `${category}|${executor}`; }
+function smStatusNeedsApprovalDate(status){ return /^(aprovad|rejeitad)/i.test(String(status||'').trim()); }
+function toggleSMApprovalDate(){
+  const show=smStatusNeedsApprovalDate(document.getElementById('sm-status')?.value);
+  const wrap=document.getElementById('sm-date-aprovacao-wrap');
+  const input=document.getElementById('sm-date-aprovacao');
+  if(wrap) wrap.style.display=show?'block':'none';
+  if(!show&&input) input.value='';
+}
+function smProjectChanged(){ smDraftItems.clear(); clearSMImportPreview(); onSMProjectChange(); }
+function smProjectExecutors(pid){
+  const executors=rubProjectExecutors(pid);
+  if(executors.length) return executors;
+  const project=(DATA.projetos||[]).find(row=>row.Projeto===pid);
+  return project?.Executor?[String(project.Executor).trim()]:[];
+}
+function smSelectedExecutor(pid){ return String(document.getElementById('sm-executor-filter')?.value||'').trim()||smProjectExecutors(pid)[0]||''; }
+function captureSMVisibleDraft(){
+  const pid=document.getElementById('sm-project')?.value||'', executor=smSelectedExecutor(pid);
+  if(!executor) return;
+  document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{
+    const category=input.dataset.cat||'', key=smDraftKey(category,executor), raw=String(input.value||'').trim();
+    if(!raw){ smDraftItems.delete(key); return; }
+    const value=parseFloat(raw); if(Number.isFinite(value)&&value>=0) smDraftItems.set(key,{cat:category,executor,valor:value});
+  });
+}
+function smExecutorChanged(){ captureSMVisibleDraft(); onSMProjectChange(); }
 function openSMModal(pid){
-  const smNum=document.getElementById('sm-number');
-  const smDate=document.getElementById('sm-date-submissao');
-  const smStatus=document.getElementById('sm-status');
-  if(smNum) smNum.value='';
-  if(smDate) smDate.value='';
-  if(smStatus) smStatus.value='Pendente';
-  const incomeEnabled=document.getElementById('sm-income-enabled');
-  const incomeValue=document.getElementById('sm-income-value');
-  if(incomeEnabled) incomeEnabled.checked=false;
-  if(incomeValue) incomeValue.value='';
-  toggleSMIncomeUsage();
-  const sp=document.getElementById('sm-project');
-  if(sp && pid) sp.value=pid;
-  onSMProjectChange();
-  updateSMTotal();
-  document.getElementById('sm-modal').classList.add('show');
-  sanitizeVisibleMojibake(document.getElementById('sm-modal'));
+  smDraftItems.clear(); clearSMImportPreview();
+  ['sm-number','sm-date-submissao','sm-date-aprovacao','sm-income-value'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const status=document.getElementById('sm-status'); if(status)status.value='Pendente';
+  const income=document.getElementById('sm-income-enabled'); if(income)income.checked=false;
+  toggleSMIncomeUsage(); toggleSMApprovalDate();
+  const project=document.getElementById('sm-project'); if(project&&pid)project.value=pid;
+  onSMProjectChange(); updateSMTotal(); document.getElementById('sm-modal').classList.add('show'); sanitizeVisibleMojibake(document.getElementById('sm-modal'));
 }
-
-function smAllAnpCategories(){
-  return (DATA.categorias||[])
-    .map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG)
-    .filter(Boolean)
-    .sort(catCompare);
+function smAllAnpCategories(){ return (DATA.categorias||[]).map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG).filter(Boolean).sort(catCompare); }
+function smCategoryRowHtml(pid,category,isNew=false){
+  const executor=smSelectedExecutor(pid);
+  const planRows=(DATA.plano||[]).filter(row=>row.Projeto===pid&&row.Categoria_despesa===category&&(!executor||row.Executor===executor));
+  const catRef=(DATA.categorias||[]).find(row=>row.Categoria_despesa_PT===category||row.Categoria_despesa_ENG===category)||{};
+  const aba=(planRows.find(row=>row.Codigo_ABA)||{}).Codigo_ABA||catRef.ABA||catRef.Codigo_ABA||getCatABA(category)||'-';
+  const ptrb=planRows.reduce((sum,row)=>sum+(parseFloat(row['Plano_PTR-B']||0)||0),0);
+  const plan=(currentPlanMap(pid,executor||'ALL')||{})[category]||0;
+  const draft=smDraftItems.get(smDraftKey(category,executor)), value=draft?draft.valor:'';
+  return `<tr data-cat-row="${escapeAttr(category)}"><td class="fw-600 fs-12 color-ink3">${escapeHtml(aba)}</td><td title="${escapeAttr(category)}">${escapeHtml(category)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">${lang==='pt'?'Nova':'New'}</span>`:''}</td><td class="text-right">${SM_MONEY_FULL.format(ptrb)}</td><td class="text-right fw-600">${SM_MONEY_FULL.format(plan)}</td><td><input type="number" class="form-input" step="0.01" min="0" placeholder="-" data-cat="${escapeAttr(category)}" value="${value===''?'':escapeAttr(value)}" oninput="updateSMTotal()" style="min-width:150px;text-align:right;"></td></tr>`;
 }
-
-function smCategoryRowHtml(pid, cat, isNew=false, preferredExecutor=''){
-  const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid && r.Categoria_despesa===cat);
-  const catRef=(DATA.categorias||[]).find(c=>c.Categoria_despesa_PT===cat||c.Categoria_despesa_ENG===cat)||{};
-  const aba=(planoRows.find(r=>r.Codigo_ABA)||{}).Codigo_ABA || catRef.ABA || catRef.Codigo_ABA || getCatABA(cat) || '-';
-  const ptrb=planoRows.reduce((s,r)=>s+parseFloat(r['Plano_PTR-B']||0),0);
-  const plan=(currentPlanMap(pid)||{})[cat]||0;
-  const executors=rubProjectExecutors(pid);
-  const selected=executors.includes(preferredExecutor) ? preferredExecutor : '';
-  const executorOptions=[`<option value="">${lang==='pt'?'Selecione':'Select'}</option>`,...executors.map(e=>`<option value="${escapeAttr(e)}"${e===selected?' selected':''}>${escapeHtml(e)}</option>`)].join('');
-  return `<tr data-cat-row="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}">
-    <td>${escapeHtml(cat)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">${lang==='pt'?'Nova':'New'}</span>`:''}</td>
-    <td class="fs-12 color-ink3">${escapeHtml(aba)}</td>
-    <td class="text-right">${FMTK(ptrb)}</td>
-    <td class="text-right fw-600">${FMTK(plan)}</td>
-    <td><select class="form-select" data-executor style="min-width:155px;">${executorOptions}</select></td>
-    <td style="white-space:nowrap;"><input type="number" class="form-input" step="0.01" placeholder="${EMPTY}" data-cat="${escapeAttr(cat)}" data-new-cat="${isNew?'1':'0'}" oninput="updateSMTotal()" style="width:110px;text-align:right;"><button type="button" class="btn btn-secondary btn-sm" onclick="addSMExecutorRow(this)" title="${lang==='pt'?'Adicionar outro executor nesta rubrica':'Add another executor to this category'}" style="margin-left:5px;">+</button></td>
-  </tr>`;
-}
-
 function refreshSMAddCategoryOptions(){
-  const sel=document.getElementById('sm-add-cat-select');
-  if(!sel) return;
-  const used=[...document.querySelectorAll('#sm-categories-table input[data-cat]')].map(i=>i.dataset.cat);
-  const missing=smAllAnpCategories().filter(cat=>!used.includes(cat));
-  sel.innerHTML=missing.map(cat=>`<option value="${escapeAttr(cat)}">${escapeHtml(cat)} (${escapeHtml(getCatABA(cat)||'')})</option>`).join('');
-  const btn=document.getElementById('sm-add-cat-btn');
-  if(btn) btn.disabled=!missing.length;
+  const select=document.getElementById('sm-add-cat-select'); if(!select)return;
+  const used=[...document.querySelectorAll('#sm-categories-table input[data-cat]')].map(input=>input.dataset.cat);
+  const missing=smAllAnpCategories().filter(category=>!used.includes(category));
+  select.innerHTML=missing.map(category=>`<option value="${escapeAttr(category)}">${escapeHtml(getCatABA(category)||'')} · ${escapeHtml(category)}</option>`).join('');
+  const button=document.getElementById('sm-add-cat-btn'); if(button)button.disabled=!missing.length;
 }
-
 function addSMCategoryRow(){
-  const pid=document.getElementById('sm-project')?.value||'';
-  const sel=document.getElementById('sm-add-cat-select');
-  const tbody=document.getElementById('sm-cat-tbody');
-  const cat=sel?.value||'';
-  if(!pid||!cat||!tbody) return;
-  const exists=[...document.querySelectorAll('#sm-categories-table input[data-cat]')].some(input=>input.dataset.cat===cat);
-  if(exists) return;
-  if(!document.querySelector('#sm-categories-table input[data-cat]')) tbody.innerHTML='';
-  tbody.insertAdjacentHTML('beforeend', smCategoryRowHtml(pid,cat,true));
-  refreshSMAddCategoryOptions();
-  updateSMTotal();
+  captureSMVisibleDraft(); const pid=document.getElementById('sm-project')?.value||'', select=document.getElementById('sm-add-cat-select'), tbody=document.getElementById('sm-cat-tbody'), category=select?.value||'';
+  if(!pid||!category||!tbody||[...tbody.querySelectorAll('input[data-cat]')].some(input=>input.dataset.cat===category))return;
+  tbody.insertAdjacentHTML('beforeend',smCategoryRowHtml(pid,category,true)); refreshSMAddCategoryOptions();
 }
-
-function addSMExecutorRow(button){
-  const row=button?.closest('tr[data-cat-row]');
-  const pid=document.getElementById('sm-project')?.value||'';
-  if(!row||!pid) return;
-  const cat=row.dataset.catRow||'';
-  const used=[...document.querySelectorAll(`#sm-cat-tbody tr[data-cat-row="${CSS.escape(cat)}"] select[data-executor]`)].map(el=>el.value).filter(Boolean);
-  const preferred=rubProjectExecutors(pid).find(executor=>!used.includes(executor))||'';
-  row.insertAdjacentHTML('afterend',smCategoryRowHtml(pid,cat,row.dataset.newCat==='1',preferred));
-}
-
 function onSMProjectChange(){
-  const pid=document.getElementById('sm-project')?.value||'';
-  const table=document.getElementById('sm-categories-table');
-  if(!table) return;
-
-  const planoRows=(DATA.plano||[]).filter(r=>r.Projeto===pid);
-  const smHistCats=(DATA.sms||[]).filter(s=>s.Projeto===pid).map(s=>s.Categoria_despesa).filter(Boolean);
-  const cats=[...new Set([...planoRows.map(r=>r.Categoria_despesa).filter(Boolean),...smHistCats])].sort(catCompare);
-  const executors=rubProjectExecutors(pid);
-  const incomeWrap=document.getElementById('sm-income-executor-wrap');
-  const incomeSelect=document.getElementById('sm-income-executor');
-  if(incomeWrap&&incomeSelect){
-    incomeSelect.innerHTML=executors.map(e=>`<option value="${escapeAttr(e)}">${escapeHtml(e)}</option>`).join('');
-    incomeWrap.style.display=executors.length>1?'block':'none';
-  }
-
-  table.innerHTML=`
-    <div style="display:flex;gap:8px;align-items:flex-end;padding:10px;background:var(--surface2);border-bottom:1px solid var(--border);">
-      <div class="form-group" style="flex:1;margin:0;">
-        <label class="form-label" style="font-size:11px;">${lang==='pt'?'Adicionar rubrica ANP existente':'Add existing ANP category'}</label>
-        <select class="form-select" id="sm-add-cat-select"></select>
-      </div>
-      <button type="button" class="btn btn-secondary btn-sm" id="sm-add-cat-btn" onclick="addSMCategoryRow()">${lang==='pt'?'Adicionar':'Add'}</button>
-    </div>
-    <div class="table-scroll"><table style="font-size:12px;">
-      <thead><tr>
-        <th>${lang==='pt'?'Categoria':'Category'}</th>
-        <th>Cód. ABA</th>
-        <th class="text-right">PTR-B Atual</th>
-        <th class="text-right">Plano Atual</th>
-        <th>${lang==='pt'?'Executor':'Executor'}</th>
-        <th class="text-right">Novo Valor</th>
-      </tr></thead>
-      <tbody id="sm-cat-tbody">
-        ${cats.map(cat=>smCategoryRowHtml(pid,cat,false)).join('') || `<tr><td colspan="6" class="empty-state">${lang==='pt'?'Nenhuma rubrica no projeto. Adicione uma categoria ANP acima.':'No project categories. Add an ANP category above.'}</td></tr>`}
-      </tbody>
-    </table></div>`;
-  refreshSMAddCategoryOptions();
+  const pid=document.getElementById('sm-project')?.value||'', table=document.getElementById('sm-categories-table'); if(!table)return;
+  const selector=document.getElementById('sm-executor-filter'), wrap=document.getElementById('sm-executor-filter-wrap'), previous=selector?.value||'', executors=smProjectExecutors(pid);
+  if(selector){selector.innerHTML=executors.map(executor=>`<option value="${escapeAttr(executor)}">${escapeHtml(executor)}</option>`).join('');if(executors.includes(previous))selector.value=previous;}
+  if(wrap)wrap.style.display=executors.length>1?'block':'none';
+  const executor=smSelectedExecutor(pid), note=document.getElementById('sm-income-executor-note');
+  if(note){note.style.display=executor?'block':'none';note.textContent=executor?`Executor selecionado: ${executor}`:'';}
+  const planRows=(DATA.plano||[]).filter(row=>row.Projeto===pid&&(!executor||row.Executor===executor));
+  const savedCategories=(DATA.sms||[]).filter(row=>row.Projeto===pid).map(row=>row.Categoria_despesa);
+  const draftCategories=[...smDraftItems.values()].filter(row=>row.executor===executor).map(row=>row.cat);
+  const categories=[...new Set([...planRows.map(row=>row.Categoria_despesa),...savedCategories,...draftCategories].filter(Boolean))].sort(catCompare);
+  const label=document.getElementById('sm-plan-caption');if(label)label.textContent=executor?`Novo valor das rubricas alteradas para ${executor}.`:'Selecione um executor para informar os valores.';
+  table.innerHTML=`<div class="table-scroll" style="max-height:420px;"><table style="font-size:12px;"><thead><tr><th style="width:70px;">ABA</th><th>Categoria</th><th class="text-right">PTR-B</th><th class="text-right">Plano Atual${latestSMLabel(pid)?` (${latestSMLabel(pid)})`:''}</th><th class="text-right">Novo valor da SM</th></tr></thead><tbody id="sm-cat-tbody">${categories.map(category=>smCategoryRowHtml(pid,category,false)).join('')||`<tr><td colspan="5" class="empty-state">${lang==='pt'?'Nenhuma rubrica para o executor selecionado.':'No categories for the selected executor.'}</td></tr>`}</tbody></table></div>`;
+  refreshSMAddCategoryOptions(); updateSMTotal();
 }
-
 function updateSMTotal(){
-  const inputs=document.querySelectorAll('#sm-categories-table input[data-cat]');
-  let total=0;
-  inputs.forEach(inp=>{
-    const v=parseFloat(inp.value);
-    if(v>0) total+=v;
-  });
-  const el=document.getElementById('sm-total-display');
-  if(el) el.textContent=FMT.format(total);
+  let total=0;document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{const value=parseFloat(input.value);if(Number.isFinite(value)&&value>0)total+=value;});
+  const el=document.getElementById('sm-total-display');if(el)el.textContent=SM_MONEY_FULL.format(total);
 }
-
 async function saveSM(){
-  const pid = document.getElementById('sm-project').value;
-  const smNum = document.getElementById('sm-number').value.trim();
-  const dataSubmissao = document.getElementById('sm-date-submissao').value;
-  const status = document.getElementById('sm-status').value;
-  const useIncome = !!document.getElementById('sm-income-enabled')?.checked;
-  const incomeValue = useIncome ? (parseFloat(document.getElementById('sm-income-value')?.value)||0) : 0;
-
-  if(!pid || !smNum){ alert('Preencha Projeto e Numero da SM.'); return; }
-  if(useIncome && incomeValue<=0){ alert('Informe o valor do rendimento utilizado.'); return; }
-
-  const inputs = document.querySelectorAll('#sm-categories-table input[data-cat]');
-  const linhas = [];
-  inputs.forEach(inp => {
-    const v = parseFloat(inp.value);
-    if(String(inp.value||'').trim()!=='' && Number.isFinite(v) && v>=0){
-      const executor=String(inp.closest('tr')?.querySelector('[data-executor]')?.value||'').trim();
-      linhas.push({ cat: inp.dataset.cat, executor, valor: v });
-    }
-  });
-
-  if(!linhas.length){ alert('Informe ao menos um valor.'); return; }
-  const missingExecutor=linhas.find(linha=>!linha.executor);
-  if(missingExecutor){
-    alert(lang==='pt'?'Selecione o executor de cada rubrica preenchida.':'Select an executor for every completed budget line.');
-    return;
-  }
-  const duplicatePair=linhas.find((linha,index)=>linhas.some((other,otherIndex)=>otherIndex<index && other.cat===linha.cat && other.executor===linha.executor));
-  if(duplicatePair){
-    alert(lang==='pt'?'Cada rubrica pode ter apenas um valor por executor nesta SM.':'Each category can have only one value per executor in this SM.');
-    return;
-  }
-
-  const existingPlanPairs=new Set((DATA.plano||[]).filter(r=>r.Projeto===pid).map(r=>`${r.Categoria_despesa}\u0001${String(r.Executor||'').trim()}`));
-  const createdPlanPairs=new Set();
-  const newPlanoRows=[];
-  linhas.forEach(linha=>{
-    const key=`${linha.cat}\u0001${linha.executor}`;
-    if(!existingPlanPairs.has(key) && !createdPlanPairs.has(key)){
-      createdPlanPairs.add(key);
-      newPlanoRows.push({
-        Projeto:pid, Executor:linha.executor, Categoria_despesa:linha.cat, Categoria:linha.cat,
-        Codigo_ABA:getCatABA(linha.cat)||'', 'Plano_PTR-B':0, Valor_PTRB:0, Plano_Atual:0,
-      });
-    }
-  });
-  const incomeExecutor=projectExecutorForUso(pid);
-  if(useIncome && !incomeExecutor){
-    alert(lang==='pt'?'Selecione o executor do rendimento utilizado.':'Select the executor for the income usage.');
-    return;
-  }
-  const usoRec=incomeValue>0 ? {
-    Projeto:pid, Executor:incomeExecutor, SM:smNum, Numero_SM:smNum,
-    Valor_Utilizado:incomeValue, Descricao:`Uso de rendimento ${smNum}`
-  } : null;
-  const smItensHeaders=(DATA._headers&&DATA._headers.SM_Itens&&DATA._headers.SM_Itens.length)
-    ? DATA._headers.SM_Itens
-    : ['Projeto','Numero_SM','Categoria','Valor','Executor'];
-  const hasSmExecutorColumn=smItensHeaders.some(header=>normLooseText(header).replace(/[ _]/g,'').toLowerCase()==='executor');
-  if(!hasSmExecutorColumn){
-    alert(lang==='pt'?'A base ainda não possui a coluna Executor na aba SM_Itens. Atualize a base antes de salvar uma SM.':'The workbook still needs the Executor column in SM_Itens before saving a change request.');
-    return;
-  }
-
-  const snapshot={
-    plano:JSON.parse(JSON.stringify(DATA.plano||[])),
-    solicitacoes:JSON.parse(JSON.stringify(DATA.solicitacoes||[])),
-    sms:JSON.parse(JSON.stringify(DATA.sms||[])),
-    uso_rendimento:JSON.parse(JSON.stringify(DATA.uso_rendimento||[])),
-  };
-
-  showLoading('Saving SM...');
-  try {
-    const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)
-      ? DATA._headers.Plano_Orcamentario
-      : ['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
-    // 29/07: gravar todas as linhas novas de uma vez (appendExcelRows), nao uma a uma em loop - loop de
-    // appendExcelRow sofria corrida no usedRange do Excel Online e perdia linha silenciosamente.
-    if(newPlanoRows.length){
-      await appendExcelRows('Plano_Orcamentario', newPlanoRows.map(row=>planoHeaders.map(h=>planoCellFor(h,row))));
-      newPlanoRows.forEach(row=>DATA.plano.push(row));
-    }
-
-    await appendExcelRow('Solicitacoes', [
-      pid, smNum, 'SM',
-      isoToExcelSerial(dataSubmissao) || '',
-      '',
-      status, ''
-    ]);
-    DATA.solicitacoes.push({
-      Projeto: pid, 'SM#': smNum, Numero: smNum, Tipo: 'SM',
-      Data_Submissao: dataSubmissao, Data_Aprovacao: '', Status: status, Observacoes: '', Valor: 0
-    });
-
-    // 29/07: SM_Itens agora grava pelos headers reais (smItemCellFor/DATA._headers), como as demais
-    // sheets desta funcao. Antes o append era por posicao fixa [Projeto,SM#,Categoria,Valor], que
-    // corrompe a linha se a planilha tiver a ordem/colunas diferente da assumida.
-    // Cabeçalhos de SM_Itens foram validados antes de qualquer gravação.
-    // 29/07: mesmo motivo do Plano_Orcamentario acima - uma linha por await em loop perdia categoria
-    // silenciosamente por corrida no usedRange (bug reportado por Ricardo: categoria "sumia" so depois
-    // do reload). Agora grava todas as linhas da SM num unico PATCH.
-    const smRows=linhas.map(linha=>({ Projeto: pid, 'SM#': smNum, Executor: linha.executor, Categoria_despesa: linha.cat, Valor: linha.valor }));
-    if(smRows.length){
-      await appendExcelRows('SM_Itens', smRows.map(smRow=>smItensHeaders.map(h=>smItemCellFor(h,smRow))));
-      smRows.forEach(smRow=>DATA.sms.push(smRow));
-    }
-
-    if(usoRec){
-      const usoHeaders=(DATA._headers&&DATA._headers.Uso_Rendimento&&DATA._headers.Uso_Rendimento.length)
-        ? DATA._headers.Uso_Rendimento
-        : ['Projeto','Executor','Numero_SM','Valor_Utilizado','Descricao'];
-      await appendExcelRow('Uso_Rendimento', usoHeaders.map(h=>usoRendimentoCellFor(h,usoRec)));
-      DATA.uso_rendimento.push(usoRec);
-    }
-
-    applySMOverrides();
-    closeModal('sm-modal');
-    hideLoading();
-    renderCurrentPage();
-    alert('SM saved successfully!');
-  } catch(e) {
-    // Excel appends before a failure can remain in the workbook; rollback keeps the UI memory consistent.
-    DATA.plano=snapshot.plano;
-    DATA.solicitacoes=snapshot.solicitacoes;
-    DATA.sms=snapshot.sms;
-    DATA.uso_rendimento=snapshot.uso_rendimento;
-    hideLoading();
-    alert('Error saving SM: ' + e.message);
-  }
+  captureSMVisibleDraft();
+  const pid=document.getElementById('sm-project').value,smNum=document.getElementById('sm-number').value.trim(),dataSubmissao=document.getElementById('sm-date-submissao').value,status=document.getElementById('sm-status').value,dataAprovacao=document.getElementById('sm-date-aprovacao').value,useIncome=!!document.getElementById('sm-income-enabled')?.checked,incomeValue=useIncome?(parseFloat(document.getElementById('sm-income-value')?.value)||0):0,linhas=[...smDraftItems.values()];
+  if(!pid||!smNum){alert('Preencha Projeto e Numero da SM.');return;}
+  if(smStatusNeedsApprovalDate(status)&&!dataAprovacao){alert(lang==='pt'?'Informe a data de aprovação para este status.':'Enter the approval date for this status.');return;}
+  if(useIncome&&incomeValue<=0){alert('Informe o valor do rendimento utilizado.');return;}
+  if(!linhas.length){alert('Informe ao menos um valor.');return;}
+  const existingPlanPairs=new Set((DATA.plano||[]).filter(row=>row.Projeto===pid).map(row=>smDraftKey(row.Categoria_despesa,String(row.Executor||'').trim()))),createdPlanPairs=new Set(),newPlanoRows=[];
+  linhas.forEach(linha=>{const key=smDraftKey(linha.cat,linha.executor);if(!existingPlanPairs.has(key)&&!createdPlanPairs.has(key)){createdPlanPairs.add(key);newPlanoRows.push({Projeto:pid,Executor:linha.executor,Categoria_despesa:linha.cat,Categoria:linha.cat,Codigo_ABA:getCatABA(linha.cat)||'','Plano_PTR-B':0,Valor_PTRB:0,Plano_Atual:0});}});
+  const incomeExecutor=smSelectedExecutor(pid);if(useIncome&&!incomeExecutor){alert(lang==='pt'?'Selecione o executor do rendimento utilizado.':'Select the executor for the income usage.');return;}
+  const usoRec=incomeValue>0?{Projeto:pid,Executor:incomeExecutor,SM:smNum,Numero_SM:smNum,Valor_Utilizado:incomeValue,Descricao:`Uso de rendimento ${smNum}`} : null;
+  const smItensHeaders=(DATA._headers&&DATA._headers.SM_Itens&&DATA._headers.SM_Itens.length)?DATA._headers.SM_Itens:['Projeto','Numero_SM','Categoria','Valor','Executor'];
+  if(!smItensHeaders.some(header=>normLooseText(header).replace(/[ _]/g,'').toLowerCase()==='executor')){alert(lang==='pt'?'A base ainda não possui a coluna Executor na aba SM_Itens. Atualize a base antes de salvar uma SM.':'The workbook still needs the Executor column in SM_Itens before saving a change request.');return;}
+  const snapshot={plano:JSON.parse(JSON.stringify(DATA.plano||[])),solicitacoes:JSON.parse(JSON.stringify(DATA.solicitacoes||[])),sms:JSON.parse(JSON.stringify(DATA.sms||[])),uso_rendimento:JSON.parse(JSON.stringify(DATA.uso_rendimento||[]))};showLoading('Saving SM...');
+  try{
+    const planoHeaders=(DATA._headers&&DATA._headers.Plano_Orcamentario&&DATA._headers.Plano_Orcamentario.length)?DATA._headers.Plano_Orcamentario:['Projeto','Executor','Categoria','Codigo_ABA','Valor_PTRB'];
+    if(newPlanoRows.length){await appendExcelRows('Plano_Orcamentario',newPlanoRows.map(row=>planoHeaders.map(header=>planoCellFor(header,row))));newPlanoRows.forEach(row=>DATA.plano.push(row));}
+    const solicitation={Projeto:pid,'SM#':smNum,Numero:smNum,Numero_Item:smNum,Tipo:'SM',Data_Submissao:dataSubmissao,Data_Aprovacao:dataAprovacao,Status:status,Observacoes:'',Valor:0};
+    const solicitacoesHeaders=(DATA._headers&&DATA._headers.Solicitacoes&&DATA._headers.Solicitacoes.length)?DATA._headers.Solicitacoes:['Projeto','Numero_Item','Tipo','Data_Submissao','Data_Aprovacao','Status','Valor'];
+    await appendExcelRow('Solicitacoes',solicitacoesHeaders.map(header=>solicitacaoCellFor(header,solicitation)));DATA.solicitacoes.push(solicitation);
+    const smRows=linhas.map(linha=>({Projeto:pid,'SM#':smNum,Executor:linha.executor,Categoria_despesa:linha.cat,Valor:linha.valor}));await appendExcelRows('SM_Itens',smRows.map(row=>smItensHeaders.map(header=>smItemCellFor(header,row))));smRows.forEach(row=>DATA.sms.push(row));
+    if(usoRec){const usoHeaders=(DATA._headers&&DATA._headers.Uso_Rendimento&&DATA._headers.Uso_Rendimento.length)?DATA._headers.Uso_Rendimento:['Projeto','Executor','Numero_SM','Valor_Utilizado','Descricao'];await appendExcelRow('Uso_Rendimento',usoHeaders.map(header=>usoRendimentoCellFor(header,usoRec)));DATA.uso_rendimento.push(usoRec);}
+    applySMOverrides();smDraftItems.clear();closeModal('sm-modal');hideLoading();renderCurrentPage();alert(lang==='pt'?'SM salva com sucesso!':'SM saved successfully!');
+  }catch(error){DATA.plano=snapshot.plano;DATA.solicitacoes=snapshot.solicitacoes;DATA.sms=snapshot.sms;DATA.uso_rendimento=snapshot.uso_rendimento;hideLoading();alert((lang==='pt'?'Erro ao salvar SM: ':'Error saving SM: ')+(error?.message||error));}
 }
 
 // ===================== INIT =====================
