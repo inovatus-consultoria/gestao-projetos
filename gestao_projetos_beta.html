@@ -6520,12 +6520,19 @@ function smImportProjectExecutors(pid){
   return project?.Executor ? [String(project.Executor).trim()] : [];
 }
 function smImportResolveCategory(pid, aba, label){
-  const normalizedAba=String(aba||'').trim().toUpperCase();
-  const ref=(DATA.categorias||[]).find(c=>String(c.ABA||c.Codigo_ABA||'').trim().toUpperCase()===normalizedAba);
-  if(ref) return ref.Categoria_despesa_PT||ref.Categoria_despesa_ENG||'';
   const normalizedLabel=smImportNormalize(label);
-  const candidates=[...(DATA.plano||[]).filter(r=>r.Projeto===pid).map(r=>r.Categoria_despesa),...(DATA.sms||[]).filter(r=>r.Projeto===pid).map(r=>r.Categoria_despesa)].filter(Boolean);
-  return candidates.find(category=>smImportNormalize(category)===normalizedLabel)||'';
+  const candidates=[...(DATA.categorias||[]).flatMap(c=>[c.Categoria_despesa_PT,c.Categoria_despesa_ENG]),...(DATA.plano||[]).filter(r=>r.Projeto===pid).map(r=>r.Categoria_despesa),...(DATA.sms||[]).filter(r=>r.Projeto===pid).map(r=>r.Categoria_despesa)].filter(Boolean);
+  const exact=candidates.find(category=>smImportNormalize(category)===normalizedLabel);
+  if(exact) return exact;
+  // A ferramenta SM pode variar conectivos e singular/plural; isso não deve mudar a rubrica.
+  const comparable=value=>smImportNormalize(value).split(' ').filter(word=>!['a','as','o','os','de','da','das','do','dos','e','ou','para','em'].includes(word)).map(word=>word.endsWith('ais')?`${word.slice(0,-3)}al`:word.endsWith('s')?word.slice(0,-1):word).join(' ');
+  const normalizedComparable=comparable(label);
+  const equivalent=candidates.find(category=>comparable(category)===normalizedComparable);
+  if(equivalent) return equivalent;
+  // ABA é fallback apenas quando é inequívoco: N, G, R e T possuem mais de uma rubrica.
+  const normalizedAba=String(aba||'').trim().toUpperCase();
+  const abaCandidates=[...new Set((DATA.categorias||[]).filter(c=>String(c.ABA||c.Codigo_ABA||'').trim().toUpperCase()===normalizedAba).flatMap(c=>[c.Categoria_despesa_PT,c.Categoria_despesa_ENG]).filter(Boolean))];
+  return abaCandidates.length===1?abaCandidates[0]:'';
 }
 function smImportSuggestedExecutor(pid, sourceExecutor, executors){
   const mapped=smImportReadMap(pid)[smImportNormalize(sourceExecutor)];
