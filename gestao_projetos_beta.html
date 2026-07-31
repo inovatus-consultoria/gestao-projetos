@@ -3896,7 +3896,7 @@ function renderProjectDetail(pid){
             const isSusp=isMilestoneSuspended(m);
             const origIdx=milestoneIndexByKey(m._localKey);
             const key=escapeAttr(m._localKey);
-            return `<tr class="milestone-row"${isSusp?' style="background:var(--surface2);color:var(--ink3);"':''} onclick="openMilestoneModal('edit','${key}')">
+            return `<tr class="milestone-row"${isSusp?' style="color:var(--ink3);"':''} onclick="openMilestoneModal('edit','${key}')">
               <td class="fw-600 fs-12">${escapeHtml(m.ID||EMPTY)}</td>
               <td class="fs-12" style="max-width:300px;">${escapeHtml(milestoneDescription(m))}</td>
               <td class="fs-12 color-ink3">${FMTD(m['Data Base'])}</td>
@@ -4252,7 +4252,7 @@ function renderMilestones(){
     const dateCell=isSuspended
       ? '<span class="badge badge-gray">'+t('suspended')+'</span>'
       : '<input type="date" class="form-input fs-12" style="padding:4px 8px;max-width:140px;" value="'+escapeAttr(forecastValue)+'" onchange="updateMilestoneDate('+origIdx+',this.value)">';
-    tbody.innerHTML+='<tr class="milestone-row"'+(isSuspended?' style="background:var(--surface2);color:var(--ink3);"':'')+' onclick="openMilestoneModal(\'edit\',\''+key+'\')">'
+    tbody.innerHTML+='<tr class="milestone-row"'+(isSuspended?' style="color:var(--ink3);"':'')+' onclick="openMilestoneModal(\'edit\',\''+key+'\')">'
       +'<td class="fw-600 fs-12">'+escapeHtml(m.ID||EMPTY)+'</td>'
       +'<td class="fs-12">'+escapeHtml(m.Projeto||EMPTY)+'</td>'
       +'<td class="fs-12" style="max-width:320px;">'+escapeHtml(milestoneDescription(m))+'</td>'
@@ -5654,7 +5654,7 @@ function _rptBodyCell(d, text, widthDxa, opts={}){
     fitText:!!opts.fitText,
     margins:{top:60,bottom:60,left:120,right:120},
     children:[new d.Paragraph({
-      children:[new d.TextRun({text:String(text||''),size:opts.size||20,font:'Calibri',bold:!!opts.bold})],
+      children:[new d.TextRun({text:String(text||''),size:opts.size||20,font:'Calibri',bold:!!opts.bold,color:opts.color||undefined})],
       alignment: opts.center ? d.AlignmentType.CENTER : d.AlignmentType.LEFT,
       keepLines:!!opts.noWrap,
     })]
@@ -5887,13 +5887,13 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
         ]}),
         ...marcos.map(m=>{
           const status=_rptStatus(m.Status),completed=status==='Completed',suspended=isMilestoneSuspended(m);
-          const rowShading=suspended?'EEF0F2':undefined;
+          const textColor=suspended?'7A7F85':undefined;
           return new d.TableRow({children:[
-            _rptBodyCell(d,_rptNoBreakText(m.ID),c1,{center:true,shading:rowShading}),
-            _rptBodyCell(d,_rptField(m,['Descri\u00e7\u00e3o','Descricao','Description']),c2,{shading:rowShading}),
-            _rptBodyCell(d,FMTD(m['Data Base']||''),c3,{center:true,shading:rowShading}),
-            _rptBodyCell(d,FMTD(m['Data prevista / Data de entrega']||''),c4,{center:true,shading:rowShading}),
-            _rptBodyCell(d,status,c5,{shading:completed?'D9EAD3':rowShading}),
+            _rptBodyCell(d,_rptNoBreakText(m.ID),c1,{center:true,color:textColor}),
+            _rptBodyCell(d,_rptField(m,['Descri\u00e7\u00e3o','Descricao','Description']),c2,{color:textColor}),
+            _rptBodyCell(d,FMTD(m['Data Base']||''),c3,{center:true,color:textColor}),
+            _rptBodyCell(d,FMTD(m['Data prevista / Data de entrega']||''),c4,{center:true,color:textColor}),
+            _rptBodyCell(d,status,c5,{shading:completed?'D9EAD3':undefined,color:textColor}),
           ]});
         })
       ]
