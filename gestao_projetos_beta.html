@@ -6580,7 +6580,9 @@ async function handleSMImportFile(input){
         const label=valueAt(row,3);
         const category=smImportResolveCategory(pid,aba,label);
         if(!category) throw new Error(`Rubrica não reconhecida pelo painel: ${label||aba||'(vazia)'}.`);
-        const value=Number(valueAt(row,smColumn));
+        const rawValue=valueAt(row,smColumn);
+        // Células vazias no Histórico da ferramenta SM v13 representam rubrica sem valor (R$ 0).
+        const value=rawValue===undefined||rawValue===null||String(rawValue).trim()===''?0:Number(rawValue);
         if(!Number.isFinite(value)) throw new Error(`Valor inválido no Histórico para ${sourceExecutor} / ${category}.`);
         rows.push({category,aba:String(aba||''),value});
       }
