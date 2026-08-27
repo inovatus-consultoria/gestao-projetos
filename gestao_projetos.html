@@ -1309,7 +1309,7 @@ tr:hover td{background:var(--surface3);}
       </div>
       <div class="form-group">
         <label class="form-label" id="lbl-gasto-valor">Amount (R$)</label>
-        <input class="form-input" type="number" id="gasto-valor" min="0" step="0.01">
+        <input class="form-input" type="number" id="gasto-valor" step="0.01">
       </div>
     </div>
     <div class="form-grid">
@@ -1591,7 +1591,7 @@ const REDIRECT_URI = 'https://inovatus-consultoria.github.io/gestao-projetos/ges
 // â”€â”€ CONFIGURAÃ‡ÃƒO DO EXCEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Link de compartilhamento do arquivo no OneDrive da empresa.
 // Para atualizar: abra o arquivo no browser â†’ Compartilhar â†’ Copiar link.
-const EXCEL_SHARE_URL = 'https://inovatusconsultoria-my.sharepoint.com/:x:/g/personal/inovatus_inovatusconsultoria_onmicrosoft_com/IQCfjU4um7RrQo9XthbN25a3AXxMNVgAvN9UWwGpPDya0ec?e=kyZh58';
+const EXCEL_SHARE_URL = 'https://inovatusconsultoria-my.sharepoint.com/:x:/g/personal/inovatus_inovatusconsultoria_onmicrosoft_com/IQCfjU4um7RrQo9XthbN25a3AXxMNVgAvN9UWwGpPDya0ec?e=SAya1Q';
 
 // IDs resolvidos em runtime por resolveExcelItem() â€” nÃ£o editar
 let _excelDriveId = null;
@@ -3848,7 +3848,7 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Gerente':'Project Manager'}</td><td>${proj['Project Manager']||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start'}</td><td>${FMTD(projectStartValue(proj))}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim':'End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim (Baseline)':'Baseline End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
         ${proj['Data final real'] ? `<tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End'}</td><td>${FMTD(proj['Data final real'])}</td></tr>` : ''}
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'DuraÃ§Ã£o':'Duration'}</td><td>${proj['DuraÃ§Ã£o (meses)']||'â€”'} ${L?'meses':'months'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
@@ -5361,7 +5361,7 @@ function populateRubGastoValues(){
       <td class="fs-12">${escapeHtml(cat)}</td>
       <td class="fw-600 fs-12 color-ink3">${escapeHtml(getCatABA(cat)||'')}</td>
       <td class="text-right">
-        <input class="form-input rub-gasto-input" type="number" min="0" step="0.01"
+        <input class="form-input rub-gasto-input" type="number" step="0.01"
           data-cat="${escapeAttr(cat)}" data-original="${v}" value="${v?String(v):''}"
           style="text-align:right;" id="rub-gasto-val-${idx}">
       </td>
