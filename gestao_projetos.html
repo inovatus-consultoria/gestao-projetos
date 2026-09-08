@@ -667,7 +667,7 @@ tr:hover td{background:var(--surface3);}
   width:90%;max-width:560px;max-height:90vh;overflow-y:auto;
   box-shadow:0 32px 80px rgba(0,0,0,0.2);
 }
-.modal-title{font-size:20px;margin-bottom:20px;color:var(--ink);}
+.modal-title{font-family:'DM Sans',sans-serif;font-size:20px;margin-bottom:20px;color:var(--ink);}
 .modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);}
 
 /* ===================== FORM ELEMENTS ===================== */
@@ -2284,7 +2284,7 @@ function normalizeProjectId(id){
 // "Concluido", "Completed" (com/sem acento) â€” todos contam como concluÃ­do.
 function isMilestoneCompleted(status){
   const s=normLooseText(status).replace(/[\s_-]+/g,'');
-  return ['completo','concluido','concluida','completed','complete'].includes(s);
+  return ['completo','concluido','concluida','concluded','completed','complete'].includes(s);
 }
 function isMilestoneSuspended(marco){
   const forecast=normLooseText(milestoneForecastValue(marco));
@@ -2587,13 +2587,13 @@ function statusAutoLabel(s){
 }
 
 // A2: status canÃ´nicos de marco (rÃ³tulos como aparecem na planilha â€” aceita PT e EN)
-const MILESTONE_STATUSES = ['Planejado','Em andamento','ConcluÃ­do','Atrasado','Suspenso','Cancelado'];
+const MILESTONE_STATUSES = ['Planned','Under review','Concluded','Late','Suspended'];
 
 function milestoneStatusBadgeClass(s){
   const low=String(s||'').trim().toLowerCase();
-  if(['concluÃ­do','concluido','completed'].includes(low)) return 'st-green';
-  if(['atrasado','overdue'].includes(low)) return 'st-red';
-  if(['em andamento','in progress','upcoming'].includes(low)) return 'st-amber';
+  if(['concluÃ­do','concluido','concluded','completed'].includes(low)) return 'st-green';
+  if(['atrasado','late','overdue'].includes(low)) return 'st-red';
+  if(['em andamento','under review','in progress','upcoming'].includes(low)) return 'st-amber';
   if(['planejado','planned'].includes(low)) return 'st-blue';
   if(['suspenso','suspended','cancelado','cancelled','canceled'].includes(low)) return 'st-gray';
   return 'st-gray';
@@ -2604,7 +2604,7 @@ function milestoneStatusBadgeClass(s){
 function milestoneStatusSelect(m, origIdx){
   const cur = String(m.Status||m._userStatus||'').trim();
   const cls = milestoneStatusBadgeClass(cur);
-  const opts = [...new Set([...MILESTONE_STATUSES, cur].filter(Boolean))];
+  const opts = MILESTONE_STATUSES;
   const optHtml = opts.map(s=>`<option value="${escapeAttr(s)}" ${s===cur?'selected':''}>${escapeHtml(s)}</option>`).join('');
   return `<select class="status-select ${cls}" onchange="updateMilestoneStatus(${origIdx},this.value)">${optHtml}</select>`;
 }
