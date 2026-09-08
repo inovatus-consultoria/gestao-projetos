@@ -3856,9 +3856,10 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);width:130px;">Executor</td><td class="fw-600">${proj.Executor||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">NÂº ANP</td><td class="fw-600">${proj['NÃºmero ANP']||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Gerente':'Project Manager'}</td><td>${proj['Project Manager']||'â€”'}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">Gestor</td><td>${proj.Gestor||'â€”'}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">INV Manager</td><td>${proj.Gestor||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start'}</td><td>${FMTD(projectStartValue(proj))}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim (Baseline)':'Baseline End'}</td><td>${FMTD(proj['Data final'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega (Baseline)':'Baseline Delivery'}</td><td>${FMTD(proj['Data final'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega planejada':'Planned End'}</td><td>${FMTD(proj['Data final planejada'])}</td></tr>
         ${proj['Data final real'] ? `<tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End'}</td><td>${FMTD(proj['Data final real'])}</td></tr>` : ''}
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'DuraÃ§Ã£o':'Duration'}</td><td>${proj['DuraÃ§Ã£o (meses)']||'â€”'} ${L?'meses':'months'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
