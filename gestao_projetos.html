@@ -1188,12 +1188,16 @@ tr:hover td{background:var(--surface3);}
         <textarea class="form-input" id="ms-modal-desc" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-ms-modal-baseline">Baseline *</label>
+        <label class="form-label" id="lbl-ms-modal-baseline">Baseline Delivery *</label>
         <input class="form-input" id="ms-modal-baseline" type="date">
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-ms-modal-forecast">Previsao *</label>
+        <label class="form-label" id="lbl-ms-modal-forecast">Planned Delivery *</label>
         <input class="form-input" id="ms-modal-forecast" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-ms-modal-actual">Actual Delivery</label>
+        <input class="form-input" id="ms-modal-actual" type="date">
       </div>
       <div class="form-group">
         <label class="form-label" id="lbl-ms-modal-status">Status *</label>
@@ -2870,10 +2874,11 @@ function normalizeMarco(r,excelRow){
     Codigo:codigo,
     'Descrição':descricao,
     Descricao:descricao,
-    'Data Base':baseline,
-    Data_Baseline:baseline,
+     'Data Base':baseline,
+     Data_Baseline:baseline,
     'Data prevista / Data de entrega':prevista,
-    Data_Prevista:prevista,
+     Data_Prevista:prevista,
+     Data_Real:excelDate(r.Data_Real||r.Data_Entrega_Real||r['Actual Delivery']),
     Status:status,
     _userStatus:status,
     _localKey:r._localKey||('ms-'+(++milestoneLocalSeq)),
@@ -4242,11 +4247,11 @@ function renderMilestones(){
     sf.value=sFilter;
   }
 
-  document.getElementById('milestones-thead').innerHTML='<tr><th>'+t('ms_id')+'</th><th>'+t('ms_project')+'</th><th>'+t('ms_desc')+'</th><th>'+t('ms_baseline')+'</th><th>'+t('ms_forecast')+'</th><th>'+t('ms_status')+'</th></tr>';
+  document.getElementById('milestones-thead').innerHTML='<tr><th>'+t('ms_id')+'</th><th>'+t('ms_project')+'</th><th>'+t('ms_desc')+'</th><th>Baseline Delivery</th><th>Planned Delivery</th><th>Actual Delivery</th><th>'+t('ms_status')+'</th></tr>';
   const tbody=document.getElementById('milestones-tbody');
   tbody.innerHTML='';
   if(!marcos.length){
-    tbody.innerHTML='<tr><td colspan="6" class="empty-state">'+t('no_milestones')+'</td></tr>';
+    tbody.innerHTML='<tr><td colspan="7" class="empty-state">'+t('no_milestones')+'</td></tr>';
     return;
   }
   marcos.forEach(m=>{
@@ -4262,7 +4267,8 @@ function renderMilestones(){
       +'<td class="fs-12">'+escapeHtml(m.Projeto||EMPTY)+'</td>'
       +'<td class="fs-12" style="max-width:320px;">'+escapeHtml(milestoneDescription(m))+'</td>'
       +'<td class="fs-12 color-ink3">'+FMTD(m['Data Base'])+'</td>'
-      +'<td><div class="inline-control" onclick="event.stopPropagation()">'+dateCell+'</div></td>'
+       +'<td><div class="inline-control" onclick="event.stopPropagation()">'+dateCell+'</div></td>'
+       +'<td class="fs-12 color-ink3">'+FMTD(m.Data_Real||m['Actual Delivery'])+'</td>'
       +'<td><div class="inline-control" onclick="event.stopPropagation()">'+milestoneStatusSelect(m,origIdx)+'</div></td>'
       +'</tr>';
   });
@@ -4289,12 +4295,13 @@ function openMilestoneModal(mode,keyOrProject){
   document.getElementById('ms-modal-baseline').value=record?.['Data Base']||'';
   const forecast=record?.['Data prevista / Data de entrega']||'';
   document.getElementById('ms-modal-forecast').value=String(forecast).toLowerCase()==='suspended'?'':forecast;
+  document.getElementById('ms-modal-actual').value=record?.Data_Real||record?.['Actual Delivery']||'';
   const statusSelect=document.getElementById('ms-modal-status');
   const currentStatus=record?.Status||(lang==='pt'?'Planejado':'Planned');
   statusSelect.innerHTML=milestoneModalStatuses(currentStatus).map(s=>'<option value="'+escapeAttr(s)+'">'+escapeHtml(s)+'</option>').join('');
   statusSelect.value=currentStatus;
 
-  const headers=(DATA._headers&&DATA._headers.Marcos)||['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Status'];
+  const headers=(DATA._headers&&DATA._headers.Marcos)||['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Data_Real','Status'];
   milestoneModalExtraHeaders=headers.filter(h=>!milestoneCoreFieldForHeader(h));
   const extra=document.getElementById('milestone-extra-fields');
   extra.innerHTML=milestoneModalExtraHeaders.map((header,i)=>{
@@ -4309,8 +4316,9 @@ function openMilestoneModal(mode,keyOrProject){
     'lbl-ms-modal-project':lang==='pt'?'Projeto *':'Project *',
     'lbl-ms-modal-code':lang==='pt'?'ID / Código *':'ID / Code *',
     'lbl-ms-modal-desc':lang==='pt'?'Descrição *':'Description *',
-    'lbl-ms-modal-baseline':'Baseline *',
-    'lbl-ms-modal-forecast':lang==='pt'?'Previsão *':'Forecast *',
+    'lbl-ms-modal-baseline':lang==='pt'?'Entrega (Baseline) *':'Baseline Delivery *',
+    'lbl-ms-modal-forecast':lang==='pt'?'Entrega planejada *':'Planned Delivery *',
+    'lbl-ms-modal-actual':lang==='pt'?'Entrega real':'Actual Delivery',
     'lbl-ms-modal-status':'Status *',
   };
   Object.entries(labels).forEach(([id,label])=>{const el=document.getElementById(id);if(el)el.textContent=label;});
@@ -4332,6 +4340,7 @@ function applyMilestoneModal(){
   const description=document.getElementById('ms-modal-desc').value.trim();
   const baseline=document.getElementById('ms-modal-baseline').value;
   const forecast=document.getElementById('ms-modal-forecast').value;
+  const actual=document.getElementById('ms-modal-actual').value;
   const status=document.getElementById('ms-modal-status').value.trim();
   if(!project||!code||!description||!baseline||!forecast||!status){
     alert(L?'Preencha Projeto, ID, Descrição, Baseline, Previsão e Status.':'Fill Project, ID, Description, Baseline, Forecast and Status.');
@@ -4353,6 +4362,8 @@ function applyMilestoneModal(){
   next.Data_Baseline=baseline;
   next['Data prevista / Data de entrega']=forecast;
   next.Data_Prevista=forecast;
+  next.Data_Real=actual;
+  next['Actual Delivery']=actual;
   next.Status=status;
   next._userStatus=status;
   document.querySelectorAll('#milestone-extra-fields [data-ms-extra-index]').forEach(input=>{
@@ -4453,6 +4464,7 @@ function marcoCellFor(header,m){
     if(String(m['Data prevista / Data de entrega']).toLowerCase()==='suspended') return 'Suspended';
     return isoToExcelSerial(m['Data prevista / Data de entrega'])||'';
   }
+  if(h==='data_real'||h==='data_entrega_real'||h==='actual_delivery') return isoToExcelSerial(m.Data_Real||m['Actual Delivery'])||'';
   if(h==='status') return m.Status||m._userStatus||'';
   const raw=m[header]??'';
   if(raw&&/data|date/.test(normLooseText(header))&&/^\d{4}-\d{2}-\d{2}/.test(String(raw))) return isoToExcelSerial(String(raw).slice(0,10))||raw;
@@ -4461,7 +4473,7 @@ function marcoCellFor(header,m){
 async function rewriteMarcosSheet(){
   const headers=(DATA._headers&&DATA._headers.Marcos&&DATA._headers.Marcos.length)
     ? DATA._headers.Marcos
-    : ['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Status'];
+     : ['Projeto','Codigo','Descricao','Data_Baseline','Data_Prevista','Data_Real','Status'];
   const dataRows = DATA.marcos.map(m=>headers.map(h=>marcoCellFor(h,m)));
   await rewriteExcelSheet('Marcos', headers, dataRows);
 }
