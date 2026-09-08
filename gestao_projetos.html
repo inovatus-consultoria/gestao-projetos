@@ -1732,7 +1732,7 @@ const T = {
     kpi_overdue:'Overdue Milestones',kpi_upcoming:'Upcoming (60d)',kpi_projects:'Active Projects',
     sync:'Sync',
     col_id:'ID',col_title:'Title',tbl_projects:'Projects',col_executor:'Executor',col_anp:'ANP #',col_pm:'Manager',
-    col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'Exec%',col_time:'Time%',col_start:'Start',col_end:'Actual End',col_gestor:'Gestor',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
+col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Time%',col_start:'Start',col_baseline_end:'Baseline End',col_planned_end:'Planned End',col_end:'Actual End',col_gestor:'INV Manager',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
     overdue:'Overdue',upcoming:'Upcoming',planned:'Planned',completed:'Completed',suspended:'Suspended',
     ms_id:'ID',ms_project:'Project',ms_desc:'Description',ms_baseline:'Baseline',ms_forecast:'Forecast',ms_status:'Status',
     btn_sync:'Sync',btn_save:'Save Changes',btn_new_sm:'+ New SM',btn_new_gasto:'+ New Expense',
@@ -1769,7 +1769,7 @@ const T = {
     kpi_overdue:'Marcos Atrasados',kpi_upcoming:'PrÃ³ximos (60d)',kpi_projects:'Projetos Ativos',
     sync:'Sincronizar',
     col_id:'ID',col_title:'TÃ­tulo',tbl_projects:'Projetos',col_executor:'Executor',col_anp:'NÂº ANP',col_pm:'Gerente',
-    col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'InÃ­cio',col_end:'Fim real',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluÃ­dos',all_managers:'Todos os gestores',
+col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'InÃ­cio',col_baseline_end:'Fim (Baseline)',col_planned_end:'Fim planejado',col_end:'Fim real',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluÃ­dos',all_managers:'Todos os gestores',
     overdue:'Atrasado',upcoming:'PrÃ³ximo',planned:'Planejado',completed:'ConcluÃ­do',suspended:'Suspenso',
     ms_id:'ID',ms_project:'Projeto',ms_desc:'DescriÃ§Ã£o',ms_baseline:'Baseline',ms_forecast:'PrevisÃ£o',ms_status:'Status',
     btn_sync:'Sincronizar',btn_save:'Salvar AlteraÃ§Ãµes',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
@@ -2818,7 +2818,8 @@ function normalizeProjeto(r){
     Data_Inicio         : start,
     'Data de inÃ­cio '   : start,
     'Data final'        : excelDate(r.Data_Fim),
-    'Data final real'   : excelDate(r.Data_Fim_Real),
+     'Data final planejada': excelDate(r.Data_Fim_Plan),
+     'Data final real'   : excelDate(r.Data_Fim_Real),
     Data_Fim_Real       : excelDate(r.Data_Fim_Real),
     'DuraÃ§Ã£o (meses)'   : r.Duracao_Meses||'',
     Duracao_Meses       : r.Duracao_Meses||'',
@@ -3392,6 +3393,8 @@ function renderPortfolio(){
     <th>${t('col_pct')}</th>
     <th>${t('col_time')}</th>
     <th>${t('col_start')}</th>
+    <th>${t('col_baseline_end')}</th>
+    <th>${t('col_planned_end')}</th>
     <th>${t('col_end')}</th>
   </tr>`;
 
@@ -3420,7 +3423,9 @@ function renderPortfolio(){
         <span class="fs-12 color-ink3">${PCT(timePct)}</span>
       </div></td>
       <td class="fs-12 color-ink3">${FMTD(projectStartValue(p))}</td>
-      <td class="fs-12 color-ink3">${FMTD(p['Data final real'])}</td>
+       <td class="fs-12 color-ink3">${FMTD(p['Data final'])}</td>
+       <td class="fs-12 color-ink3">${FMTD(p['Data final planejada'])}</td>
+       <td class="fs-12 color-ink3">${FMTD(p['Data final real'])}</td>
     </tr>`;
   });
 
