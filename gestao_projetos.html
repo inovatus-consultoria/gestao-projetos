@@ -776,6 +776,8 @@ tr:hover td{background:var(--surface3);}
 .pivot-outer{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);}
 .rubricas-shared-scroll{overflow-x:auto;max-width:100%;}
 .rubricas-shared-scroll>.pivot-outer{overflow-x:visible;}
+.rubricas-shared-scroll>.table-title{position:sticky;left:0;z-index:10;background:var(--bg);width:max-content;min-width:100%;}
+.rubricas-shared-scroll .income-section .table-title{position:sticky;left:0;z-index:10;background:var(--bg);width:max-content;min-width:100%;}
 .pivot-table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowrap;min-width:100%;}
 .pivot-table th,.pivot-table td{padding:9px 12px;border-bottom:1px solid var(--surface2);border-right:1px solid var(--surface2);vertical-align:middle;}
 .pivot-table thead th{background:var(--surface2);font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;position:sticky;top:0;z-index:3;}
@@ -795,10 +797,14 @@ tr:hover td{background:var(--surface3);}
 .col-ptrb{left:352px;min-width:140px;text-align:right!important;border-right:none!important;}
 .col-plan{left:492px;min-width:148px;text-align:right!important;border-right:none!important;}
 .col-total{left:640px;min-width:148px;text-align:right!important;border-right:none!important;}
-.col-pct{left:788px;min-width:82px;text-align:right!important;border-right:2px solid var(--border)!important;}
+.col-pct{left:788px;min-width:82px;text-align:right!important;border-right:none!important;}
 .income-pivot-table{min-width:max-content;}
 .income-pivot-table .income-category{min-width:722px;text-align:left!important;}
 .income-pivot-table .income-total{min-width:148px;text-align:right!important;}
+.income-pivot-table .income-category,.income-pivot-table .income-total{position:sticky;background:var(--surface);z-index:2;}
+.income-pivot-table thead .income-category,.income-pivot-table thead .income-total{background:var(--surface2);z-index:5;}
+.income-pivot-table .income-category{left:0;}
+.income-pivot-table .income-total{left:722px;}
 
 /* Month columns */
 .col-month{min-width:136px;text-align:center!important;}
@@ -921,7 +927,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="nav-item" onclick="navigate('rubricas')" id="nav-rubricas">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-      <span id="nav-rubricas-label">Budget Lines</span>
+      <span id="nav-rubricas-label">Budget vs Cost</span>
     </div>
     <div class="nav-item" onclick="navigate('sms')" id="nav-sms">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1734,7 +1740,7 @@ const T = {
      rubricas:'Budget vs Cost',sub_rubricas:'ANP categories â€” PTR-B vs Current vs Actuals',
     sms:'SMs & DVs',sub_sms:'Change Requests, Travel Requests and Special Expenses',
     nav_portfolio:'Portfolio',nav_project:'Project',nav_financial:'Financial',
-    nav_milestones:'Milestones',nav_rubricas:'Budget Lines',nav_sms:'SMs & DVs',nav_atividades:'Activities',
+    nav_milestones:'Milestones',nav_rubricas:'Budget vs Cost',nav_sms:'SMs & DVs',nav_atividades:'Activities',
     nav_section:'Navigation',
     atividades:'Activities',sub_atividades:'Monthly narrative for report generation',
     kpi_total:'Total Budget',kpi_actuals:'Total Actuals',kpi_exec:'Avg. Execution',
@@ -4932,7 +4938,7 @@ function renderRubricas(){
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
-  const incomeSection = `<div class="card" style="margin-top:16px;overflow:hidden;">
+  const incomeSection = `<div class="card income-section" style="margin-top:16px;overflow:visible;">
     <div class="table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div>
     <table class="pivot-table income-pivot-table"><thead><tr><th class="income-category">${L?'Linha':'Line'}</th><th class="income-total">${L?'Total':'Total'}</th>${monthHeaders}</tr></thead><tbody>
       <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
