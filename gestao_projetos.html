@@ -777,7 +777,7 @@ tr:hover td{background:var(--surface3);}
 .rubricas-shared-scroll{overflow-x:auto;max-width:100%;}
 .rubricas-shared-scroll>.pivot-outer{overflow-x:visible;}
 .rubricas-shared-scroll>.table-title{position:sticky;left:0;z-index:10;background:var(--bg);width:max-content;min-width:100%;}
-.rubricas-shared-scroll .income-section .table-title{position:sticky;left:0;z-index:10;background:var(--bg);width:max-content;min-width:100%;}
+.rubricas-shared-scroll .income-section-title{position:sticky;left:0;z-index:10;background:var(--bg);width:max-content;min-width:100%;}
 .rubricas-shared-scroll .income-section{width:max-content;min-width:100%;}
 .pivot-table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowrap;min-width:100%;}
 .pivot-table th,.pivot-table td{padding:9px 12px;border-bottom:1px solid var(--surface2);border-right:1px solid var(--surface2);vertical-align:middle;}
@@ -4939,8 +4939,7 @@ function renderRubricas(){
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
-  const incomeSection = `<div class="card income-section" style="margin-top:16px;overflow:visible;">
-    <div class="table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div>
+  const incomeSection = `<div class="income-section-title table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div><div class="card income-section" style="overflow:visible;">
     <table class="pivot-table income-pivot-table"><thead><tr><th class="income-category">${L?'Linha':'Line'}</th><th class="income-total">${L?'Total':'Total'}</th>${monthHeaders}</tr></thead><tbody>
       <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
       <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro Acumulado':'Accumulated Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${(()=>{let acc=0;return months.map(m=>{acc+=rendTotals[m]||0;return `<td class="col-month">${rubFmtCell(acc)}</td>`}).join('')})()}</tr>
