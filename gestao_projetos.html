@@ -774,6 +774,8 @@ tr:hover td{background:var(--surface3);}
 
 /* ===================== PIVOT TABLE ===================== */
 .pivot-outer{overflow-x:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);}
+.rubricas-shared-scroll{overflow-x:auto;max-width:100%;}
+.rubricas-shared-scroll>.pivot-outer{overflow-x:visible;}
 .pivot-table{border-collapse:separate;border-spacing:0;font-size:12px;white-space:nowrap;min-width:100%;}
 .pivot-table th,.pivot-table td{padding:9px 12px;border-bottom:1px solid var(--surface2);border-right:1px solid var(--surface2);vertical-align:middle;}
 .pivot-table thead th{background:var(--surface2);font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;position:sticky;top:0;z-index:3;}
@@ -794,9 +796,12 @@ tr:hover td{background:var(--surface3);}
 .col-plan{left:492px;min-width:148px;text-align:right!important;border-right:none!important;}
 .col-total{left:640px;min-width:148px;text-align:right!important;border-right:none!important;}
 .col-pct{left:788px;min-width:82px;text-align:right!important;border-right:2px solid var(--border)!important;}
+.income-pivot-table{min-width:max-content;}
+.income-pivot-table .income-category{min-width:300px;text-align:left!important;}
+.income-pivot-table .income-total{min-width:148px;text-align:right!important;}
 
 /* Month columns */
-.col-month{min-width:136px;text-align:right!important;}
+.col-month{min-width:136px;text-align:center!important;}
 .col-month.cell-editable{cursor:pointer;}
 .col-month.cell-editable:hover{background:var(--accent-light)!important;}
 .col-month.cell-changed{background:var(--amber-light)!important;border-color:var(--amber)!important;}
@@ -1097,7 +1102,7 @@ tr:hover td{background:var(--surface3);}
     <div class="page" id="page-rubricas">
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="title-rubricas">Budget Lines</h1>
+<h1 class="page-title" id="title-rubricas">Budget vs Cost</h1>
           <div class="page-subtitle" id="sub-rubricas">ANP categories - PTR-B vs Current vs Actuals</div>
         </div>
       </div>
@@ -1726,7 +1731,7 @@ const T = {
     portfolio:'Portfolio Overview',sub_portfolio:'All 10 RD&I projects Â· ANP Clause',
     project:'Project Detail',financial:'Financial Overview',sub_financial:'PTR-B vs Current Plan vs Actuals',
     milestones:'Milestones',sub_milestones:'All 127 deliverables and milestones',
-    rubricas:'Budget Lines',sub_rubricas:'ANP categories â€” PTR-B vs Current vs Actuals',
+     rubricas:'Budget vs Cost',sub_rubricas:'ANP categories â€” PTR-B vs Current vs Actuals',
     sms:'SMs & DVs',sub_sms:'Change Requests, Travel Requests and Special Expenses',
     nav_portfolio:'Portfolio',nav_project:'Project',nav_financial:'Financial',
     nav_milestones:'Milestones',nav_rubricas:'Budget Lines',nav_sms:'SMs & DVs',nav_atividades:'Activities',
@@ -4926,13 +4931,14 @@ function renderRubricas(){
     <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
+  const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
   const incomeSection = `<div class="card" style="margin-top:16px;overflow:hidden;">
     <div class="table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div>
-    <div class="pivot-outer"><table class="pivot-table"><thead><tr>${frozenHeaders}${monthHeaders}</tr></thead><tbody>
-      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td><td class="col-frozen col-pct"></td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
-      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Rendimento Financeiro Acumulado':'Accumulated Financial Income'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td><td class="col-frozen col-pct"></td>${(()=>{let acc=0;return months.map(m=>{acc+=rendTotals[m]||0;return `<td class="col-month">${rubFmtCell(acc)}</td>`}).join('')})()}</tr>
-      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Uso de rendimento acumulado':'Cumulative Income Used'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell((DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0))}</td><td class="col-frozen col-pct"></td>${months.map(()=>'<td class="col-month">—</td>').join('')}</tr>
-    </tbody></table></div></div>`;
+    <table class="pivot-table income-pivot-table"><thead><tr><th class="income-category">${L?'Linha':'Line'}</th><th class="income-total">${L?'Total':'Total'}</th>${monthHeaders}</tr></thead><tbody>
+      <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
+      <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro Acumulado':'Accumulated Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${(()=>{let acc=0;return months.map(m=>{acc+=rendTotals[m]||0;return `<td class="col-month">${rubFmtCell(acc)}</td>`}).join('')})()}</tr>
+      <tr class="row-income"><td class="income-category">${L?'Uso de rendimento acumulado':'Cumulative Income Used'}</td><td class="income-total">${rubFmtCell(incomeUsedTotal)}</td>${months.map(()=>'<td class="col-month">—</td>').join('')}</tr>
+    </tbody></table></div>`;
   const readOnlyNote = hasMultiExec && execFilter==='ALL'
     ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visÃ£o consolidada Ã© somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
     : '';
@@ -4940,13 +4946,16 @@ function renderRubricas(){
   document.getElementById('rubricas-content').innerHTML = `
     ${readOnlyNote}
     ${rubDuplicateWarning(pFilter,execFilter)}
-    <div class="pivot-outer">
+     <div class="rubricas-shared-scroll">
+     <div class="table-title" style="padding:16px 16px 10px;">${L?'Execução orçamentária':'Budget Execution'}</div>
+     <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
        <tbody>${rows.join('')}${totalRow}</tbody>
        </table>
      </div>
      ${incomeSection}
+     </div>
     <div id="rub-save-bar" style="display:none;" class="rub-save-bar">
       <span class="rub-save-badge" id="rub-change-count">0 ${L?'alteraÃ§Ãµes pendentes':'pending changes'}</span>
       <div style="display:flex;gap:10px;">
