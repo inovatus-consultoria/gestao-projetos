@@ -4215,6 +4215,7 @@ function milestoneCoreFieldForHeader(header){
   if(h==='descricao'||h==='description') return 'description';
   if(h==='database'||h==='databaseline'||h==='baseline') return 'baseline';
   if(h==='dataprevista'||h==='forecast'||h==='deliverydate'||h==='datadeentrega') return 'forecast';
+  if(h==='datareal'||h==='dataentregareal'||h==='actualdelivery') return 'actual';
   if(h==='status') return 'status';
   return '';
 }
@@ -4225,6 +4226,7 @@ function milestoneValueForHeader(m,header){
   if(core==='description') return milestoneDescription(m)===EMPTY?'':milestoneDescription(m);
   if(core==='baseline') return m['Data Base']||m.Data_Baseline||'';
   if(core==='forecast') return m['Data prevista / Data de entrega']||m.Data_Prevista||'';
+  if(core==='actual') return m.Data_Real||m['Actual Delivery']||'';
   if(core==='status') return m.Status||m._userStatus||'';
   return m[header]??'';
 }
@@ -4750,7 +4752,7 @@ function renderRubReadonlyTable(pid){
     ${months.map(m=>`<td class="col-month" data-value="${rendTotals[m]||0}">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}
   </tr>`;
   return `
-    <div style="font-family:'DM Serif Display',serif;font-size:16px;margin:18px 0 8px;">${title}</div>
+<div style="font-family:'DM Sans',sans-serif;font-size:16px;margin:18px 0 8px;">${title}</div>
     ${rubDuplicateWarning(pid,'ALL')}
     <div class="pivot-outer" style="margin-bottom:8px;">
       <table class="pivot-table">
@@ -4924,13 +4926,14 @@ function renderRubricas(){
     <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
-  const incomeRow = `<tr class="row-income">
-    <td class="col-frozen col-aba"></td>
-    <td class="col-frozen col-cat">${L?'Rendimento':'Income'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td>
-    <td class="col-frozen col-total" id="rub-income-total" data-value="${rendTotal}">${rubFmtCell(rendTotal)}</td>
-    <td class="col-frozen col-pct"></td>
-    ${months.map((m,mi)=>{const v=rendTotals[m]||0,editClass=canEdit?' cell-editable':'',editClick=canEdit?' onclick="rubStartIncomeEdit(this)"':'';return `<td class="col-month${editClass}" id="rub-income-${mi}" data-proj="${pFilter}" data-month="${m}" data-exec="${execFilter}" data-value="${v}"${editClick}>${rubFmtCell(v)}</td>`;}).join('')}
-  </tr>`;  const readOnlyNote = hasMultiExec && execFilter==='ALL'
+  const incomeSection = `<div class="card" style="margin-top:16px;overflow:hidden;">
+    <div class="table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div>
+    <div class="pivot-outer"><table class="pivot-table"><thead><tr>${frozenHeaders}${monthHeaders}</tr></thead><tbody>
+      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td><td class="col-frozen col-pct"></td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
+      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Rendimento Financeiro Acumulado':'Accumulated Financial Income'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell(rendTotal)}</td><td class="col-frozen col-pct"></td>${(()=>{let acc=0;return months.map(m=>{acc+=rendTotals[m]||0;return `<td class="col-month">${rubFmtCell(acc)}</td>`}).join('')})()}</tr>
+      <tr class="row-income"><td class="col-frozen col-aba"></td><td class="col-frozen col-cat">${L?'Uso de rendimento acumulado':'Cumulative Income Used'}</td><td class="col-frozen col-ptrb"></td><td class="col-frozen col-plan"></td><td class="col-frozen col-total">${rubFmtCell((DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0))}</td><td class="col-frozen col-pct"></td>${months.map(()=>'<td class="col-month">—</td>').join('')}</tr>
+    </tbody></table></div></div>`;
+  const readOnlyNote = hasMultiExec && execFilter==='ALL'
     ? `<div class="alert-box alert-amber" style="margin-bottom:12px;">${L?'Selecione um executor para editar ou adicionar gastos deste projeto. A visÃ£o consolidada Ã© somente leitura.':'Select an executor to edit or add expenses for this project. The consolidated view is read-only.'}</div>`
     : '';
 
@@ -4940,9 +4943,10 @@ function renderRubricas(){
     <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
-        <tbody>${rows.join('')}${totalRow}${incomeRow}</tbody>
-      </table>
-    </div>
+       <tbody>${rows.join('')}${totalRow}</tbody>
+       </table>
+     </div>
+     ${incomeSection}
     <div id="rub-save-bar" style="display:none;" class="rub-save-bar">
       <span class="rub-save-badge" id="rub-change-count">0 ${L?'alteraÃ§Ãµes pendentes':'pending changes'}</span>
       <div style="display:flex;gap:10px;">
