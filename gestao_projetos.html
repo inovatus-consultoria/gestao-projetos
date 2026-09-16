@@ -604,6 +604,12 @@ tr:last-child td{border-bottom:none;}
 tr:hover td{background:var(--surface3);}
 .tr-clickable{cursor:pointer;}
 
+/* Portfolio table: compact two-line headers and consistent date alignment */
+#projects-table th{white-space:normal;line-height:1.2;}
+#projects-table th:nth-child(2),#projects-table td:nth-child(2){width:200px;max-width:200px;}
+#projects-table th:nth-child(5),#projects-table td:nth-child(5){white-space:nowrap;}
+#projects-table th:nth-child(n+11),#projects-table td:nth-child(n+11){text-align:center;}
+
 /* ===================== BADGES / CHIPS ===================== */
 .badge{
   display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;
@@ -3431,7 +3437,7 @@ function renderPortfolio(){
     const title=projectShortTitle(p);
     tbody.innerHTML+=`<tr class="tr-clickable" onclick="openProject('${pid}')">
       <td><span class="fw-600">${pid}</span></td>
-      <td style="max-width:220px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="${escapeAttr(title)}">${escapeHtml(title)}</div></td>
+      <td style="max-width:200px;width:200px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeAttr(title)}">${escapeHtml(title)}</div></td>
       <td>${projectStatusBadge(p.Status_Projeto)}</td>
       <td class="fs-12 color-ink3">${p.Executor||'â€”'}</td>
       <td class="fs-12">${p['NÃºmero ANP']||'â€”'}</td>
