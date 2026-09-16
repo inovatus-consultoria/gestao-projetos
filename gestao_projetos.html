@@ -1446,11 +1446,15 @@ tr:hover td{background:var(--surface3);}
         <input class="form-input" type="date" id="pm-inicio">
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-fim">End *</label>
+        <label class="form-label" id="lbl-pm-fim">Baseline End *</label>
         <input class="form-input" type="date" id="pm-fim">
       </div>
     </div>
     <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-fimplan">Planned End</label>
+        <input class="form-input" type="date" id="pm-fimplan">
+      </div>
       <div class="form-group">
         <label class="form-label" id="lbl-pm-fimreal">Actual End</label>
         <input class="form-input" type="date" id="pm-fimreal">
@@ -1768,7 +1772,7 @@ col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Ti
     export_proj:'Export project',export_all:'Export all projects',
     pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor 1 *',pm_executor2:'Executor 2',
     pm_pmanager:'Project Manager',pm_gestor:'Gestor',pm_status:'Status',
-    pm_inicio:'Start *',pm_fim:'End *',pm_fimreal:'Actual End',pm_duracao:'Duration (months)',
+    pm_inicio:'Start *',pm_fim:'Baseline End *',pm_fimplan:'Planned End',pm_fimreal:'Actual End',pm_duracao:'Duration (months)',
     pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',pm_delete:'Delete Project',
   },
   pt:{
@@ -1805,7 +1809,7 @@ col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time
     export_proj:'Exportar projeto',export_all:'Exportar todos',
     pm_codigo:'CÃ³digo *',pm_anp:'NÂº ANP',pm_titulo:'TÃ­tulo *',pm_executor:'Executor',
     pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
-    pm_inicio:'InÃ­cio *',pm_fim:'Fim *',pm_fimreal:'Fim real',pm_duracao:'DuraÃ§Ã£o (meses)',
+    pm_inicio:'InÃ­cio *',pm_fim:'Fim (Baseline) *',pm_fimplan:'Fim planejado',pm_fimreal:'Fim real',pm_duracao:'DuraÃ§Ã£o (meses)',
     pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',pm_delete:'Excluir Projeto',
   }
 };
@@ -2254,7 +2258,7 @@ function applyTranslations(){
     ['lbl-pm-codigo','pm_codigo'],['lbl-pm-anp','pm_anp'],['lbl-pm-titulo','pm_titulo'],
     ['lbl-pm-executor','pm_executor'],['lbl-pm-executor2','pm_executor2'],['lbl-pm-pmanager','pm_pmanager'],['lbl-pm-gestor','pm_gestor'],
     ['lbl-pm-status','pm_status'],['lbl-pm-inicio','pm_inicio'],['lbl-pm-fim','pm_fim'],
-    ['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
+    ['lbl-pm-fimplan','pm_fimplan'],['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
     ['btn-pm-save','pm_save'],['btn-pm-cancel','cancel'],['btn-pm-delete','pm_delete'],
   ];
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
@@ -6935,7 +6939,7 @@ function updateProjectPtrbTotal(){
 }
 function openProjectModal(){
   editingProjectId=null;
-  ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-executor2','pm-pmanager','pm-inicio','pm-fim','pm-fimreal','pm-duracao','pm-valor']
+  ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-executor2','pm-pmanager','pm-inicio','pm-fim','pm-fimplan','pm-fimreal','pm-duracao','pm-valor']
     .forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   const gestor=document.getElementById('pm-gestor'); if(gestor) gestor.value='Yiannis';
   const status=document.getElementById('pm-status'); if(status) status.value='Em andamento';
@@ -6968,6 +6972,7 @@ function openProjectEditModal(pid){
   setV('pm-status', p.Status_Projeto||'Em andamento');
   setV('pm-inicio', (String(projectStartValue(p)||'').split('T')[0]));
   setV('pm-fim', (String(p['Data final']||'').split('T')[0]));
+  setV('pm-fimplan', (String(p['Data final planejada']||p.Data_Fim_Plan||'').split('T')[0]));
   setV('pm-fimreal', (String(p['Data final real']||'').split('T')[0]));
   setV('pm-duracao', p['DuraÃ§Ã£o (meses)']||p.Duracao_Meses||'');
   setV('pm-valor', p['Planned Value (R$)']||p.Valor_PTRB||'');
@@ -7001,6 +7006,7 @@ async function saveProjectEdits(){
   const gestor=document.getElementById('pm-gestor').value;
   const inicio=document.getElementById('pm-inicio').value;
   const fim=document.getElementById('pm-fim').value;
+  const fimplan=document.getElementById('pm-fimplan').value;
   const fimreal=document.getElementById('pm-fimreal').value;
   const duracao=document.getElementById('pm-duracao').value;
   const valor=parseFloat(document.getElementById('pm-valor').value);
@@ -7027,6 +7033,7 @@ async function saveProjectEdits(){
     Gestor:gestor,
     'Data de inÃ­cio ':inicio,
     'Data final':fim,
+    'Data final planejada':fimplan||'', Data_Fim_Plan:fimplan||'',
     'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
     'DuraÃ§Ã£o (meses)':duracao||'', Duracao_Meses:duracao||'',
     'Planned Value (R$)':valor, Valor_PTRB:valor,
