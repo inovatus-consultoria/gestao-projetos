@@ -1907,7 +1907,7 @@ function projectPdfDate(value){
   return date&&!isNaN(date.getTime())?date.toLocaleDateString('pt-BR'):'-';
 }
 function projectPdfAmount(value){
-  return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}).format(Number(value)||0);
+  return new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(value)||0);
 }
 function projectPdfKpiValue(value){
   return projectPdfText(FMTK(Number(value)||0));
@@ -2275,14 +2275,14 @@ function applyTranslations(){
 }
 
 // ===================== UTILS =====================
-const FMT = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const FMT = new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 const FMTK = v => {
   if(Math.abs(v)>=1e6) return 'R$'+(v/1e6).toFixed(1)+'M';
   if(Math.abs(v)>=1e3) return 'R$'+(v/1e3).toFixed(0)+'K';
   return FMT.format(v);
 };
-const FMTINT = v => new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0}).format(parseFloat(v)||0);
-const FMTFULL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+const FMTINT = v => new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
+const FMTFULL = new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 const EMPTY = '-';
 const SEP = ' - ';
 const FMTD = d => { const parsed=parseMilestoneDate(d); return parsed&&!isNaN(parsed.getTime())?parsed.toLocaleDateString('pt-BR'):EMPTY; };
@@ -5781,7 +5781,7 @@ function _rptNoBreakText(value){
   return String(value||'').replace(/ /g,'\u00A0').replace(/-/g,'\u2011');
 }
 function _rptMoney(value){
-  return 'R$ '+Number(value||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return 'R$ '+Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function _rptMonthEnd(mesAno){
   const iso=_rptMesISO(mesAno),m=/^(\d{4})-(\d{2})/.exec(iso||'');
@@ -5979,7 +5979,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
           const ptrb = Number(planRow['Plano_PTR-B']||0);
           const plan = Number(planMap[cat]||0);
           const actual = Number(gastosMap[cat]||0);
-          const fmtR = v=>v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+          const fmtR = v=>v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
           const aba = planRow.Codigo_ABA||getCatABA(cat)||'';
           return new d.TableRow({height:{value:567,rule:d.HeightRule.EXACT},children:[
             _rptBodyCell(d,aba,c2,{center:true,verticalCenter:true}),_rptBodyCell(d,_rptCategory(cat),c1,{size:18,verticalCenter:true}),
@@ -6077,7 +6077,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
 function _rptPortfolioChildren(d, projetos, tableCounter){
   const widths=[700,3100,1150,950,1150,1700,1400,800,800,1050,1158],totalW=widths.reduce((a,b)=>a+b,0);
   const heads=['Project','Title','Status','Executor','ANP','Current Budget','Actuals','Exec%','Time%','Start','Actual End'];
-  const money=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const money=v=>Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const rows=projetos.map(p=>{const e=getExec(p.Projeto);return [_rptProjectNumber(p.Projeto),projectShortTitle(p),_rptStatus(p.Status_Projeto),p.Executor||'',_rptField(p,['N\u00famero ANP','Numero ANP','ANP']),money(e.plan),money(e.actual),_rptPct(e.pct),_rptPct(getTimePct(p)),FMTD(projectStartValue(p)),FMTD(_rptField(p,['Data final real','Actual End']))];});
   const tc=tableCounter[0]++;
   return [_rptNumberedHeading(d,'Project Portfolio',0,{before:120,after:180}),_rptCaption(d,`Table ${tc}: Project Portfolio.`),new d.Table({width:{size:100,type:d.WidthType.PERCENTAGE},layout:d.TableLayoutType.AUTOFIT,columnWidths:widths,rows:[new d.TableRow({tableHeader:true,children:heads.map((h,i)=>_rptHdrCell(d,h,widths[i],{center:i!==1}))}),...rows.map(vals=>new d.TableRow({children:vals.map((v,i)=>_rptBodyCell(d,v,widths[i],{center:i!==1}))}))]})];
@@ -7281,7 +7281,7 @@ async function saveGasto(){
 }
 
 // ===================== MODAL: SM =====================
-const SM_MONEY_FULL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+  const SM_MONEY_FULL=new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 let smDraftItems=new Map();
 let editingSMIdx=null;
 function smDraftKey(category,executor){ return `${category}|${executor}`; }
