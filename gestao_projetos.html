@@ -3135,7 +3135,7 @@ function currentPlanTotal(pid){
 
 function currentPlanHeader(pid,L){
   const sm=latestSMLabel(pid);
-  return `${L?'Plano Atual':'Curr. Plan'}${sm?` (${sm})`:''}`;
+  return sm||'SM00';
 }
 
 // â”€â”€â”€ SM override: Plano_Atual mirrors the latest SM snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -4904,8 +4904,8 @@ function renderRubricas(){
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-ptrb">PTR-B</th>
     <th class="col-frozen col-plan">${currentPlanHeader(pFilter,L)}</th>
-    <th class="col-frozen col-total">Total</th>
-    <th class="col-frozen col-pct">%</th>`;
+    <th class="col-frozen col-total">ACTUALS</th>
+    <th class="col-frozen col-pct">R$EXEC%</th>`;
   const monthHeaders = months.map(m=>`<th class="col-month">${m}</th>`).join('');
 
   // Rows
@@ -4940,6 +4940,16 @@ function renderRubricas(){
   const grandPct = showCurrentPlan && grandPlan ? grandTotal/grandPlan : NaN;
   const rendTotals = rubRendimentoMonthTotals(pFilter, execFilter);
   const rendTotal = months.reduce((s,m)=>s+(rendTotals[m]||0),0);
+  const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
+  const incomeUseRow = `<tr class="row-income">
+    <td class="col-frozen col-aba"></td>
+    <td class="col-frozen col-cat">${L?'Uso aprovado de Rendimento Financeiro':'Approved use of Financial Income'}</td>
+    <td class="col-frozen col-ptrb"></td>
+    <td class="col-frozen col-plan">${rubFmt(-incomeUsedTotal)}</td>
+    <td class="col-frozen col-total"></td>
+    <td class="col-frozen col-pct"></td>
+    ${months.map(()=>'<td class="col-month"></td>').join('')}
+  </tr>`;
   const totalRow = `<tr class="row-total">
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-cat">TOTAL</td>
@@ -4949,7 +4959,6 @@ function renderRubricas(){
     <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
-  const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
   const incomeSection = `<div class="income-section-title table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div><div class="card income-section" style="overflow:visible;">
     <table class="pivot-table income-pivot-table"><thead><tr><th class="income-category">${L?'Linha':'Line'}</th><th class="income-total">${L?'Total':'Total'}</th>${monthHeaders}</tr></thead><tbody>
       <tr class="row-income"><td class="income-category">${L?'Rendimento Financeiro':'Financial Income'}</td><td class="income-total">${rubFmtCell(rendTotal)}</td>${months.map(m=>`<td class="col-month">${rubFmtCell(rendTotals[m]||0)}</td>`).join('')}</tr>
@@ -4968,7 +4977,7 @@ function renderRubricas(){
      <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
-       <tbody>${rows.join('')}${totalRow}</tbody>
+       <tbody>${rows.join('')}${incomeUseRow}${totalRow}</tbody>
        </table>
      </div>
      ${incomeSection}
