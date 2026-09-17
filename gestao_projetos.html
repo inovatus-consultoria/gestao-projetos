@@ -4942,8 +4942,7 @@ function renderRubricas(){
   const rendTotals = rubRendimentoMonthTotals(pFilter, execFilter);
   const rendTotal = months.reduce((s,m)=>s+(rendTotals[m]||0),0);
   const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
-  const adjustedGrandPlan=grandPlan-incomeUsedTotal;
-  const adjustedGrandPct=showCurrentPlan&&adjustedGrandPlan?grandTotal/adjustedGrandPlan:NaN;
+  const deficitSurplus=grandPtrb-grandPlan+incomeUsedTotal;
   const incomeUseRow = `<tr class="row-income">
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-cat">${L?'Uso aprovado de Rendimento Financeiro':'Approved use of Financial Income'}</td>
@@ -4957,10 +4956,19 @@ function renderRubricas(){
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-cat">TOTAL</td>
     <td class="col-frozen col-ptrb" id="rub-grand-ptrb">${rubFmt(grandPtrb)}</td>
-    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${adjustedGrandPlan}">${showCurrentPlan?rubFmt(adjustedGrandPlan):'â€”'}</td>
+    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${grandPlan}">${showCurrentPlan?rubFmt(grandPlan):'â€”'}</td>
     <td class="col-frozen col-total" id="rub-grand-total" data-value="${grandTotal}">${rubFmt(grandTotal)}</td>
-    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(adjustedGrandPct):'â€”'}</td>
+    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
+  </tr>`;
+  const deficitRow = `<tr class="row-income">
+    <td class="col-frozen col-aba"></td>
+    <td class="col-frozen col-cat">${L?'Déficit / superávit (-/+)':'Deficit / surplus (-/+)'}</td>
+    <td class="col-frozen col-ptrb"></td>
+    <td class="col-frozen col-plan">${rubFmt(deficitSurplus)}</td>
+    <td class="col-frozen col-total"></td>
+    <td class="col-frozen col-pct"></td>
+    ${months.map(()=>'<td class="col-month"></td>').join('')}
   </tr>`;
   const incomeSection = `<div class="income-section-title table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div><div class="card income-section" style="overflow:visible;">
     <table class="pivot-table income-pivot-table"><thead><tr><th class="income-category">${L?'Linha':'Line'}</th><th class="income-total">${L?'Total':'Total'}</th>${monthHeaders}</tr></thead><tbody>
@@ -4980,7 +4988,7 @@ function renderRubricas(){
      <div class="pivot-outer">
       <table class="pivot-table">
         <thead><tr>${frozenHeaders}${monthHeaders}</tr></thead>
-       <tbody>${rows.join('')}${incomeUseRow}${totalRow}</tbody>
+       <tbody>${rows.join('')}${totalRow}${incomeUseRow}${deficitRow}</tbody>
        </table>
      </div>
      ${incomeSection}
