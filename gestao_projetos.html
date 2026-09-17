@@ -792,6 +792,7 @@ tr:hover td{background:var(--surface3);}
 .pivot-table tbody tr:hover td{background:var(--surface3);}
 .pivot-table tbody tr:hover td.col-frozen{background:var(--surface3);}
 .pivot-table tr.row-total td{background:var(--ink);color:#fff;font-weight:600;position:sticky;bottom:0;z-index:2;}
+.pivot-table tr.row-total:hover td,.pivot-table tr.row-total:hover td.col-frozen{background:var(--ink);color:#fff;}
 .pivot-table tr.row-total td.col-frozen{z-index:4;}
 .pivot-table tr.row-income td{background:var(--green-light);color:var(--green);font-weight:600;}
 .pivot-table tr.row-income td.col-frozen{background:var(--green-light);}
@@ -4941,6 +4942,8 @@ function renderRubricas(){
   const rendTotals = rubRendimentoMonthTotals(pFilter, execFilter);
   const rendTotal = months.reduce((s,m)=>s+(rendTotals[m]||0),0);
   const incomeUsedTotal=(DATA.uso_rendimento||[]).filter(u=>u.Projeto===pFilter&&(execFilter==='ALL'||u.Executor===execFilter)).reduce((s,u)=>s+Number(u.Valor_Utilizado||0),0);
+  const adjustedGrandPlan=grandPlan-incomeUsedTotal;
+  const adjustedGrandPct=showCurrentPlan&&adjustedGrandPlan?grandTotal/adjustedGrandPlan:NaN;
   const incomeUseRow = `<tr class="row-income">
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-cat">${L?'Uso aprovado de Rendimento Financeiro':'Approved use of Financial Income'}</td>
@@ -4954,9 +4957,9 @@ function renderRubricas(){
     <td class="col-frozen col-aba"></td>
     <td class="col-frozen col-cat">TOTAL</td>
     <td class="col-frozen col-ptrb" id="rub-grand-ptrb">${rubFmt(grandPtrb)}</td>
-    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${grandPlan}">${showCurrentPlan?rubFmt(grandPlan):'â€”'}</td>
+    <td class="col-frozen col-plan" id="rub-grand-plan" data-value="${adjustedGrandPlan}">${showCurrentPlan?rubFmt(adjustedGrandPlan):'â€”'}</td>
     <td class="col-frozen col-total" id="rub-grand-total" data-value="${grandTotal}">${rubFmt(grandTotal)}</td>
-    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(grandPct):'â€”'}</td>
+    <td class="col-frozen col-pct" id="rub-grand-pct">${showCurrentPlan?PCT(adjustedGrandPct):'â€”'}</td>
     ${months.map((m,mi)=>`<td class="col-month" id="rub-colt-${mi}" data-value="${monthTotals[m]||0}">${rubFmtCell(monthTotals[m]||0)}</td>`).join('')}
   </tr>`;
   const incomeSection = `<div class="income-section-title table-title" style="padding:16px 16px 10px;">${L?'Rendimento Financeiro':'Financial Income'}</div><div class="card income-section" style="overflow:visible;">
