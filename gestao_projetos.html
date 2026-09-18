@@ -1261,7 +1261,7 @@ tr:hover td{background:var(--surface3);}
           <thead>
             <tr>
               <th id="rub-gasto-th-cat">Category</th>
-              <th style="width:80px;">ABA</th>
+              <th style="width:80px;">SHEET</th>
               <th class="text-right" style="width:180px;" id="rub-gasto-th-value">Amount (R$)</th>
             </tr>
           </thead>
@@ -1386,7 +1386,7 @@ tr:hover td{background:var(--surface3);}
       <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Financial Income used (R$)</label><input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0"></div>
     </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button><button class="btn btn-primary" onclick="saveSM()">Save SM</button></div>
+    <div class="modal-footer"><button class="btn btn-danger btn-sm" id="sm-delete-btn" type="button" onclick="deleteSM()" style="display:none;margin-right:auto;">Delete SM</button><button class="btn btn-secondary" type="button" onclick="closeModal('sm-modal')">Cancel</button><button class="btn btn-primary" type="button" onclick="saveSM()">Save SM</button></div>
   </div>
 </div>
 
@@ -1490,7 +1490,7 @@ tr:hover td{background:var(--surface3);}
             <thead>
               <tr>
                 <th id="pm-ptrb-th-cat">Category</th>
-                <th style="width:80px;">ABA</th>
+                <th style="width:80px;">SHEET</th>
                 <th class="text-right" style="width:180px;" id="pm-ptrb-th-value">Executor 1</th>
                 <th class="text-right" style="width:180px;" id="pm-ptrb-th-value2">Executor 2</th>
               </tr>
@@ -1728,6 +1728,7 @@ function repopulateProjectDropdowns(){
 
 // ===================== DADOS / ESTADO =====================
 let DATA = {
+  executors:[],
   projetos:[],
   gastos:[],
   plano:[],
@@ -1771,7 +1772,7 @@ col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Ti
     next90:'Next 60 days',overdue_ms:'Overdue',
     cancel:'Cancel',save_gasto:'Save Expense',save_sm:'Save SM',
     lbl_project:'Project',lbl_executor:'Executor',lbl_cat:'Category',lbl_amount:'Amount (R$)',
-    lbl_date:'Date',lbl_year:'Year',lbl_sm:'SM #',lbl_codigo:'CÃ³digo Aba',
+    lbl_date:'Date',lbl_year:'Year',lbl_sm:'SM #',lbl_codigo:'Sheet code',
     new_expense:'New Expense',new_sm:'New Change Request (SM)',
     rub_cat:'Category',rub_ptrb:'PTR-B',rub_plan:'Current Plan',rub_actual:'Actuals',rub_balance:'Balance',rub_pct:'Exec%',
     no_milestones:'No milestones in this period.',search:'Search...',
@@ -1808,7 +1809,7 @@ col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time
     next90:'PrÃ³ximos 60 dias',overdue_ms:'Atrasados',
     cancel:'Cancelar',save_gasto:'Salvar Gasto',save_sm:'Salvar SM',
     lbl_project:'Projeto',lbl_executor:'Executor',lbl_cat:'Categoria',lbl_amount:'Valor (R$)',
-    lbl_date:'Data',lbl_year:'Ano',lbl_sm:'SM #',lbl_codigo:'CÃ³digo Aba',
+    lbl_date:'Data',lbl_year:'Ano',lbl_sm:'Sheet code',lbl_codigo:'Sheet code',
     new_expense:'Novo Gasto',new_sm:'Nova SolicitaÃ§Ã£o de MudanÃ§a (SM)',
     rub_cat:'Categoria',rub_ptrb:'PTR-B',rub_plan:'Plano Atual',rub_actual:'Realizado',rub_balance:'Saldo',rub_pct:'Exec%',
     no_milestones:'Nenhum marco neste perÃ­odo.',search:'Buscar...',
@@ -2156,7 +2157,7 @@ async function generateProjectPdf(pid,options={}){
       doc.setTextColor(...PROJECT_PDF_COLORS.muted);
       doc.text((L?'Bloco: ':'Block: ')+chunk.map(projectPdfText).join(' / '),10,smPageY);
       smPageY+=4;
-      const head=[L?'Categoria':'Category','ABA',L?'PTR-B Original (R$)':'Original PTR-B (R$)',...chunk.map(projectPdfText)];
+      const head=[L?'Categoria':'Category','SHEET',L?'PTR-B Original (R$)':'Original PTR-B (R$)',...chunk.map(projectPdfText)];
       const body=smCategories.map(cat=>{
         const row=[projectPdfText(cat),projectPdfText(getCatABA(cat)||'-'),projectPdfAmount(catPtrbMap[cat]||0)];
         chunk.forEach(number=>{
@@ -2546,6 +2547,25 @@ function normLooseText(v){
     .toLowerCase();
 }
 
+// Executor names in transaction sheets are single canonical names. Projects may
+// display several executors together (for example, "OceanPact / UFRN"). Keep
+// that project display value intact, but use the master sheet for internal
+// matching and filters.
+function canonicalExecutorName(value){
+  const raw=cleanMojibakeText(String(value??'')).replace(/\s+/g,' ').trim();
+  if(!raw) return '';
+  const key=normLooseText(raw);
+  const master=(DATA.executors||[]).find(row=>normLooseText(row.Executor_Name)===key);
+  return master?.Executor_Name||raw;
+}
+function splitProjectExecutorNames(value){
+  return String(value??'').split(/\s*\/\s*/).map(canonicalExecutorName).filter(Boolean);
+}
+function projectExecutorNames(pid){
+  const project=(DATA.projetos||[]).find(row=>row.Projeto===pid);
+  return splitProjectExecutorNames(project?.Executor||'');
+}
+
 function milestoneDescription(m){
   const key=Object.keys(m||{}).find(k=>normLooseText(k)==='descricao');
   return (key&&m[key]) || m.Descricao || m.ID || EMPTY;
@@ -2684,10 +2704,10 @@ async function fazerLogin(){
   const poll=setInterval(async()=>{
     try{
       if(!popup||popup.closed){clearInterval(poll);return;}
-      const url=popup.location.href;
-      if(!captured&&url.includes('gestao_projetos.html')&&url.includes('code=')){
-        captured=true;clearInterval(poll);popup.close();
-        await trocarCodePorToken(new URLSearchParams(url.split('?')[1]).get('code'));
+       const url=popup.location.href,callbackUrl=new URL(url),redirectUrl=new URL(REDIRECT_URI,window.location.href);
+       if(!captured&&callbackUrl.origin===redirectUrl.origin&&callbackUrl.pathname===redirectUrl.pathname&&callbackUrl.searchParams.has('code')){
+         captured=true;clearInterval(poll);popup.close();
+         await trocarCodePorToken(callbackUrl.searchParams.get('code'));
       }
     }catch(e){}
   },200);
@@ -2706,11 +2726,19 @@ async function trocarCodePorToken(code){
     }).toString()
   });
   const data=await res.json();
+  if(!res.ok||!data.access_token) throw new Error(data.error_description||'Authentication token could not be obtained.');
   accessToken=data.access_token;
   localStorage.setItem('inovatus_access_token',data.access_token);
   localStorage.setItem('inovatus_expires_at',Date.now()+data.expires_in*1000);
   if(data.refresh_token)localStorage.setItem('inovatus_refresh_token',data.refresh_token);
   await inicializarApp();
+}
+async function processarCallbackNaPagina(){
+  const params=new URLSearchParams(window.location.search),code=params.get('code');
+  if(!code) return false;
+  history.replaceState({},document.title,window.location.pathname+window.location.hash);
+  try{ await trocarCodePorToken(code); return true; }
+  catch(error){ hideLoading(); console.error('OAuth callback error:',error); alert('Authentication failed: '+(error?.message||error)); return false; }
 }
 
 // Renova o access_token via refresh_token, sem popup. Usado no boot e proativamente durante
@@ -2785,6 +2813,7 @@ async function graphGet(path){
 // Valores monetÃ¡rios como float real â€” sem divisÃ£o necessÃ¡ria
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const EXCEL_SHEETS = {
+  'Executors'         : { key:'executors',     norm: normalizeExecutor       },
   'Projetos'           : { key:'projetos',      norm: normalizeProjeto       },
   'Plano_Orcamentario' : { key:'plano',          norm: normalizePlano         },
   'Gastos'             : { key:'gastos',         norm: normalizeGasto         },
@@ -2833,6 +2862,12 @@ function mesFromDate(iso){
 // â”€â”€ Normalizers â€” mapeiam colunas do Excel para o modelo interno â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // r = objeto com chaves = headers da planilha (nomes reais, nÃ£o field_N)
 
+function normalizeExecutor(r){
+  return {
+    Executor_ID   : String(r.Executor_ID||r.ID||'').trim(),
+    Executor_Name : String(r.Executor_Name||r.Executor||r.Name||'').trim(),
+  };
+}
 function normalizeProjeto(r){
   const start=projectStartIso(r);
   return {
@@ -2865,7 +2900,7 @@ function normalizePlano(r){
   const v = parseFloat(r.Valor_PTRB)||0;
   return {
     Projeto           : r.Projeto||'',
-    Executor          : r.Executor||'',
+    Executor          : canonicalExecutorName(r.Executor),
     Categoria_despesa : r.Categoria||'',
     Codigo_ABA        : r.Codigo_ABA||'',
     'Plano_PTR-B'     : v,
@@ -2877,7 +2912,7 @@ function normalizeGasto(r){
   return {
     Projetos          : r.Projeto||'',
     Projeto           : r.Projeto||'',
-    Executor          : r.Executor||'',
+    Executor          : canonicalExecutorName(r.Executor),
     Data              : data,
     Ano               : data?data.substring(0,4):'',
     MÃªs               : mesFromDate(data),
@@ -2926,7 +2961,7 @@ function normalizeSMItem(r){
   return {
     Projeto           : r.Projeto||'',
     'SM#'             : r.Numero_SM||'',
-    Executor          : r.Executor||'',
+    Executor          : canonicalExecutorName(r.Executor),
     Categoria_despesa : r.Categoria||'',
     Valor             : parseFloat(r.Valor)||0,
   };
@@ -2935,7 +2970,7 @@ function normalizeRendimento(r){
   const data = excelDate(r.Data);
   return {
     Projeto      : r.Projeto||'',
-    Executor     : r.Executor||'',
+    Executor     : canonicalExecutorName(r.Executor),
     Data         : data,
     Ano          : data ? data.substring(0,4) : '',
     MÃªs          : mesFromDate(data),
@@ -2945,6 +2980,7 @@ function normalizeRendimento(r){
 function normalizeUsoRendimento(r){
   return {
     Projeto         : r.Projeto||'',
+    Executor        : canonicalExecutorName(r.Executor),
     SM              : r.Numero_SM||'',
     Valor_Utilizado : parseFloat(r.Valor_Utilizado)||0,
     Descricao       : r.Descricao||'',
@@ -4018,7 +4054,7 @@ function renderProjectDetail(pid){
             <thead>
               <tr>
                 <th style="min-width:160px;">${L?'Categoria':'Category'}</th>
-                <th>Aba</th>
+                <th>SHEET</th>
                 <th class="text-right">PTR-B ${L?'Original':'Original'}</th>
                 ${smNums.map(sn=>`<th class="text-right" style="background:var(--accent);color:#fff;min-width:110px;">${sn}</th>`).join('')}
               </tr>
@@ -4662,22 +4698,20 @@ function rubProjectExecutors(pid){
     ...DATA.plano.filter(r=>r.Projeto===pid).map(r=>r.Executor),
     ...DATA.gastos.filter(g=>(g.Projetos||g.Projeto)===pid).map(g=>g.Executor),
     ...DATA.sms.filter(s=>s.Projeto===pid).map(s=>s.Executor),
+    ...projectExecutorNames(pid),
   ];
-  return [...new Set(vals.map(v=>String(v||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const unique=new Map();
+  vals.map(canonicalExecutorName).filter(Boolean).forEach(value=>unique.set(normLooseText(value),value));
+  return [...unique.values()].sort((a,b)=>a.localeCompare(b));
 }
 function rubLatestSMPlanMap(pid, execFilter='ALL'){
   return currentPlanMap(pid,execFilter);
 }
 function rubResolveExecutor(pid, exec){
   if(exec && exec!=='ALL') return exec;
-  let executors=rubProjectExecutors(pid);
-  if(!executors.length){
-    const proj=DATA.projetos.find(p=>p.Projeto===pid);
-    if(proj?.Executor) executors=[proj.Executor];
-  }
+  const executors=rubProjectExecutors(pid);
   if(executors.length===1) return executors[0];
-  const projData=DATA.projetos.find(p=>p.Projeto===pid);
-  return String(projData?.Executor||'').trim();
+  return '';
 }
 
 // ConstrÃ³i o pivot (cat x mÃªs) para um projeto, opcionalmente filtrado por executor.
@@ -4729,7 +4763,7 @@ function renderRubReadonlyTable(pid){
   const proj=DATA.projetos.find(p=>p.Projeto===pid);
   const title=projectOptionLabel(proj||{Projeto:pid});
   const frozenHeaders=`
-    <th class="col-frozen col-aba">ABA</th>
+    <th class="col-frozen col-aba">SHEET</th>
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-ptrb">PTR-B</th>
     <th class="col-frozen col-plan">${currentPlanHeader(pid,L)}</th>
@@ -4901,7 +4935,7 @@ function renderRubricas(){
 
   // Header
   const frozenHeaders = `
-    <th class="col-frozen col-aba">ABA</th>
+    <th class="col-frozen col-aba">SHEET</th>
     <th class="col-frozen col-cat">${L?'Categoria':'Category'}</th>
     <th class="col-frozen col-ptrb">PTR-B</th>
     <th class="col-frozen col-plan">${currentPlanHeader(pFilter,L)}</th>
@@ -5475,7 +5509,7 @@ async function saveRubGastoModal(){
 function buildRubWorksheet(pid, execFilter){
   const L=lang==='pt';
   const {months, allCats, pivot, planMap, ptrbMap, showCurrentPlan}=buildRubPivot(pid, execFilter||'ALL');
-  const header=['ABA',L?'Categoria':'Category','PTR-B',currentPlanHeader(pid,L),'Total','%',...months];
+  const header=['SHEET',L?'Categoria':'Category','PTR-B',currentPlanHeader(pid,L),'Total','%',...months];
   const rows=[header];
   const monthTotals=months.map(()=>0);
   allCats.forEach(cat=>{
@@ -6005,7 +6039,7 @@ function _rptProjectSection(d, proj, tableCounter, mesAno){
       columnWidths:[c2,c1,c3,c4,c5,c6],
       rows:[
         new d.TableRow({tableHeader:true,children:[
-          _rptHdrCell(d,'ABA',c2,{center:true}),_rptHdrCell(d,'Category',c1),
+          _rptHdrCell(d,'SHEET',c2,{center:true}),_rptHdrCell(d,'Category',c1),
           _rptHdrCell(d,'PTR-B (R$)',c3,{center:true}),_rptHdrCell(d,'Curr. Plan (R$)',c4,{center:true}),
           _rptHdrCell(d,'Actuals (R$)',c5,{center:true}),_rptHdrCell(d,'Exec%',c6,{center:true}),
         ]}),
@@ -6559,8 +6593,7 @@ function projectExecutorForUso(pid){
   if(selected) return selected;
   const executors=(typeof rubProjectExecutors==='function') ? rubProjectExecutors(pid).filter(Boolean) : [];
   if(executors.length===1) return executors[0];
-  const p=(DATA.projetos||[]).find(x=>x.Projeto===pid);
-  return p?.Executor||'';
+  return '';
 }
 function syncSolIncomeUsageFields(value){
   const tipo=document.getElementById('sol-tipo')?.value||'';
@@ -6602,8 +6635,7 @@ function smImportRememberMap(pid, mappings){
 function smImportProjectExecutors(pid){
   const found=rubProjectExecutors(pid);
   if(found.length) return found;
-  const project=(DATA.projetos||[]).find(p=>p.Projeto===pid);
-  return project?.Executor ? [String(project.Executor).trim()] : [];
+  return projectExecutorNames(pid);
 }
 function smImportResolveCategory(pid, aba, label){
   const normalizedLabel=smImportNormalize(label);
@@ -6706,7 +6738,7 @@ function renderSMImportPreview(){
     const options=[`<option value="">${lang==='pt'?'Selecione o executor':'Select executor'}</option>`,...executors.map(executor=>`<option value="${escapeAttr(executor)}"${executor===suggestion?' selected':''}>${escapeHtml(executor)}</option>`)].join('');
     const total=group.rows.reduce((sum,row)=>sum+(parseFloat(row.value)||0),0);
     const rows=group.rows.map((row,rowIndex)=>`<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(row.aba||'-')}</td><td>${escapeHtml(row.category)}</td><td><input type="number" min="0" step="0.01" class="form-input" data-sm-import-value="${index}:${rowIndex}" value="${escapeAttr(row.value)}" style="min-width:150px;text-align:right;"></td></tr>`).join('');
-    return `<div class="card" style="padding:10px;margin-top:10px;box-shadow:none;"><div class="form-grid" style="align-items:end;"><div><div class="form-label">${lang==='pt'?'Executor extraído':'Excel executor'}</div><div class="fw-600">${escapeHtml(group.sourceExecutor)}</div></div><div class="form-group" style="margin:0;"><label class="form-label">${lang==='pt'?'Executor na base do painel':'Panel executor'}</label><select class="form-select" data-sm-import-group="${index}">${options}</select></div><div class="text-right fs-12 color-ink3">${lang==='pt'?'Total extraído':'Extracted total'}<br><strong>${SM_MONEY_FULL.format(total)}</strong></div></div><div class="table-scroll" style="max-height:260px;margin-top:8px;border:1px solid var(--border);border-radius:6px;"><table style="font-size:12px;"><thead><tr><th>ABA</th><th>${lang==='pt'?'Categoria':'Category'}</th><th class="text-right">${lang==='pt'?'Valor a importar':'Value to import'}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    return `<div class="card" style="padding:10px;margin-top:10px;box-shadow:none;"><div class="form-grid" style="align-items:end;"><div><div class="form-label">${lang==='pt'?'Executor extraído':'Excel executor'}</div><div class="fw-600">${escapeHtml(group.sourceExecutor)}</div></div><div class="form-group" style="margin:0;"><label class="form-label">${lang==='pt'?'Executor na base do painel':'Panel executor'}</label><select class="form-select" data-sm-import-group="${index}">${options}</select></div><div class="text-right fs-12 color-ink3">${lang==='pt'?'Total extraído':'Extracted total'}<br><strong>${SM_MONEY_FULL.format(total)}</strong></div></div><div class="table-scroll" style="max-height:260px;margin-top:8px;border:1px solid var(--border);border-radius:6px;"><table style="font-size:12px;"><thead><tr><th>SHEET</th><th>${lang==='pt'?'Categoria':'Category'}</th><th class="text-right">${lang==='pt'?'Valor a importar':'Value to import'}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }).join('');
   preview.innerHTML=`<div class="card" style="padding:12px;border-color:var(--amber);"><div class="fw-600">${lang==='pt'?'Prévia da importação':'Import preview'} · ${escapeHtml(smImportedPayload.smNumber)}</div><div class="fs-12 color-ink3" style="margin-top:3px;">${escapeHtml(smImportedPayload.fileName)}. Revise executor e valores; nenhum dado será salvo até clicar em Salvar SM.</div>${groups}<div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="btn btn-primary btn-sm" onclick="applySMImport()">${lang==='pt'?'Aplicar à SM':'Apply to SM'}</button><button type="button" class="btn btn-secondary btn-sm" onclick="clearSMImportPreview()">${lang==='pt'?'Cancelar':'Cancel'}</button></div></div>`;
 }
@@ -6828,7 +6860,7 @@ function renderSolSMItemsEditor(s){
   const items=(DATA.sms||[]).filter(item=>item.Projeto===pid&&sameSmNumber(item['SM#']||item.Numero_SM||item.Numero,number));
   container.style.display='block';
   if(!items.length){ container.innerHTML=`<div class="alert-box alert-amber" style="margin:0;">${lang==='pt'?'Esta SM não possui rubricas cadastradas no painel.':'This SM has no budget lines registered in the panel.'}</div>`; return; }
-  container.innerHTML=`<div class="table-card" style="box-shadow:none;"><div class="table-header"><div class="table-title">${lang==='pt'?'Rubricas cadastradas nesta SM':'Budget lines registered in this SM'}</div></div><div class="table-scroll"><table style="font-size:12px;"><thead><tr><th>ABA</th><th>${lang==='pt'?'Categoria':'Category'}</th><th>${lang==='pt'?'Executor':'Executor'}</th><th class="text-right">${lang==='pt'?'Valor informado':'Registered value'}</th></tr></thead><tbody>${items.map(item=>{const index=DATA.sms.indexOf(item);return `<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(getCatABA(item.Categoria_despesa)||'-')}</td><td>${escapeHtml(item.Categoria_despesa||'')}</td><td>${escapeHtml(item.Executor|| (lang==='pt'?'Não informado':'Not informed'))}</td><td><input type="number" min="0" step="0.01" class="form-input" data-sol-sm-item="${index}" value="${escapeAttr(item.Valor||0)}" style="min-width:150px;text-align:right;"></td></tr>`;}).join('')}</tbody></table></div></div>`;
+  container.innerHTML=`<div class="table-card" style="box-shadow:none;"><div class="table-header"><div class="table-title">${lang==='pt'?'Rubricas cadastradas nesta SM':'Budget lines registered in this SM'}</div></div><div class="table-scroll"><table style="font-size:12px;"><thead><tr><th>SHEET</th><th>${lang==='pt'?'Categoria':'Category'}</th><th>${lang==='pt'?'Executor':'Executor'}</th><th class="text-right">${lang==='pt'?'Valor informado':'Registered value'}</th></tr></thead><tbody>${items.map(item=>{const index=DATA.sms.indexOf(item);return `<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(getCatABA(item.Categoria_despesa)||'-')}</td><td>${escapeHtml(item.Categoria_despesa||'')}</td><td>${escapeHtml(item.Executor|| (lang==='pt'?'Não informado':'Not informed'))}</td><td><input type="number" min="0" step="0.01" class="form-input" data-sol-sm-item="${index}" value="${escapeAttr(item.Valor||0)}" style="min-width:150px;text-align:right;"></td></tr>`;}).join('')}</tbody></table></div></div>`;
 }
 
 function openSolEditModal(idx){
@@ -7317,7 +7349,11 @@ async function saveGasto(){
 
 // ===================== MODAL: SM =====================
   const SM_MONEY_FULL=new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+  const SM_INPUT_NUMBER=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  function parseSMInputValue(value){ const raw=String(value??'').trim().replace(/,/g,''); if(!raw)return NaN; const parsed=Number(raw); return Number.isFinite(parsed)?parsed:NaN; }
+  function formatSMNumberInput(input){ const value=parseSMInputValue(input?.value); if(input&&Number.isFinite(value))input.value=SM_INPUT_NUMBER.format(value); }
 let smDraftItems=new Map();
+let smVisibleExecutor='';
 let editingSMIdx=null;
  function smDraftKey(category,executor){ return `${category}|${executor}`; }
  function smStatusKey(status){
@@ -7342,29 +7378,49 @@ let editingSMIdx=null;
   if(!show) clearSMImportPreview();
   if(show) onSMProjectChange();
 }
-function smProjectChanged(){ smDraftItems.clear(); clearSMImportPreview(); onSMProjectChange(); }
+function smProjectChanged(){
+  clearSMImportPreview();
+  if(editingSMIdx===null) seedSMDraftFromLatest(document.getElementById('sm-project')?.value||'');
+  else smDraftItems.clear();
+  onSMProjectChange();
+}
 function smProjectExecutors(pid){
   const executors=rubProjectExecutors(pid);
   if(executors.length) return executors;
-  const project=(DATA.projetos||[]).find(row=>row.Projeto===pid);
-  return project?.Executor?[String(project.Executor).trim()]:[];
+  return projectExecutorNames(pid);
 }
 function smSelectedExecutor(pid){ return String(document.getElementById('sm-executor-filter')?.value||'').trim()||smProjectExecutors(pid)[0]||''; }
-function captureSMVisibleDraft(){
+function seedSMDraftFromSM(pid,number){
+  smDraftItems.clear();
+  const fallbackExecutor=smProjectExecutors(pid)[0]||'';
+  (DATA.sms||[]).filter(row=>row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,number)).forEach(row=>{
+    const executor=canonicalExecutorName(row.Executor)||fallbackExecutor;
+    const category=String(row.Categoria_despesa||'').trim();
+    if(executor&&category) smDraftItems.set(smDraftKey(category,executor),{cat:category,executor,valor:parseFloat(row.Valor||0)||0});
+  });
+}
+function seedSMDraftFromLatest(pid){
+  const latest=latestSMInfo(pid);
+  if(latest) seedSMDraftFromSM(pid,latest.label);
+  else smDraftItems.clear();
+}
+function captureSMVisibleDraft(executorOverride=''){
   if(!smStatusAllowsFinancialData(document.getElementById('sm-status')?.value)) return;
-  const pid=document.getElementById('sm-project')?.value||'', executor=smSelectedExecutor(pid);
+  const pid=document.getElementById('sm-project')?.value||'', executor=String(executorOverride||smSelectedExecutor(pid)).trim();
   if(!executor) return;
   document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{
     const category=input.dataset.cat||'', key=smDraftKey(category,executor), raw=String(input.value||'').trim();
     if(!raw){ smDraftItems.delete(key); return; }
-    const value=parseFloat(raw); if(Number.isFinite(value)&&value>=0) smDraftItems.set(key,{cat:category,executor,valor:value});
+    const value=parseSMInputValue(raw); if(Number.isFinite(value)&&value>=0) smDraftItems.set(key,{cat:category,executor,valor:value});
   });
 }
-function smExecutorChanged(){ captureSMVisibleDraft(); onSMProjectChange(); }
+function smExecutorChanged(){ captureSMVisibleDraft(smVisibleExecutor); onSMProjectChange(); }
 function resetSMModalIdentity(){
   const project=document.getElementById('sm-project'), number=document.getElementById('sm-number');
   if(project) project.disabled=false;
   if(number) number.disabled=false;
+  const deleteButton=document.getElementById('sm-delete-btn');
+  if(deleteButton) deleteButton.style.display='none';
 }
 function openSMModal(pid){
   editingSMIdx=null; resetSMModalIdentity(); smDraftItems.clear(); clearSMImportPreview();
@@ -7373,6 +7429,7 @@ function openSMModal(pid){
   const income=document.getElementById('sm-income-enabled'); if(income)income.checked=false;
   const title=document.getElementById('modal-sm-title'); if(title)title.textContent='Nova Solicitação de Mudança (SM)';
   const project=document.getElementById('sm-project'); if(project&&pid)project.value=pid;
+  seedSMDraftFromLatest(project?.value||pid||'');
   toggleSMIncomeUsage(); toggleSMStatusFields(); onSMProjectChange(); updateSMTotal(); document.getElementById('sm-modal').classList.add('show'); sanitizeVisibleMojibake(document.getElementById('sm-modal'));
 }
 function openSMEditModal(idx){
@@ -7382,13 +7439,12 @@ function openSMEditModal(idx){
   const project=document.getElementById('sm-project'), numberInput=document.getElementById('sm-number');
   if(project){project.value=pid;project.disabled=true;}
   if(numberInput){numberInput.value=number;numberInput.disabled=true;}
+  const deleteButton=document.getElementById('sm-delete-btn');
+  if(deleteButton) deleteButton.style.display='inline-flex';
   document.getElementById('sm-date-submissao').value=String(s.Data_Submissao||'').split('T')[0];
   document.getElementById('sm-date-aprovacao').value=String(s.Data_Aprovacao||'').split('T')[0];
   const status=document.getElementById('sm-status'); if(status)status.value=smNormalizedStatus(s.Status);
-  (DATA.sms||[]).filter(row=>row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,number)).forEach(row=>{
-    const executor=String(row.Executor||'').trim()||smProjectExecutors(pid)[0]||'';
-    if(executor)smDraftItems.set(smDraftKey(row.Categoria_despesa,executor),{cat:row.Categoria_despesa,executor,valor:parseFloat(row.Valor||0)||0});
-  });
+  seedSMDraftFromSM(pid,number);
   const uso=getUsoRendimentoForSM(pid,number), income=document.getElementById('sm-income-enabled');
   if(income)income.checked=!!uso;
   document.getElementById('sm-income-value').value=uso?(parseFloat(uso.Valor_Utilizado||0)||''):'';
@@ -7404,7 +7460,7 @@ function smCategoryRowHtml(pid,category,isNew=false){
   const ptrb=planRows.reduce((sum,row)=>sum+(parseFloat(row['Plano_PTR-B']||0)||0),0);
   const plan=(currentPlanMap(pid,executor||'ALL')||{})[category]||0;
   const draft=smDraftItems.get(smDraftKey(category,executor)), value=draft?draft.valor:'';
-  return `<tr data-cat-row="${escapeAttr(category)}"><td class="fw-600 fs-12 color-ink3">${escapeHtml(aba)}</td><td title="${escapeAttr(category)}">${escapeHtml(category)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">${lang==='pt'?'Nova':'New'}</span>`:''}</td><td class="text-right">${SM_MONEY_FULL.format(ptrb)}</td><td class="text-right fw-600">${SM_MONEY_FULL.format(plan)}</td><td><input type="number" class="form-input" step="0.01" min="0" placeholder="-" data-cat="${escapeAttr(category)}" value="${value===''?'':escapeAttr(value)}" oninput="updateSMTotal()" style="min-width:150px;text-align:right;"></td></tr>`;
+  return `<tr data-cat-row="${escapeAttr(category)}"><td class="fw-600 fs-12 color-ink3">${escapeHtml(aba)}</td><td title="${escapeAttr(category)}">${escapeHtml(category)}${isNew?` <span class="badge badge-amber" style="font-size:10px;">New</span>`:''}</td><td class="text-right">${SM_MONEY_FULL.format(ptrb)}</td><td class="text-right fw-600">${SM_MONEY_FULL.format(plan)}</td><td><input type="text" inputmode="decimal" class="form-input" placeholder="-" data-cat="${escapeAttr(category)}" value="${value===''?'':escapeAttr(SM_INPUT_NUMBER.format(value))}" oninput="updateSMTotal()" onblur="formatSMNumberInput(this);updateSMTotal()" style="min-width:150px;text-align:right;"></td></tr>`;
 }
 function refreshSMAddCategoryOptions(){
   const select=document.getElementById('sm-add-cat-select'); if(!select)return;
@@ -7423,26 +7479,73 @@ function onSMProjectChange(){
   const selector=document.getElementById('sm-executor-filter'), wrap=document.getElementById('sm-executor-filter-wrap'), previous=selector?.value||'', executors=smProjectExecutors(pid);
   if(selector){selector.innerHTML=executors.map(executor=>`<option value="${escapeAttr(executor)}">${escapeHtml(executor)}</option>`).join('');if(executors.includes(previous))selector.value=previous;}
   if(wrap)wrap.style.display=executors.length>1?'block':'none';
-  const executor=smSelectedExecutor(pid), note=document.getElementById('sm-income-executor-note');
+  const executor=smSelectedExecutor(pid); smVisibleExecutor=executor; const note=document.getElementById('sm-income-executor-note');
   if(note){note.style.display=executor?'block':'none';note.textContent=executor?`Executor selecionado: ${executor}`:'';}
   const planRows=(DATA.plano||[]).filter(row=>row.Projeto===pid&&(!executor||row.Executor===executor));
   const savedCategories=(DATA.sms||[]).filter(row=>row.Projeto===pid).map(row=>row.Categoria_despesa);
   const draftCategories=[...smDraftItems.values()].filter(row=>row.executor===executor).map(row=>row.cat);
   const categories=[...new Set([...planRows.map(row=>row.Categoria_despesa),...savedCategories,...draftCategories].filter(Boolean))].sort(catCompare);
-  const label=document.getElementById('sm-plan-caption');if(label)label.textContent=executor?`Novo valor das rubricas alteradas para ${executor}.`:'Selecione um executor para informar os valores.';
-  table.innerHTML=`<div class="table-scroll" style="max-height:420px;"><table style="font-size:12px;"><thead><tr><th style="width:70px;">ABA</th><th>Categoria</th><th class="text-right">PTR-B</th><th class="text-right">Plano Atual${latestSMLabel(pid)?` (${latestSMLabel(pid)})`:''}</th><th class="text-right">Novo valor da SM</th></tr></thead><tbody id="sm-cat-tbody">${categories.map(category=>smCategoryRowHtml(pid,category,false)).join('')||`<tr><td colspan="5" class="empty-state">${lang==='pt'?'Nenhuma rubrica para o executor selecionado.':'No categories for the selected executor.'}</td></tr>`}</tbody></table></div>`;
+  const label=document.getElementById('sm-plan-caption');if(label)label.textContent=executor?`New values for changed budget lines for ${executor}.`:'Select an executor to enter values.';
+  const currentPlanLabel=latestSMLabel(pid)||'CURRENT PLAN';
+  table.innerHTML=`<div class="table-scroll" style="max-height:420px;"><table style="font-size:12px;"><thead><tr><th style="width:70px;">SHEET</th><th>CATEGORY</th><th class="text-right">PTR-B</th><th class="text-right">${escapeHtml(currentPlanLabel)}</th><th class="text-right">NEW VALUE</th></tr></thead><tbody id="sm-cat-tbody">${categories.map(category=>smCategoryRowHtml(pid,category,false)).join('')||`<tr><td colspan="5" class="empty-state">No categories for the selected executor.</td></tr>`}</tbody></table></div>`;
   refreshSMAddCategoryOptions(); updateSMTotal();
 }
 function updateSMTotal(){
-  let total=0;document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{const value=parseFloat(input.value);if(Number.isFinite(value)&&value>0)total+=value;});
+  let total=0;document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{const value=parseSMInputValue(input.value);if(Number.isFinite(value)&&value>0)total+=value;});
   const el=document.getElementById('sm-total-display');if(el)el.textContent=SM_MONEY_FULL.format(total);
 }
 function smHasSavedItems(pid,number){ return (DATA.sms||[]).some(row=>row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,number)); }
+function smDuplicateSolicitacaoIndex(pid,number,excludeIdx=null){
+  return (DATA.solicitacoes||[]).findIndex((row,index)=>index!==excludeIdx&&String(row.Tipo||'SM').toUpperCase()==='SM'&&row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero||row.Numero_Item,number));
+}
+async function deleteSM(){
+  const idx=editingSMIdx, record=idx!==null?(DATA.solicitacoes||[])[idx]:null;
+  if(!record) return;
+  const pid=record.Projeto||'', number=record.Numero||record['SM#']||'';
+  const duplicateIdx=smDuplicateSolicitacaoIndex(pid,number,idx), hasItems=smHasSavedItems(pid,number), selectedHasFinancialData=smStatusAllowsFinancialData(record.Status);
+  if(duplicateIdx>=0&&hasItems&&selectedHasFinancialData){
+    alert(lang==='pt'?'Não é seguro excluir esta SM porque existem solicitações duplicadas com rubricas financeiras compartilhadas pelo mesmo Projeto e número. Corrija os duplicados no workbook primeiro.':'This SM cannot be safely deleted because duplicate requests share financial lines for the same project and number. Resolve the duplicates in the workbook first.');
+    return;
+  }
+  const label=`${pid} · ${number}`;
+  const deleteFinancialData=duplicateIdx<0;
+  const confirmation=deleteFinancialData
+    ? (lang==='pt'?`Excluir definitivamente a SM ${label}? As rubricas financeiras e o uso de rendimento associados também serão removidos.`:`Permanently delete SM ${label}? Its financial lines and financial-income usage will also be removed.`)
+    : (lang==='pt'?`Excluir definitivamente a solicitação duplicada ${label}? As rubricas financeiras compartilhadas serão preservadas.`:`Permanently delete the duplicate request ${label}? The shared financial lines will be preserved.`);
+  if(!confirm(confirmation)) return;
+  const snapshot={
+    solicitacoes:JSON.parse(JSON.stringify(DATA.solicitacoes||[])),
+    sms:JSON.parse(JSON.stringify(DATA.sms||[])),
+    uso_rendimento:JSON.parse(JSON.stringify(DATA.uso_rendimento||[]))
+  };
+  const tasks=[
+    ['Solicitacoes',rewriteSolicitacoesSheet],
+    ['SM_Itens',rewriteSMItensSheetFromMemory],
+    ['Uso_Rendimento',rewriteUsoRendimentoSheet]
+  ], written=[];
+  DATA.solicitacoes.splice(idx,1);
+  if(duplicateIdx<0){
+    DATA.sms=(DATA.sms||[]).filter(row=>!(row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,number)));
+    DATA.uso_rendimento=(DATA.uso_rendimento||[]).filter(row=>!(row.Projeto===pid&&sameSmNumber(row.SM||row.Numero_SM,number)));
+  }
+  showLoading(lang==='pt'?'Excluindo SM...':'Deleting SM...');
+  try{
+    for(const [sheet,fn] of tasks){ await fn(); written.push([sheet,fn]); }
+    applySMOverrides();
+    smDraftItems.clear(); editingSMIdx=null; resetSMModalIdentity(); closeModal('sm-modal'); hideLoading(); renderCurrentPage();
+    alert(lang==='pt'?'SM excluída com sucesso.':'SM deleted successfully.');
+  }catch(error){
+    DATA.solicitacoes=snapshot.solicitacoes; DATA.sms=snapshot.sms; DATA.uso_rendimento=snapshot.uso_rendimento;
+    for(const [,fn] of written){ try{ await fn(); }catch(compensationError){ console.error('SM delete compensation failed:',compensationError); } }
+    hideLoading(); console.error('deleteSM error:',error); alert((lang==='pt'?'Erro ao excluir SM: ':'Error deleting SM: ')+(error?.message||error));
+  }
+}
 async function saveSM(){
   const pid=document.getElementById('sm-project').value,smNum=document.getElementById('sm-number').value.trim(),dataSubmissao=document.getElementById('sm-date-submissao').value,status=smNormalizedStatus(document.getElementById('sm-status').value),dataAprovacao=document.getElementById('sm-date-aprovacao').value,isFinal=smStatusAllowsFinancialData(status);
   if(!pid||!smNum){alert('Preencha Projeto e Numero da SM.');return;}
   const oldSol=(editingSMIdx!==null&&DATA.solicitacoes[editingSMIdx])?DATA.solicitacoes[editingSMIdx]:null;
   const oldPid=oldSol?.Projeto||pid,oldNumber=oldSol?.Numero||oldSol?.['SM#']||smNum;
+  if(smDuplicateSolicitacaoIndex(pid,smNum,editingSMIdx)>=0){alert(lang==='pt'?'Já existe uma SM com este número para o projeto selecionado. Use um número diferente ou edite a SM existente.':'An SM with this number already exists for the selected project. Use a different number or edit the existing SM.');return;}
   if(!isFinal&&oldSol&&smHasSavedItems(oldPid,oldNumber)){alert(lang==='pt'?'Esta SM já possui rubricas. Para preservar o histórico financeiro, mantenha-a como Aprovada ou Rejeitada.':'This SM already has budget lines. Keep it Approved or Rejected to preserve financial history.');return;}
   if(isFinal){
     captureSMVisibleDraft();
@@ -7476,6 +7579,8 @@ async function saveSM(){
 
 // ===================== INIT =====================
 (async () => {
+  const callbackHandled=await processarCallbackNaPagina();
+  if(callbackHandled) return;
   // Try to restore existing session silently
   await tentarRestaurarSessao();
   // If no valid session was found, show login screen
