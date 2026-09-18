@@ -1369,7 +1369,7 @@ tr:hover td{background:var(--surface3);}
     <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label" id="sm-date-aprovacao-label">Approval/rejection date</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
     <div id="sm-financial-fields" style="display:none;margin-top:12px;">
       <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:8px;">
-        <div><label class="form-label" style="margin-bottom:0;">SM budget lines</label><div class="fs-12 color-ink3" id="sm-plan-caption">Enter the new value for each changed budget line.</div></div>
+        <div><label class="form-label" style="margin-bottom:0;" id="sm-categories-label">SM Categories</label><div class="fs-12 color-ink3" id="sm-plan-caption">Enter the new value for each changed budget line.</div></div>
         <div class="form-group" id="sm-executor-filter-wrap" style="display:none;margin:0;min-width:260px;"><label class="form-label">Executor</label><select class="form-select" id="sm-executor-filter" onchange="smExecutorChanged()"></select></div>
       </div>
       <div id="sm-categories-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;"></div>
@@ -1380,7 +1380,6 @@ tr:hover td{background:var(--surface3);}
       <button type="button" class="btn btn-secondary btn-sm" onclick="openSMImportPicker()">Import SM</button>
     </div>
     <div id="sm-import-preview" style="display:none;margin-top:10px;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);"><div style="font-size:13px;color:var(--ink3);">Selected executor total: <strong id="sm-total-display">R$ 0</strong></div></div>
     <div style="margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);"><input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()"><span>Add Financial Income use</span></label>
       <div class="fs-12 color-ink3" id="sm-income-executor-note" style="display:none;margin-top:7px;"></div>
@@ -1774,7 +1773,7 @@ col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Ti
     cancel:'Cancel',save_gasto:'Save Expense',save_sm:'Save SM',
     lbl_project:'Project',lbl_executor:'Executor',lbl_cat:'Category',lbl_amount:'Amount (R$)',
     lbl_date:'Date',lbl_year:'Year',lbl_sm:'SM #',lbl_codigo:'Sheet code',
-    new_expense:'New Expense',new_sm:'New Change Request (SM)',
+    new_expense:'New Expense',new_sm:'New Change Request (SM)',edit_sm:'Edit SM',sm_categories:'SM Categories',sm_total:'SM Total',
     rub_cat:'Category',rub_ptrb:'PTR-B',rub_plan:'Current Plan',rub_actual:'Actuals',rub_balance:'Balance',rub_pct:'Exec%',
     no_milestones:'No milestones in this period.',search:'Search...',
     alert_overdue:'projects have overdue milestones',alert_fin:'projects over 100% budget execution',
@@ -1811,7 +1810,7 @@ col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time
     cancel:'Cancelar',save_gasto:'Salvar Gasto',save_sm:'Salvar SM',
     lbl_project:'Projeto',lbl_executor:'Executor',lbl_cat:'Categoria',lbl_amount:'Valor (R$)',
     lbl_date:'Data',lbl_year:'Ano',lbl_sm:'Sheet code',lbl_codigo:'Sheet code',
-    new_expense:'Novo Gasto',new_sm:'Nova SolicitaÃ§Ã£o de MudanÃ§a (SM)',
+    new_expense:'Novo Gasto',new_sm:'Nova SolicitaÃ§Ã£o de MudanÃ§a (SM)',edit_sm:'Editar SM',sm_categories:'Categorias da SM',sm_total:'Total da SM',
     rub_cat:'Categoria',rub_ptrb:'PTR-B',rub_plan:'Plano Atual',rub_actual:'Realizado',rub_balance:'Saldo',rub_pct:'Exec%',
     no_milestones:'Nenhum marco neste perÃ­odo.',search:'Buscar...',
     alert_overdue:'projetos com marcos atrasados',alert_fin:'projetos com execuÃ§Ã£o acima de 100%',
@@ -2258,7 +2257,7 @@ function applyTranslations(){
     ['ms-opt-completed','completed'],['ms-opt-suspended','suspended'],
     ['card-next-milestones','next90'],['card-overdue-milestones','overdue_ms'],
     ['tbl-title-projects','tbl_projects'],
-    ['modal-gasto-title','new_expense'],['modal-sm-title','new_sm'],
+    ['modal-gasto-title','new_expense'],['modal-sm-title','new_sm'],['sm-categories-label','sm_categories'],['sm-total-label','sm_total'],
     ['lbl-gasto-project','lbl_project'],['lbl-gasto-executor','lbl_executor'],
     ['lbl-gasto-cat','lbl_cat'],['lbl-gasto-valor','lbl_amount'],
     ['lbl-gasto-date','lbl_date'],['lbl-gasto-ano','lbl_year'],
@@ -7489,7 +7488,7 @@ function openSMEditModal(idx){
   const uso=getUsoRendimentoForSM(pid,number), income=document.getElementById('sm-income-enabled');
   if(income)income.checked=!!uso;
   document.getElementById('sm-income-value').value=uso?(parseFloat(uso.Valor_Utilizado||0)||''):'';
-  const title=document.getElementById('modal-sm-title'); if(title)title.textContent='Editar Solicitação de Mudança (SM)';
+  const title=document.getElementById('modal-sm-title'); if(title)title.textContent=t('edit_sm');
   toggleSMIncomeUsage(); toggleSMStatusFields(); onSMProjectChange(); updateSMTotal(); document.getElementById('sm-modal').classList.add('show'); sanitizeVisibleMojibake(document.getElementById('sm-modal'));
 }
 function smAllAnpCategories(){ return (DATA.categorias||[]).map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG).filter(Boolean).sort(catCompare); }
@@ -7528,11 +7527,15 @@ function onSMProjectChange(){
   const categories=[...new Set([...planRows.map(row=>row.Categoria_despesa),...savedCategories,...draftCategories].filter(Boolean))].sort(catCompare);
   const label=document.getElementById('sm-plan-caption');if(label)label.textContent=executor?`New values for changed budget lines for ${executor}.`:'Select an executor to enter values.';
   const currentPlanLabel=latestSMLabel(pid)||'CURRENT PLAN';
-  table.innerHTML=`<div class="table-scroll" style="max-height:420px;"><table style="font-size:12px;"><thead><tr><th style="width:70px;">SHEET</th><th>CATEGORY</th><th class="text-right">PTR-B</th><th class="text-right">${escapeHtml(currentPlanLabel)}</th><th class="text-right">NEW VALUE</th></tr></thead><tbody id="sm-cat-tbody">${categories.map(category=>smCategoryRowHtml(pid,category,false)).join('')||`<tr><td colspan="5" class="empty-state">No categories for the selected executor.</td></tr>`}</tbody></table></div>`;
+  table.innerHTML=`<div class="table-scroll" style="max-height:420px;"><table style="font-size:12px;"><thead><tr><th style="width:70px;">SHEET</th><th>CATEGORY</th><th class="text-right">PTR-B</th><th class="text-right">${escapeHtml(currentPlanLabel)}</th><th class="text-right">NEW VALUE</th></tr></thead><tbody id="sm-cat-tbody">${categories.map(category=>smCategoryRowHtml(pid,category,false)).join('')||`<tr><td colspan="5" class="empty-state">No categories for the selected executor.</td></tr>`}</tbody><tfoot><tr style="background:var(--surface2);font-weight:700;"><td></td><th id="sm-total-label">SM Total</th><td></td><th class="text-right" id="sm-total-plan-display">R$ 0.00</th><th class="text-right" id="sm-total-display">R$ 0.00</th></tr></tfoot></table></div>`;
   refreshSMAddCategoryOptions(); updateSMTotal();
 }
 function updateSMTotal(){
+  const label=document.getElementById('sm-total-label');if(label)label.textContent=t('sm_total');
+  const pid=document.getElementById('sm-project')?.value||'', executor=smSelectedExecutor(pid), planMap=currentPlanMap(pid,executor||'ALL')||{};
+  let planTotal=0;document.querySelectorAll('#sm-cat-tbody tr[data-cat-row]').forEach(row=>{const value=Number(planMap[row.dataset.catRow]||0);if(Number.isFinite(value))planTotal+=value;});
   let total=0;document.querySelectorAll('#sm-categories-table input[data-cat]').forEach(input=>{const value=parseSMInputValue(input.value);if(Number.isFinite(value)&&value>0)total+=value;});
+  const planEl=document.getElementById('sm-total-plan-display');if(planEl)planEl.textContent=SM_MONEY_FULL.format(planTotal);
   const el=document.getElementById('sm-total-display');if(el)el.textContent=SM_MONEY_FULL.format(total);
 }
 function smHasSavedItems(pid,number){ return (DATA.sms||[]).some(row=>row.Projeto===pid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,number)); }
