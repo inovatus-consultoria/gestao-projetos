@@ -1363,7 +1363,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group"><label class="form-label">Submission date</label><input class="form-input" type="date" id="sm-date-submissao"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Em análise">Under review</option><option value="Aprovada">Approved</option><option value="Rejeitada">Rejected</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Under review">Under review</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option><option value="Cancelled">Cancelled</option></select></div>
     </div>
     <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label" id="sm-date-aprovacao-label">Approval/rejection date</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
     <div id="sm-financial-fields" style="display:none;margin-top:12px;">
@@ -5569,14 +5569,22 @@ function smTypeBadge(tipo){
   return '<span class="badge badge-amber" style="font-size:10px;">SM</span>';
 }
 
-function smStatusBadge(st){
-  if(!st) return 'â€”';
-  const low=st.toLowerCase();
-  const cls = low.includes('aprovad')||low.includes('approved') ? 'badge-green'
-    : low.includes('pendente')||low.includes('anÃ¡lise')||low.includes('revisÃ£o') ? 'badge-amber'
-    : low.includes('rejeit') ? 'badge-red'
-    : 'badge-gray';
-  return `<span class="badge ${cls}">${st}</span>`;
+ function smStatusBadge(st,tipo='SM'){
+    if(!st) return 'â€”';
+    if(tipo!=='SM'){
+      const low=String(st).toLowerCase();
+      const cls = low.includes('aprovad')||low.includes('approved') ? 'badge-green'
+        : low.includes('pendente')||low.includes('anÃ¡lise')||low.includes('revisÃ£o')||low.includes('under review') ? 'badge-amber'
+        : low.includes('rejeit')||low.includes('reject') ? 'badge-red'
+        : 'badge-gray';
+      return `<span class="badge ${cls}">${escapeHtml(st)}</span>`;
+    }
+    const status=smStatusKey(st);
+   const cls = status==='Approved' ? 'badge-green'
+     : status==='Rejected' ? 'badge-red'
+     : status==='Under review' ? 'badge-amber'
+     : 'badge-gray';
+   return `<span class="badge ${cls}">${status}</span>`;
 }
 
 
@@ -6477,7 +6485,7 @@ function renderSMs(){
                 <td class="fw-600">${s['SM#']||s.Numero||'â€”'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Submissao?FMTD(s.Data_Submissao):'â€”'}</td>
                 <td class="fs-12 color-ink3">${s.Data_Aprovacao?FMTD(s.Data_Aprovacao):'â€”'}</td>
-                <td>${smStatusBadge(s.Status)}</td>
+                <td>${smStatusBadge(s.Status,s.Tipo)}</td>
                 <td class="fs-12 color-ink3" style="max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(s.Observacoes||'')}">${escapeHtml(s.Observacoes||EMPTY)}</td>
               </tr>`;
             }).join('')}
@@ -7311,18 +7319,25 @@ async function saveGasto(){
   const SM_MONEY_FULL=new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
 let smDraftItems=new Map();
 let editingSMIdx=null;
-function smDraftKey(category,executor){ return `${category}|${executor}`; }
-function smStatusAllowsFinancialData(status){ return /^(aprovad|rejeitad)/i.test(String(status||'').trim()); }
-function smStatusNeedsApprovalDate(status){ return smStatusAllowsFinancialData(status); }
-function smNormalizedStatus(status){ return smStatusAllowsFinancialData(status)?String(status).trim():'Em análise'; }
-function toggleSMStatusFields(){
-  const status=document.getElementById('sm-status')?.value||'';
-  const show=smStatusAllowsFinancialData(status);
+ function smDraftKey(category,executor){ return `${category}|${executor}`; }
+ function smStatusKey(status){
+   const key=normLooseText(status);
+   if(['approved','aprovada','aprovado'].includes(key)) return 'Approved';
+   if(['rejected','rejeitada','rejeitado'].includes(key)) return 'Rejected';
+   if(['cancelled','canceled','cancelada','cancelado'].includes(key)) return 'Cancelled';
+   return 'Under review';
+ }
+ function smStatusAllowsFinancialData(status){ return ['Approved','Rejected'].includes(smStatusKey(status)); }
+ function smStatusNeedsApprovalDate(status){ return smStatusAllowsFinancialData(status); }
+ function smNormalizedStatus(status){ return smStatusKey(status); }
+ function toggleSMStatusFields(){
+   const status=document.getElementById('sm-status')?.value||'';
+   const show=smStatusAllowsFinancialData(status);
   const dateWrap=document.getElementById('sm-date-aprovacao-wrap');
   const dateLabel=document.getElementById('sm-date-aprovacao-label');
   const financial=document.getElementById('sm-financial-fields');
   if(dateWrap) dateWrap.style.display=show?'block':'none';
-  if(dateLabel) dateLabel.textContent=/^rejeitad/i.test(status)?'Data de rejeição':'Data de aprovação';
+   if(dateLabel) dateLabel.textContent=smStatusKey(status)==='Rejected'?'Rejection date':'Approval date';
   if(financial) financial.style.display=show?'block':'none';
   if(!show) clearSMImportPreview();
   if(show) onSMProjectChange();
@@ -7354,7 +7369,7 @@ function resetSMModalIdentity(){
 function openSMModal(pid){
   editingSMIdx=null; resetSMModalIdentity(); smDraftItems.clear(); clearSMImportPreview();
   ['sm-number','sm-date-submissao','sm-date-aprovacao','sm-income-value'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const status=document.getElementById('sm-status'); if(status)status.value='Em análise';
+   const status=document.getElementById('sm-status'); if(status)status.value='Under review';
   const income=document.getElementById('sm-income-enabled'); if(income)income.checked=false;
   const title=document.getElementById('modal-sm-title'); if(title)title.textContent='Nova Solicitação de Mudança (SM)';
   const project=document.getElementById('sm-project'); if(project&&pid)project.value=pid;
@@ -7429,7 +7444,11 @@ async function saveSM(){
   const oldSol=(editingSMIdx!==null&&DATA.solicitacoes[editingSMIdx])?DATA.solicitacoes[editingSMIdx]:null;
   const oldPid=oldSol?.Projeto||pid,oldNumber=oldSol?.Numero||oldSol?.['SM#']||smNum;
   if(!isFinal&&oldSol&&smHasSavedItems(oldPid,oldNumber)){alert(lang==='pt'?'Esta SM já possui rubricas. Para preservar o histórico financeiro, mantenha-a como Aprovada ou Rejeitada.':'This SM already has budget lines. Keep it Approved or Rejected to preserve financial history.');return;}
-  if(isFinal){captureSMVisibleDraft();if(!dataAprovacao){alert(lang==='pt'?'Informe a data de aprovação/rejeição.':'Enter the approval/rejection date.');return;}}
+  if(isFinal){
+    captureSMVisibleDraft();
+    if(oldSol&&smHasSavedItems(oldPid,oldNumber)&&!confirm(lang==='pt'?'Esta SM já possui rubricas. Deseja substituir os valores financeiros existentes pelos valores atuais?':'This change request already has budget lines. Replace the existing financial values with the current values?')) return;
+    if(!dataAprovacao){alert(lang==='pt'?'Informe a data de aprovação/rejeição.':'Enter the approval/rejection date.');return;}
+  }
   const useIncome=isFinal&&!!document.getElementById('sm-income-enabled')?.checked,incomeValue=useIncome?(parseFloat(document.getElementById('sm-income-value')?.value)||0):0,linhas=isFinal?[...smDraftItems.values()]:[];
   if(useIncome&&incomeValue<=0){alert('Informe o valor do rendimento utilizado.');return;}
   if(isFinal&&!linhas.length){alert(lang==='pt'?'Informe ou importe ao menos uma rubrica final.':'Enter or import at least one final budget line.');return;}
