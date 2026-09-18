@@ -1057,7 +1057,7 @@ tr:hover td{background:var(--surface3);}
         </div>
         <div class="page-header-right">
           <select class="form-select" id="project-selector" onchange="selectProject(this.value)" style="width:auto;"></select>
-          <button class="btn btn-secondary btn-sm" onclick="printProjectPage()" id="btn-print-project">Imprimir</button>
+          <button class="btn btn-secondary btn-sm" onclick="printProjectPage()" id="btn-print-project">Print</button>
         </div>
       </div>
 
@@ -1074,7 +1074,7 @@ tr:hover td{background:var(--surface3);}
           <div class="page-subtitle" id="sub-milestones">All 127 deliverables and milestones</div>
         </div>
         <div class="page-header-right">
-          <button class="btn btn-secondary btn-sm" onclick="addMilestone()" id="btn-add-milestone">Adicionar Marco</button>
+          <button class="btn btn-secondary btn-sm" onclick="addMilestone()" id="btn-add-milestone">Add Milestone</button>
           <button class="btn btn-primary btn-sm" onclick="saveMilestones()" id="btn-save-milestones">Save Changes</button>
         </div>
       </div>
@@ -1094,8 +1094,8 @@ tr:hover td{background:var(--surface3);}
         <select class="form-select" id="ms-date-filter" onchange="toggleMilestoneDateInputs(true)" style="max-width:190px;">
           <option value="ALL">Periodo: todos</option>
           <option value="NEXT3">Proximos 3 meses</option>
-          <option value="MONTH">Mes especifico</option>
-          <option value="CUSTOM">Intervalo personalizado</option>
+          <option value="MONTH">Specific month</option>
+          <option value="CUSTOM">Custom interval</option>
         </select>
         <input type="month" class="form-input" id="ms-month-filter" onchange="renderMilestones()" style="max-width:150px;display:none;">
         <input type="date" class="form-input" id="ms-date-from" onchange="renderMilestones()" style="max-width:150px;display:none;">
@@ -1158,11 +1158,11 @@ tr:hover td{background:var(--surface3);}
           <div class="page-subtitle" id="sub-sms">Change Requests, Travel Requests and Special Expenses</div>
         </div>
         <div class="page-header-right" style="position:relative;">
-          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">Novo registro</span> v</button>
+          <button class="btn btn-primary btn-sm" onclick="toggleCreateSolMenu(event)" id="btn-new-sm">+ <span id="lbl-new-sol">New record</span> v</button>
           <div id="create-sol-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:50;min-width:200px;overflow:hidden;">
-            <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / SolicitaÃ§Ã£o de mudanÃ§a</button>
-            <button class="sol-menu-item" onclick="createSolicitacao('DV')">DV / Despesa de viagem</button>
-            <button class="sol-menu-item" onclick="createSolicitacao('DE')">DE / Despesa especial</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('SM')">SM / Change Request</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('DV')">DV / Travel Expense</button>
+            <button class="sol-menu-item" onclick="createSolicitacao('DE')">DE / Special Expense</button>
           </div>
         </div>
       </div>
@@ -1193,7 +1193,7 @@ tr:hover td{background:var(--surface3);}
 <!-- ===================== MODAL: MILESTONE ===================== -->
 <div class="modal-overlay" id="milestone-modal">
   <div class="modal" style="max-width:760px;">
-    <h2 class="modal-title" id="milestone-modal-title">Marco</h2>
+    <h2 class="modal-title" id="milestone-modal-title">Milestone</h2>
     <div class="form-grid">
       <div class="form-group">
         <label class="form-label" id="lbl-ms-modal-project">Projeto *</label>
@@ -1227,7 +1227,7 @@ tr:hover td{background:var(--surface3);}
     <div id="milestone-extra-fields" class="milestone-extra-grid" style="margin-top:14px;"></div>
     <div class="modal-footer">
       <button class="btn btn-danger btn-sm" id="btn-ms-modal-delete" type="button" onclick="deleteMilestoneFromModal()" style="display:none;margin-right:auto;">Excluir</button>
-      <button class="btn btn-secondary" type="button" onclick="closeMilestoneModal()">Cancelar</button>
+      <button class="btn btn-secondary" type="button" onclick="closeMilestoneModal()">Cancel</button>
       <button class="btn btn-primary" id="btn-ms-modal-apply" type="button" onclick="applyMilestoneModal()">Aplicar alteracoes</button>
     </div>
   </div>
@@ -1356,37 +1356,37 @@ tr:hover td{background:var(--surface3);}
 <!-- ===================== MODAL: ADD SM ===================== -->
 <div class="modal-overlay" id="sm-modal">
   <div class="modal" style="max-width:1120px;width:min(96vw,1120px);">
-    <h2 class="modal-title" id="modal-sm-title">Nova Solicitação de Mudança (SM)</h2>
+    <h2 class="modal-title" id="modal-sm-title">New Change Request (SM)</h2>
     <div class="form-grid">
-      <div class="form-group"><label class="form-label">Projeto</label><select class="form-select" id="sm-project" onchange="smProjectChanged()"></select></div>
-      <div class="form-group"><label class="form-label">Nº da SM</label><input class="form-input" id="sm-number" placeholder="SM1, SM2..."></div>
+      <div class="form-group"><label class="form-label">Project</label><select class="form-select" id="sm-project" onchange="smProjectChanged()"></select></div>
+      <div class="form-group"><label class="form-label">SM #</label><input class="form-input" id="sm-number" placeholder="SM1, SM2..."></div>
     </div>
     <div class="form-grid">
-      <div class="form-group"><label class="form-label">Data de submissão</label><input class="form-input" type="date" id="sm-date-submissao"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Em análise">Em análise</option><option value="Aprovada">Aprovada</option><option value="Rejeitada">Rejeitada</option></select></div>
+      <div class="form-group"><label class="form-label">Submission date</label><input class="form-input" type="date" id="sm-date-submissao"></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Em análise">Under review</option><option value="Aprovada">Approved</option><option value="Rejeitada">Rejected</option></select></div>
     </div>
-    <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label" id="sm-date-aprovacao-label">Data de aprovação/rejeição</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
+    <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label" id="sm-date-aprovacao-label">Approval/rejection date</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
     <div id="sm-financial-fields" style="display:none;margin-top:12px;">
       <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:8px;">
-        <div><label class="form-label" style="margin-bottom:0;">Rubricas da SM</label><div class="fs-12 color-ink3" id="sm-plan-caption">Informe o novo valor de cada rubrica alterada.</div></div>
+        <div><label class="form-label" style="margin-bottom:0;">SM budget lines</label><div class="fs-12 color-ink3" id="sm-plan-caption">Enter the new value for each changed budget line.</div></div>
         <div class="form-group" id="sm-executor-filter-wrap" style="display:none;margin:0;min-width:260px;"><label class="form-label">Executor</label><select class="form-select" id="sm-executor-filter" onchange="smExecutorChanged()"></select></div>
       </div>
       <div id="sm-categories-table" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;"></div>
     <div id="sm-add-category-controls" style="display:flex;gap:8px;align-items:end;margin-top:10px;">
-      <div class="form-group" style="flex:1;margin:0;"><label class="form-label" style="font-size:11px;">Adicionar rubrica ANP existente</label><select class="form-select" id="sm-add-cat-select"></select></div>
-      <button type="button" class="btn btn-secondary btn-sm" id="sm-add-cat-btn" onclick="addSMCategoryRow()">Adicionar rubrica</button>
+      <div class="form-group" style="flex:1;margin:0;"><label class="form-label" style="font-size:11px;">Add existing ANP category</label><select class="form-select" id="sm-add-cat-select"></select></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="sm-add-cat-btn" onclick="addSMCategoryRow()">Add category</button>
       <input type="file" id="sm-import-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;" onchange="handleSMImportFile(this)">
-      <button type="button" class="btn btn-secondary btn-sm" onclick="openSMImportPicker()">Importar SM</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openSMImportPicker()">Import SM</button>
     </div>
     <div id="sm-import-preview" style="display:none;margin-top:10px;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);"><div style="font-size:13px;color:var(--ink3);">Total do executor selecionado: <strong id="sm-total-display">R$ 0</strong></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border);"><div style="font-size:13px;color:var(--ink3);">Selected executor total: <strong id="sm-total-display">R$ 0</strong></div></div>
     <div style="margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);"><input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()"><span>Adicionar uso de rendimento</span></label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);"><input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()"><span>Add Financial Income use</span></label>
       <div class="fs-12 color-ink3" id="sm-income-executor-note" style="display:none;margin-top:7px;"></div>
-      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Valor do rendimento utilizado (R$)</label><input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0"></div>
+      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Financial Income used (R$)</label><input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0"></div>
     </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancelar</button><button class="btn btn-primary" onclick="saveSM()">Salvar SM</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('sm-modal')">Cancel</button><button class="btn btn-primary" onclick="saveSM()">Save SM</button></div>
   </div>
 </div>
 
@@ -1429,10 +1429,10 @@ tr:hover td{background:var(--surface3);}
         </div>
       </div>
     </div>
-    <button class="btn btn-secondary btn-sm" id="btn-pm-add-executor" type="button" onclick="setProjectSecondExecutorEnabled(true,false)" style="margin:-2px 0 14px;">+ Adicionar executor</button>
+    <button class="btn btn-secondary btn-sm" id="btn-pm-add-executor" type="button" onclick="setProjectSecondExecutorEnabled(true,false)" style="margin:-2px 0 14px;">+ Add executor</button>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-gestor">Gestor</label>
+        <label class="form-label" id="lbl-pm-gestor">INV Manager</label>
         <select class="form-select" id="pm-gestor">
           <option value="Yiannis">Yiannis</option>
           <option value="Diogo">Diogo</option>
@@ -1441,10 +1441,10 @@ tr:hover td{background:var(--surface3);}
       <div class="form-group">
         <label class="form-label" id="lbl-pm-status">Status</label>
         <select class="form-select" id="pm-status">
-          <option value="Em andamento">Em andamento</option>
-          <option value="ConcluÃ­do">ConcluÃ­do</option>
-          <option value="Suspenso">Suspenso</option>
-          <option value="Cancelado">Cancelado</option>
+          <option value="Em andamento">In progress</option>
+          <option value="ConcluÃ­do">Completed</option>
+          <option value="Suspenso">Suspended</option>
+          <option value="Cancelado">Cancelled</option>
         </select>
       </div>
     </div>
@@ -1518,11 +1518,11 @@ tr:hover td{background:var(--surface3);}
         <select class="form-select" id="sol-projeto"></select>
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-tipo">Tipo</label>
+        <label class="form-label" id="lbl-sol-tipo">Type</label>
         <select class="form-select" id="sol-tipo" onchange="syncSolIncomeUsageFields()">
-          <option value="SM">SM / SolicitaÃ§Ã£o de mudanÃ§a</option>
-          <option value="DV">DV / Despesa de viagem</option>
-          <option value="DE">DE / Despesa especial</option>
+          <option value="SM">SM / Change Request</option>
+          <option value="DV">DV / Travel Expense</option>
+          <option value="DE">DE / Special Expense</option>
         </select>
       </div>
     </div>
@@ -1534,22 +1534,22 @@ tr:hover td{background:var(--surface3);}
       <div class="form-group">
         <label class="form-label" id="lbl-sol-status">Status</label>
         <select class="form-select" id="sol-status">
-          <option value="Pendente">Pendente</option>
+          <option value="Pendente">Pending</option>
           <option value="Em anÃ¡lise">Em anÃ¡lise</option>
-          <option value="Aprovada">Aprovada</option>
-          <option value="Rejeitada">Rejeitada</option>
+          <option value="Aprovada">Approved</option>
+          <option value="Rejeitada">Rejected</option>
           <option value="ConcluÃ­do">ConcluÃ­do</option>
-          <option value="Cancelado">Cancelado</option>
+          <option value="Cancelado">Cancelled</option>
         </select>
       </div>
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-sub">Data de submissÃ£o</label>
+        <label class="form-label" id="lbl-sol-sub">Submission date</label>
         <input class="form-input" type="date" id="sol-data-sub">
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-sol-apr">Data de aprovaÃ§Ã£o</label>
+        <label class="form-label" id="lbl-sol-apr">Approval date</label>
         <input class="form-input" type="date" id="sol-data-apr">
       </div>
     </div>
@@ -1558,18 +1558,18 @@ tr:hover td{background:var(--surface3);}
       <input class="form-input" type="number" id="sol-valor" min="0" step="0.01">
     </div>
     <div class="form-group" id="sol-income-group" style="display:none;">
-      <label class="form-label" id="lbl-sol-income">Uso de rendimento (R$)</label>
+      <label class="form-label" id="lbl-sol-income">Financial Income used (R$)</label>
       <input class="form-input" type="number" id="sol-income-usage" min="0" step="0.01" placeholder="0">
-      <div class="fs-12 color-ink3" style="margin-top:4px;">Informe 0 ou deixe vazio para remover o uso de rendimento desta SM.</div>
+      <div class="fs-12 color-ink3" style="margin-top:4px;">Enter 0 or leave blank to remove Financial Income use from this SM.</div>
     </div>
     <div class="form-group">
-      <label class="form-label" id="lbl-sol-obs">ObservaÃ§Ãµes</label>
+      <label class="form-label" id="lbl-sol-obs">Observations</label>
       <input class="form-input" id="sol-obs">
     </div>
     <div id="sol-sm-items-editor" style="display:none;margin-top:14px;"></div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('sol-modal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveSolModal()" id="btn-sol-save">Salvar</button>
+      <button class="btn btn-secondary" onclick="closeModal('sol-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSolModal()" id="btn-sol-save">Save</button>
     </div>
   </div>
 </div>
@@ -1779,7 +1779,7 @@ col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Ti
     new_project:'+ New Project',new_sol:'New record',modal_new_project:'New Project',gantt:'Timeline',
     export_proj:'Export project',export_all:'Export all projects',
     pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor 1 *',pm_executor2:'Executor 2',
-    pm_pmanager:'Project Manager',pm_gestor:'Gestor',pm_status:'Status',
+    pm_pmanager:'Project Manager',pm_gestor:'INV Manager',pm_status:'Status',
     pm_inicio:'Start *',pm_fim:'Baseline End *',pm_fimplan:'Planned End',pm_fimreal:'Actual End',pm_duracao:'Duration (months)',
     pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',pm_delete:'Delete Project',
   },
