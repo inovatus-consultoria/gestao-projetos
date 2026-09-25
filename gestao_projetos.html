@@ -6595,18 +6595,21 @@ async function rewriteSMItensSheetFromMemory(){
   const dataRows=(DATA.sms||[]).map(s=>headers.map(h=>smItemCellFor(h,s)));
   await rewriteExcelSheet('SM_Itens', headers, dataRows);
 }
-function usoRendimentoIndexForSM(pid, numero){
-  return (DATA.uso_rendimento||[]).findIndex(u=>u.Projeto===pid && sameSmNumber(u.SM||u.Numero_SM, numero));
+function usoRendimentoIndexForSM(pid, numero, executor=''){
+  const target=canonicalExecutorName(executor);
+  return (DATA.uso_rendimento||[]).findIndex(u=>u.Projeto===pid && sameSmNumber(u.SM||u.Numero_SM, numero) && (!target || canonicalExecutorName(u.Executor)===target));
 }
-function getUsoRendimentoForSM(pid, numero){
-  const idx=usoRendimentoIndexForSM(pid, numero);
+function getUsoRendimentoForSM(pid, numero, executor=''){
+  const idx=usoRendimentoIndexForSM(pid, numero, executor);
   return idx>=0 ? DATA.uso_rendimento[idx] : null;
 }
-function replaceUsoRendimentoForSM(oldPid, oldNumero, newRec){
+function replaceUsoRendimentoForSM(oldPid, oldNumero, newRec, executor=''){
   DATA.uso_rendimento=DATA.uso_rendimento||[];
-  DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!(u.Projeto===oldPid && sameSmNumber(u.SM||u.Numero_SM, oldNumero)));
+  const target=canonicalExecutorName(executor||newRec?.Executor);
+  const matches=(u,pid,numero)=>u.Projeto===pid && sameSmNumber(u.SM||u.Numero_SM, numero) && (!target || canonicalExecutorName(u.Executor)===target);
+  DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!matches(u,oldPid,oldNumero));
   if(newRec){
-    DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!(u.Projeto===newRec.Projeto && sameSmNumber(u.SM||u.Numero_SM, newRec.SM||newRec.Numero_SM)));
+    DATA.uso_rendimento=DATA.uso_rendimento.filter(u=>!matches(u,newRec.Projeto,newRec.SM||newRec.Numero_SM));
     DATA.uso_rendimento.push(newRec);
   }
 }
@@ -6928,7 +6931,7 @@ async function saveSolModal(){
   if(isSM){
     editedItems.forEach(item=>{const row=DATA.sms[item.index];if(row){row.Projeto=pid;row['SM#']=numero;row.Valor=item.value;}});
     const usoRec=usoValor>0?{Projeto:pid,Executor:projectExecutorForUso(pid),SM:numero,Numero_SM:numero,Valor_Utilizado:usoValor,Descricao:obs||`Uso de rendimento ${numero}`} : null;
-    replaceUsoRendimentoForSM(oldSol?.Projeto||pid,oldSol?.Numero||oldSol?.['SM#']||numero,usoRec);
+    replaceUsoRendimentoForSM(oldSol?.Projeto||pid,oldSol?.Numero||oldSol?.['SM#']||numero,usoRec,usoRec?.Executor||projectExecutorForUso(pid));
   }
   showLoading(L?'Salvando registro no Excel...':'Saving record to Excel...');
   try{
@@ -7459,7 +7462,14 @@ function captureSMVisibleDraft(executorOverride=''){
     const value=parseSMInputValue(raw); if(Number.isFinite(value)&&value>=0) smDraftItems.set(key,{cat:category,executor,valor:value});
   });
 }
-function smExecutorChanged(){ captureSMVisibleDraft(smVisibleExecutor); onSMProjectChange(); }
+function syncSMIncomeForExecutor(){
+  const pid=document.getElementById('sm-project')?.value||'', number=document.getElementById('sm-number')?.value.trim()||'', executor=smSelectedExecutor(pid);
+  const uso=getUsoRendimentoForSM(pid,number,executor), income=document.getElementById('sm-income-enabled'), value=document.getElementById('sm-income-value');
+  if(income) income.checked=!!uso;
+  if(value) value.value=uso?(parseFloat(uso.Valor_Utilizado||0)||''):'';
+  toggleSMIncomeUsage();
+}
+function smExecutorChanged(){ captureSMVisibleDraft(smVisibleExecutor); onSMProjectChange(); syncSMIncomeForExecutor(); }
 function resetSMModalIdentity(){
   const project=document.getElementById('sm-project'), number=document.getElementById('sm-number');
   if(project) project.disabled=false;
@@ -7490,11 +7500,8 @@ function openSMEditModal(idx){
   document.getElementById('sm-date-aprovacao').value=String(s.Data_Aprovacao||'').split('T')[0];
   const status=document.getElementById('sm-status'); if(status)status.value=smNormalizedStatus(s.Status);
   seedSMDraftFromSM(pid,number);
-  const uso=getUsoRendimentoForSM(pid,number), income=document.getElementById('sm-income-enabled');
-  if(income)income.checked=!!uso;
-  document.getElementById('sm-income-value').value=uso?(parseFloat(uso.Valor_Utilizado||0)||''):'';
   const title=document.getElementById('modal-sm-title'); if(title)title.textContent=t('edit_sm');
-  toggleSMIncomeUsage(); toggleSMStatusFields(); onSMProjectChange(); updateSMTotal(); document.getElementById('sm-modal').classList.add('show'); sanitizeVisibleMojibake(document.getElementById('sm-modal'));
+  toggleSMStatusFields(); onSMProjectChange(); syncSMIncomeForExecutor(); updateSMTotal(); document.getElementById('sm-modal').classList.add('show'); sanitizeVisibleMojibake(document.getElementById('sm-modal'));
 }
 function smAllAnpCategories(){ return (DATA.categorias||[]).map(c=>c.Categoria_despesa_PT||c.Categoria_despesa_ENG).filter(Boolean).sort(catCompare); }
 function smCategoryRowHtml(pid,category,isNew=false){
@@ -7619,7 +7626,7 @@ async function saveSM(){
     if(oldSol){DATA.solicitacoes[editingSMIdx]=solicitation;await rewriteSolicitacoesSheet();}
     else {const solicitacoesHeaders=(DATA._headers&&DATA._headers.Solicitacoes&&DATA._headers.Solicitacoes.length)?DATA._headers.Solicitacoes:['Projeto','Numero_Item','Tipo','Data_Submissao','Data_Aprovacao','Status','Valor'];await appendExcelRow('Solicitacoes',solicitacoesHeaders.map(header=>solicitacaoCellFor(header,solicitation)));DATA.solicitacoes.push(solicitation);}
     if(isFinal){
-      if(oldSol){DATA.sms=DATA.sms.filter(row=>!(row.Projeto===oldPid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,oldNumber)));DATA.sms.push(...smRows);replaceUsoRendimentoForSM(oldPid,oldNumber,usoRec);await rewriteSMItensSheetFromMemory();await rewriteUsoRendimentoSheet();}
+      if(oldSol){DATA.sms=DATA.sms.filter(row=>!(row.Projeto===oldPid&&sameSmNumber(row['SM#']||row.Numero_SM||row.Numero,oldNumber)));DATA.sms.push(...smRows);replaceUsoRendimentoForSM(oldPid,oldNumber,usoRec,incomeExecutor);await rewriteSMItensSheetFromMemory();await rewriteUsoRendimentoSheet();}
       else {await appendExcelRows('SM_Itens',smRows.map(row=>smItensHeaders.map(header=>smItemCellFor(header,row))));DATA.sms.push(...smRows);if(usoRec){const usoHeaders=(DATA._headers&&DATA._headers.Uso_Rendimento&&DATA._headers.Uso_Rendimento.length)?DATA._headers.Uso_Rendimento:['Projeto','Executor','Numero_SM','Valor_Utilizado','Descricao'];await appendExcelRow('Uso_Rendimento',usoHeaders.map(header=>usoRendimentoCellFor(header,usoRec)));DATA.uso_rendimento.push(usoRec);}}
     }
     applySMOverrides();smDraftItems.clear();editingSMIdx=null;resetSMModalIdentity();closeModal('sm-modal');hideLoading();renderCurrentPage();alert(lang==='pt'?'SM salva com sucesso!':'SM saved successfully!');
