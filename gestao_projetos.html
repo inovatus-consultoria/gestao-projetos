@@ -1364,7 +1364,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group"><label class="form-label">Submission date</label><input class="form-input" type="date" id="sm-date-submissao"></div>
-      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Under review">Under review</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option><option value="Cancelled">Cancelled</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="sm-status" onchange="toggleSMStatusFields()"><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select></div>
     </div>
     <div class="form-group" id="sm-date-aprovacao-wrap" style="display:none;"><label class="form-label" id="sm-date-aprovacao-label">Approval/rejection date</label><input class="form-input" type="date" id="sm-date-aprovacao"></div>
     <div id="sm-financial-fields" style="display:none;margin-top:12px;">
@@ -1383,7 +1383,7 @@ tr:hover td{background:var(--surface3);}
     <div style="margin-top:12px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);"><input type="checkbox" id="sm-income-enabled" onchange="toggleSMIncomeUsage()"><span>Add Financial Income use</span></label>
       <div class="fs-12 color-ink3" id="sm-income-executor-note" style="display:none;margin-top:7px;"></div>
-      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Financial Income used (R$)</label><input class="form-input" type="number" id="sm-income-value" min="0" step="0.01" placeholder="0"></div>
+      <div class="form-group" id="sm-income-field" style="display:none;margin:10px 0 0;"><label class="form-label">Financial Income used (R$)</label><input class="form-input" type="text" inputmode="decimal" id="sm-income-value" placeholder="0.00" onblur="formatSMNumberInput(this)"></div>
     </div>
     </div>
     <div class="modal-footer"><button class="btn btn-danger btn-sm" id="sm-delete-btn" type="button" onclick="deleteSM()" style="display:none;margin-right:auto;">Delete SM</button><button class="btn btn-secondary" type="button" onclick="closeModal('sm-modal')">Cancel</button><button class="btn btn-primary" type="button" onclick="saveSM()">Save SM</button></div>
@@ -6762,7 +6762,7 @@ function renderSMImportPreview(){
     const suggestion=smImportSuggestedExecutor(pid,group.sourceExecutor,executors);
     const options=[`<option value="">${lang==='pt'?'Selecione o executor':'Select executor'}</option>`,...executors.map(executor=>`<option value="${escapeAttr(executor)}"${executor===suggestion?' selected':''}>${escapeHtml(executor)}</option>`)].join('');
     const total=group.rows.reduce((sum,row)=>sum+(parseFloat(row.value)||0),0);
-    const rows=group.rows.map((row,rowIndex)=>`<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(row.aba||'-')}</td><td>${escapeHtml(row.category)}</td><td><input type="number" min="0" step="0.01" class="form-input" data-sm-import-value="${index}:${rowIndex}" value="${escapeAttr(row.value)}" style="min-width:150px;text-align:right;"></td></tr>`).join('');
+    const rows=group.rows.map((row,rowIndex)=>`<tr><td class="fw-600 fs-12 color-ink3">${escapeHtml(row.aba||'-')}</td><td>${escapeHtml(row.category)}</td><td><input type="text" inputmode="decimal" class="form-input" data-sm-import-value="${index}:${rowIndex}" value="${escapeAttr(SM_INPUT_NUMBER.format(Number(row.value)||0))}" onblur="formatSMNumberInput(this)" style="min-width:150px;text-align:right;"></td></tr>`).join('');
     return `<div class="card" style="padding:10px;margin-top:10px;box-shadow:none;"><div class="form-grid" style="align-items:end;"><div><div class="form-label">${lang==='pt'?'Executor extraído':'Excel executor'}</div><div class="fw-600">${escapeHtml(group.sourceExecutor)}</div></div><div class="form-group" style="margin:0;"><label class="form-label">${lang==='pt'?'Executor na base do painel':'Panel executor'}</label><select class="form-select" data-sm-import-group="${index}">${options}</select></div><div class="text-right fs-12 color-ink3">${lang==='pt'?'Total extraído':'Extracted total'}<br><strong>${SM_MONEY_FULL.format(total)}</strong></div></div><div class="table-scroll" style="max-height:260px;margin-top:8px;border:1px solid var(--border);border-radius:6px;"><table style="font-size:12px;"><thead><tr><th>SHEET</th><th>${lang==='pt'?'Categoria':'Category'}</th><th class="text-right">${lang==='pt'?'Valor a importar':'Value to import'}</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
   }).join('');
   preview.innerHTML=`<div class="card" style="padding:12px;border-color:var(--amber);"><div class="fw-600">${lang==='pt'?'Prévia da importação':'Import preview'} · ${escapeHtml(smImportedPayload.smNumber)}</div><div class="fs-12 color-ink3" style="margin-top:3px;">${escapeHtml(smImportedPayload.fileName)}. Revise executor e valores; nenhum dado será salvo até clicar em Salvar SM.</div>${groups}<div style="display:flex;gap:8px;margin-top:10px;"><button type="button" class="btn btn-primary btn-sm" onclick="applySMImport()">${lang==='pt'?'Aplicar à SM':'Apply to SM'}</button><button type="button" class="btn btn-secondary btn-sm" onclick="clearSMImportPreview()">${lang==='pt'?'Cancelar':'Cancel'}</button></div></div>`;
@@ -6788,7 +6788,7 @@ function applySMImport(){
   for(let groupIndex=0;groupIndex<smImportedPayload.groups.length;groupIndex++){
     const group=smImportedPayload.groups[groupIndex], executor=mappings[group.sourceExecutor];
     for(let rowIndex=0;rowIndex<group.rows.length;rowIndex++){
-      const row=group.rows[rowIndex], input=document.querySelector(`#sm-import-preview input[data-sm-import-value="${groupIndex}:${rowIndex}"]`), raw=String(input?.value??row.value).trim(), value=raw===''?0:parseFloat(raw);
+      const row=group.rows[rowIndex], input=document.querySelector(`#sm-import-preview input[data-sm-import-value="${groupIndex}:${rowIndex}"]`), raw=String(input?.value??row.value).trim(), value=raw===''?0:parseSMInputValue(raw);
       if(!Number.isFinite(value)||value<0){alert(lang==='pt'?`Revise o valor de ${row.category}.`:`Review the value for ${row.category}.`);return;}
       imported.push({cat:row.category,executor,valor:value});
     }
@@ -7396,7 +7396,7 @@ async function saveGasto(){
 }
 
 // ===================== MODAL: SM =====================
-  const SM_MONEY_FULL=new Intl.NumberFormat('en-US',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2});
+  const SM_MONEY_FULL=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const SM_INPUT_NUMBER=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   function parseSMInputValue(value){ const raw=String(value??'').trim().replace(/,/g,''); if(!raw)return NaN; const parsed=Number(raw); return Number.isFinite(parsed)?parsed:NaN; }
   function formatSMNumberInput(input){ const value=parseSMInputValue(input?.value); if(input&&Number.isFinite(value))input.value=SM_INPUT_NUMBER.format(value); }
@@ -7466,7 +7466,7 @@ function syncSMIncomeForExecutor(){
   const pid=document.getElementById('sm-project')?.value||'', number=document.getElementById('sm-number')?.value.trim()||'', executor=smSelectedExecutor(pid);
   const uso=getUsoRendimentoForSM(pid,number,executor), income=document.getElementById('sm-income-enabled'), value=document.getElementById('sm-income-value');
   if(income) income.checked=!!uso;
-  if(value) value.value=uso?(parseFloat(uso.Valor_Utilizado||0)||''):'';
+  if(value) value.value=uso?(SM_INPUT_NUMBER.format(parseFloat(uso.Valor_Utilizado||0)||0)):'';
   toggleSMIncomeUsage();
 }
 function smExecutorChanged(){ captureSMVisibleDraft(smVisibleExecutor); onSMProjectChange(); syncSMIncomeForExecutor(); }
@@ -7480,7 +7480,7 @@ function resetSMModalIdentity(){
 function openSMModal(pid){
   editingSMIdx=null; resetSMModalIdentity(); smDraftItems.clear(); clearSMImportPreview();
   ['sm-number','sm-date-submissao','sm-date-aprovacao','sm-income-value'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-   const status=document.getElementById('sm-status'); if(status)status.value='Under review';
+   const status=document.getElementById('sm-status'); if(status)status.value='Approved';
   const income=document.getElementById('sm-income-enabled'); if(income)income.checked=false;
   const title=document.getElementById('modal-sm-title'); if(title)title.textContent='Nova Solicitação de Mudança (SM)';
   const project=document.getElementById('sm-project'); if(project&&pid)project.value=pid;
@@ -7597,8 +7597,9 @@ async function deleteSM(){
   }
 }
 async function saveSM(){
-  const pid=document.getElementById('sm-project').value,smNum=document.getElementById('sm-number').value.trim(),dataSubmissao=document.getElementById('sm-date-submissao').value,status=smNormalizedStatus(document.getElementById('sm-status').value),dataAprovacao=document.getElementById('sm-date-aprovacao').value,isFinal=smStatusAllowsFinancialData(status);
+  const pid=document.getElementById('sm-project').value,smNum=document.getElementById('sm-number').value.trim(),dataSubmissao=document.getElementById('sm-date-submissao').value,statusValue=document.getElementById('sm-status').value,status=smNormalizedStatus(statusValue),dataAprovacao=document.getElementById('sm-date-aprovacao').value,isFinal=smStatusAllowsFinancialData(status);
   if(!pid||!smNum){alert('Preencha Projeto e Numero da SM.');return;}
+  if(!['Approved','Rejected'].includes(statusValue)){alert(lang==='pt'?'Selecione Aprovada ou Rejeitada para a SM.':'Select Approved or Rejected for the SM.');return;}
   const oldSol=(editingSMIdx!==null&&DATA.solicitacoes[editingSMIdx])?DATA.solicitacoes[editingSMIdx]:null;
   const oldPid=oldSol?.Projeto||pid,oldNumber=oldSol?.Numero||oldSol?.['SM#']||smNum;
   if(smDuplicateSolicitacaoIndex(pid,smNum,editingSMIdx)>=0){alert(lang==='pt'?'Já existe uma SM com este número para o projeto selecionado. Use um número diferente ou edite a SM existente.':'An SM with this number already exists for the selected project. Use a different number or edit the existing SM.');return;}
@@ -7608,7 +7609,7 @@ async function saveSM(){
     if(oldSol&&smHasSavedItems(oldPid,oldNumber)&&!confirm(lang==='pt'?'Esta SM já possui rubricas. Deseja substituir os valores financeiros existentes pelos valores atuais?':'This change request already has budget lines. Replace the existing financial values with the current values?')) return;
     if(!dataAprovacao){alert(lang==='pt'?'Informe a data de aprovação/rejeição.':'Enter the approval/rejection date.');return;}
   }
-  const useIncome=isFinal&&!!document.getElementById('sm-income-enabled')?.checked,incomeValue=useIncome?(parseFloat(document.getElementById('sm-income-value')?.value)||0):0,linhas=isFinal?[...smDraftItems.values()]:[];
+  const useIncome=isFinal&&!!document.getElementById('sm-income-enabled')?.checked,incomeValue=useIncome?(parseSMInputValue(document.getElementById('sm-income-value')?.value)||0):0,linhas=isFinal?[...smDraftItems.values()]:[];
   if(useIncome&&incomeValue<=0){alert('Informe o valor do rendimento utilizado.');return;}
   if(isFinal&&!linhas.length){alert(lang==='pt'?'Informe ou importe ao menos uma rubrica final.':'Enter or import at least one final budget line.');return;}
   const smItensHeaders=(DATA._headers&&DATA._headers.SM_Itens&&DATA._headers.SM_Itens.length)?DATA._headers.SM_Itens:['Projeto','Numero_SM','Categoria','Valor','Executor'];
