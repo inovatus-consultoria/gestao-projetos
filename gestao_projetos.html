@@ -1136,7 +1136,7 @@ tr:hover td{background:var(--surface3);}
         </button>
         <button class="btn btn-primary btn-sm" onclick="openRubRendimentoModal()" id="btn-rub-rend" style="display:none;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-          <span id="lbl-rub-rend">Add income</span>
+          <span id="lbl-rub-rend">Add Monthly Income</span>
         </button>
         <button class="btn btn-secondary btn-sm" onclick="exportRubricasProjeto()" id="btn-export-rub-proj" style="display:none;margin-left:auto;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1304,7 +1304,7 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-group">
       <label class="form-label" id="lbl-rub-rend-value">Income amount (R$)</label>
-      <input class="form-input" type="number" min="0" step="0.01" id="rub-rend-value" style="text-align:right;">
+      <input class="form-input" type="text" inputmode="decimal" id="rub-rend-value" placeholder="0.00" onblur="formatEnglishNumberInput(this)" style="text-align:right;">
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('rub-rend-modal')" id="btn-rub-rend-cancel">Cancel</button>
@@ -4923,7 +4923,7 @@ function renderRubricas(){
   if(rendBtn){
     rendBtn.disabled = !canEdit;
     rendBtn.style.opacity = canEdit ? '1' : '0.55';
-    document.getElementById('lbl-rub-rend').textContent = L ? 'Adicionar rendimento' : 'Add income';
+    document.getElementById('lbl-rub-rend').textContent = L ? 'Adicionar rendimento' : 'Add Monthly Income';
   }
 
   // Filter data
@@ -5326,7 +5326,7 @@ function rubApplyRendimentoChange(proj, month, exec, newVal){
     if(r.Executor!==executor) return true;
     return false;
   });
-  if(newVal>0){
+  if(Number.isFinite(newVal) && Math.abs(newVal)>0.005){
     DATA.rendimento.push({
       Projeto:proj, Executor:executor, Ano:year, 'MÃªs':monthName, 'MÃƒÂªs':monthName,
       Data:`${year}-${mo}-01`, Valor_Rendido:newVal
@@ -5357,7 +5357,7 @@ function openRubRendimentoModal(){
   const currentKey=rubDateMonthKey(new Date());
   const [currentYear,currentMonth]=currentKey.split('-');
   const yearOptions=rubProjectYearOptions(pid);
-  document.getElementById('modal-rub-rend-title').textContent=L?'Adicionar rendimento mensal':'Add monthly income';
+  document.getElementById('modal-rub-rend-title').textContent=L?'Adicionar rendimento mensal':'Add Monthly Income';
   document.getElementById('lbl-rub-rend-project').textContent=L?'Projeto':'Project';
   document.getElementById('lbl-rub-rend-executor').textContent='Executor';
   document.getElementById('lbl-rub-rend-year').textContent=L?'Ano':'Year';
@@ -5390,7 +5390,7 @@ function populateRubRendimentoValue(){
   const input=document.getElementById('rub-rend-value');
   if(input){
     input.dataset.original=String(value);
-    input.value=value?String(value):'';
+    input.value=Number.isFinite(value)&&Math.abs(value)>0.005?NUMBER_EN.format(value):'';
   }
 }
 
@@ -5401,8 +5401,10 @@ async function saveRubRendimentoModal(){
   const month=rubSelectedRendimentoMonth();
   const input=document.getElementById('rub-rend-value');
   if(!pid||!exec||!month||!input) return;
-  const original=parseFloat(input.dataset.original||'0')||0;
-  const newVal=parseFloat(input.value)||0;
+  const original=parseEnglishNumber(input.dataset.original||'0')||0;
+  const raw=String(input.value||'').trim();
+  const newVal=raw===''?0:parseEnglishNumber(raw);
+  if(!Number.isFinite(newVal)){alert(L?'Informe um valor numerico valido.':'Enter a valid numeric value.');return;}
   if(Math.abs(newVal-original)<0.005){
     closeModal('rub-rend-modal');
     return;
