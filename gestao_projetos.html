@@ -1446,12 +1446,12 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-fimplan">Planned End Date</label>
-        <input class="form-input" type="date" id="pm-fimplan" onchange="updateProjectDuration()">
-      </div>
-      <div class="form-group">
         <label class="form-label" id="lbl-pm-fimext">Extended End Date</label>
         <input class="form-input" type="date" id="pm-fimext">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="lbl-pm-fimplan">Planned End Date</label>
+        <input class="form-input" type="date" id="pm-fimplan" onchange="updateProjectDuration()">
       </div>
     </div>
     <div class="form-grid">
@@ -3466,8 +3466,8 @@ function renderPortfolio(){
     <th>${t('col_time')}</th>
     <th>${t('col_start')}</th>
     <th>${t('col_baseline_end')}</th>
-    <th>${t('col_planned_end')}</th>
     <th>${t('col_extended_end')}</th>
+    <th>${t('col_planned_end')}</th>
     <th>${t('col_end')}</th>
   </tr>`;
 
@@ -3497,8 +3497,8 @@ function renderPortfolio(){
       </div></td>
       <td class="fs-12 color-ink3">${FMTD(projectStartValue(p))}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final'])}</td>
-       <td class="fs-12 color-ink3">${FMTD(p['Data final planejada'])}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final estendida'])}</td>
+       <td class="fs-12 color-ink3">${FMTD(p['Data final planejada'])}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final real'])}</td>
     </tr>`;
   });
@@ -3936,8 +3936,8 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);">INV Manager</td><td>${proj.Gestor||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start Date'}</td><td>${FMTD(projectStartValue(proj))}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim (Baseline)':'Baseline End Date'}</td><td>${FMTD(proj['Data final'])}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega planejada':'Planned End Date'}</td><td>${FMTD(proj['Data final planejada'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim estendido':'Extended End Date'}</td><td>${FMTD(proj['Data final estendida'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega planejada':'Planned End Date'}</td><td>${FMTD(proj['Data final planejada'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End Date'}</td><td>${FMTD(proj['Data final real'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
       </table>
