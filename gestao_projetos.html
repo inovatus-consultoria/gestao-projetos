@@ -1446,16 +1446,18 @@ tr:hover td{background:var(--surface3);}
     </div>
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-fimplan">Planned End</label>
+        <label class="form-label" id="lbl-pm-fimplan">Planned End Date</label>
         <input class="form-input" type="date" id="pm-fimplan" onchange="updateProjectDuration()">
       </div>
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-fimreal">Actual End</label>
-        <input class="form-input" type="date" id="pm-fimreal" onchange="updateProjectDuration()">
+        <label class="form-label" id="lbl-pm-fimext">Extended End Date</label>
+        <input class="form-input" type="date" id="pm-fimext">
       </div>
+    </div>
+    <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" id="lbl-pm-duracao">Planned Duration (months)</label>
-        <input class="form-input" type="number" id="pm-duracao" min="0" readonly>
+        <label class="form-label" id="lbl-pm-fimreal">Actual End Date</label>
+        <input class="form-input" type="date" id="pm-fimreal" onchange="updateProjectDuration()">
       </div>
     </div>
     <div class="form-group">
@@ -1748,7 +1750,7 @@ const T = {
     kpi_overdue:'Overdue Milestones',kpi_upcoming:'Upcoming (60d)',kpi_projects:'Active Projects',
     sync:'Sync',
     col_id:'ID',col_title:'Title',tbl_projects:'Projects',col_executor:'Executor',col_anp:'ANP #',col_pm:'Manager',
-col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Time%',col_start:'Start',col_baseline_end:'Baseline End',col_planned_end:'Planned End',col_end:'Actual End',col_gestor:'INV Manager',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
+col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Time%',col_start:'Start Date',col_baseline_end:'Baseline End Date',col_planned_end:'Planned End Date',col_extended_end:'Extended End Date',col_end:'Actual End Date',col_gestor:'INV Manager',col_status:'Status',show_completed:'Show completed',all_managers:'All managers',
     overdue:'Overdue',upcoming:'Upcoming',planned:'Planned',completed:'Completed',suspended:'Suspended',
     ms_id:'ID',ms_project:'Project',ms_desc:'Description',ms_baseline:'Baseline',ms_forecast:'Forecast',ms_status:'Status',
     btn_sync:'Sync',btn_save:'Save Changes',btn_new_sm:'+ New SM',btn_new_gasto:'+ New Expense',
@@ -1768,7 +1770,7 @@ col_budget:'Current Budget',col_actuals:'Actuals',col_pct:'R$EXEC%',col_time:'Ti
     export_proj:'Export project',export_all:'Export all projects',
     pm_codigo:'Code *',pm_anp:'ANP #',pm_titulo:'Title *',pm_executor:'Executor 1 *',pm_executor2:'Executor 2',
     pm_pmanager:'Project Manager',pm_gestor:'INV Manager',pm_status:'Status',
-     pm_inicio:'Start *',pm_fim:'Baseline End *',pm_fimplan:'Planned End',pm_fimreal:'Actual End',pm_duracao:'Planned Duration (months)',
+     pm_inicio:'Start Date *',pm_fim:'Baseline End Date *',pm_fimplan:'Planned End Date',pm_fimext:'Extended End Date',pm_fimreal:'Actual End Date',pm_duracao:'Planned Duration (months)',
     pm_valor:'PTR-B Value (R$) *',pm_save:'Save Project',pm_delete:'Delete Project',
   },
   pt:{
@@ -1785,7 +1787,7 @@ rubricas:'Budget vs Cost',sub_rubricas:'Categorias ANP â€” PTR-B vs Plano v
     kpi_overdue:'Marcos Atrasados',kpi_upcoming:'PrÃ³ximos (60d)',kpi_projects:'Projetos Ativos',
     sync:'Sincronizar',
     col_id:'ID',col_title:'TÃ­tulo',tbl_projects:'Projetos',col_executor:'Executor',col_anp:'NÂº ANP',col_pm:'Gerente',
-col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'InÃ­cio',col_baseline_end:'Fim (Baseline)',col_planned_end:'Fim planejado',col_end:'Fim real',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluÃ­dos',all_managers:'Todos os gestores',
+col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time:'Tempo%',col_start:'Data de inÃ­cio',col_baseline_end:'Data final (Baseline)',col_planned_end:'Data final planejada',col_extended_end:'Data final estendida',col_end:'Data final real',col_gestor:'Gestor',col_status:'Status',show_completed:'Mostrar concluÃ­dos',all_managers:'Todos os gestores',
     overdue:'Atrasado',upcoming:'PrÃ³ximo',planned:'Planejado',completed:'ConcluÃ­do',suspended:'Suspenso',
     ms_id:'ID',ms_project:'Projeto',ms_desc:'DescriÃ§Ã£o',ms_baseline:'Baseline',ms_forecast:'PrevisÃ£o',ms_status:'Status',
     btn_sync:'Sincronizar',btn_save:'Salvar AlteraÃ§Ãµes',btn_new_sm:'+ Nova SM',btn_new_gasto:'+ Novo Gasto',
@@ -1805,7 +1807,7 @@ col_budget:'OrÃ§amento atual',col_actuals:'Realizado',col_pct:'Exec%',col_time
     export_proj:'Exportar projeto',export_all:'Exportar todos',
     pm_codigo:'CÃ³digo *',pm_anp:'NÂº ANP',pm_titulo:'TÃ­tulo *',pm_executor:'Executor',
     pm_pmanager:'Gerente',pm_gestor:'Gestor',pm_status:'Status',
-     pm_inicio:'InÃ­cio *',pm_fim:'Fim (Baseline) *',pm_fimplan:'Fim planejado',pm_fimreal:'Fim real',pm_duracao:'DuraÃ§Ã£o planejada (meses)',
+     pm_inicio:'Data de inÃ­cio *',pm_fim:'Data final (Baseline) *',pm_fimplan:'Data final planejada',pm_fimext:'Data final estendida',pm_fimreal:'Data final real',pm_duracao:'DuraÃ§Ã£o planejada (meses)',
     pm_valor:'Valor PTR-B (R$) *',pm_save:'Salvar Projeto',pm_delete:'Excluir Projeto',
   }
 };
@@ -2254,7 +2256,7 @@ function applyTranslations(){
     ['lbl-pm-codigo','pm_codigo'],['lbl-pm-anp','pm_anp'],['lbl-pm-titulo','pm_titulo'],
     ['lbl-pm-executor','pm_executor'],['lbl-pm-executor2','pm_executor2'],['lbl-pm-pmanager','pm_pmanager'],['lbl-pm-gestor','pm_gestor'],
     ['lbl-pm-status','pm_status'],['lbl-pm-inicio','pm_inicio'],['lbl-pm-fim','pm_fim'],
-    ['lbl-pm-fimplan','pm_fimplan'],['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
+    ['lbl-pm-fimplan','pm_fimplan'],['lbl-pm-fimext','pm_fimext'],['lbl-pm-fimreal','pm_fimreal'],['lbl-pm-duracao','pm_duracao'],['lbl-pm-valor','pm_valor'],
     ['btn-pm-save','pm_save'],['btn-pm-cancel','cancel'],['btn-pm-delete','pm_delete'],
   ];
   els.forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.textContent=t(k);});
@@ -2451,6 +2453,7 @@ function projetoCellFor(header,p){
   if(h==='data_inicio'||h==='data_de_inicio'||h==='data_inicial'||h==='inicio'||h==='start_date'||h==='start') return isoToExcelSerial(projectStartValue(p))||'';
   if(h==='data_fim'||h==='fim'||h==='end') return isoToExcelSerial(p['Data final'])||'';
   if(h==='data_fim_plan'||h==='fim_plan'||h==='planned_end'||h==='planned_end_date') return isoToExcelSerial(p['Data final planejada']||p.Data_Fim_Plan)||'';
+  if(h==='data_fim_ext'||h==='fim_ext'||h==='extended_end'||h==='extended_end_date') return isoToExcelSerial(p['Data final estendida']||p.Data_Fim_Ext)||'';
   if(h==='data_fim_real'||h==='fim_real'||h==='actual_end') return p['Data final real'] ? (isoToExcelSerial(p['Data final real'])||'') : '';
   if(h==='duracao_meses'||h==='duracao'||h==='duration_months') return p.Duracao_Meses||p['Duração (meses)']||'';
   if(h==='valor_ptrb'||h==='planned_value') return parseFloat(p.Valor_PTRB||p['Planned Value (R$)']||0)||0;
@@ -2459,13 +2462,17 @@ function projetoCellFor(header,p){
   return p[header]||'';
 }
 async function rewriteProjetosSheet(){
-  const base=['Codigo','Titulo','Executor','Numero_ANP','Project_Manager','Gestor','Data_Inicio','Data_Fim','Data_Fim_Plan','Data_Fim_Real','Duracao_Meses','Valor_PTRB','Status_Projeto'];
+  const base=['Codigo','Titulo','Executor','Numero_ANP','Project_Manager','Gestor','Data_Inicio','Data_Fim','Data_Fim_Plan','Data_Fim_Ext','Data_Fim_Real','Duracao_Meses','Valor_PTRB','Status_Projeto'];
   const headers=(DATA._headers&&DATA._headers.Projetos&&DATA._headers.Projetos.length)
     ? DATA._headers.Projetos.slice()
     : base.slice();
   if(!headers.some(h=>normLooseText(h).replace(/\s+/g,'_')==='data_fim_plan')){
     const actualIndex=headers.findIndex(h=>normLooseText(h).replace(/\s+/g,'_')==='data_fim_real');
     headers.splice(actualIndex>=0?actualIndex:headers.length,0,'Data_Fim_Plan');
+  }
+  if(!headers.some(h=>normLooseText(h).replace(/\s+/g,'_')==='data_fim_ext')){
+    const actualIndex=headers.findIndex(h=>normLooseText(h).replace(/\s+/g,'_')==='data_fim_real');
+    headers.splice(actualIndex>=0?actualIndex:headers.length,0,'Data_Fim_Ext');
   }
   if(!headers.some(h=>normLooseText(h).replace(/\s+/g,'_')==='objetivo_projeto')) headers.push('Objetivo_Projeto');
   const dataRows=DATA.projetos.map(p=>headers.map(h=>projetoCellFor(h,p)));
@@ -2883,6 +2890,8 @@ function normalizeProjeto(r){
     'Data final'        : excelDate(r.Data_Fim),
     'Data final planejada': excelDate(r.Data_Fim_Plan||r['Data final planejada']||r.Planned_End),
     Data_Fim_Plan        : excelDate(r.Data_Fim_Plan||r['Data final planejada']||r.Planned_End),
+    'Data final estendida': excelDate(r.Data_Fim_Ext||r['Data final estendida']||r.Extended_End),
+    Data_Fim_Ext         : excelDate(r.Data_Fim_Ext||r['Data final estendida']||r.Extended_End),
      'Data final real'   : excelDate(r.Data_Fim_Real),
     Data_Fim_Real       : excelDate(r.Data_Fim_Real),
     'DuraÃ§Ã£o (meses)'   : r.Duracao_Meses||'',
@@ -3458,6 +3467,7 @@ function renderPortfolio(){
     <th>${t('col_start')}</th>
     <th>${t('col_baseline_end')}</th>
     <th>${t('col_planned_end')}</th>
+    <th>${t('col_extended_end')}</th>
     <th>${t('col_end')}</th>
   </tr>`;
 
@@ -3488,6 +3498,7 @@ function renderPortfolio(){
       <td class="fs-12 color-ink3">${FMTD(projectStartValue(p))}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final'])}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final planejada'])}</td>
+       <td class="fs-12 color-ink3">${FMTD(p['Data final estendida'])}</td>
        <td class="fs-12 color-ink3">${FMTD(p['Data final real'])}</td>
     </tr>`;
   });
@@ -3925,9 +3936,9 @@ function renderProjectDetail(pid){
         <tr><td style="padding:6px 0;color:var(--ink3);">INV Manager</td><td>${proj.Gestor||'â€”'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'InÃ­cio':'Start Date'}</td><td>${FMTD(projectStartValue(proj))}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim (Baseline)':'Baseline End Date'}</td><td>${FMTD(proj['Data final'])}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega planejada':'Extended End Date'}</td><td>${FMTD(proj['Data final planejada'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Entrega planejada':'Planned End Date'}</td><td>${FMTD(proj['Data final planejada'])}</td></tr>
+        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim estendido':'Extended End Date'}</td><td>${FMTD(proj['Data final estendida'])}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">${L?'Fim real':'Actual End Date'}</td><td>${FMTD(proj['Data final real'])}</td></tr>
-        <tr><td style="padding:6px 0;color:var(--ink3);">${L?'DuraÃ§Ã£o':'Duration'}</td><td>${proj['DuraÃ§Ã£o (meses)']||'â€”'} ${L?'meses':'months'}</td></tr>
         <tr><td style="padding:6px 0;color:var(--ink3);">Status</td><td>${projectStatusSelect(proj)}</td></tr>
       </table>
     </div>
@@ -7060,7 +7071,7 @@ function updateProjectDuration(){
 }
 function openProjectModal(){
   editingProjectId=null;
-  ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-executor2','pm-pmanager','pm-inicio','pm-fim','pm-fimplan','pm-fimreal','pm-duracao','pm-valor']
+  ['pm-codigo','pm-anp','pm-titulo','pm-executor','pm-executor2','pm-pmanager','pm-inicio','pm-fim','pm-fimplan','pm-fimext','pm-fimreal','pm-duracao','pm-valor']
     .forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
   const gestor=document.getElementById('pm-gestor'); if(gestor) gestor.value='Yiannis';
   const status=document.getElementById('pm-status'); if(status) status.value='Em andamento';
@@ -7095,6 +7106,7 @@ function openProjectEditModal(pid){
   setV('pm-inicio', (String(projectStartValue(p)||'').split('T')[0]));
   setV('pm-fim', (String(p['Data final']||'').split('T')[0]));
   setV('pm-fimplan', (String(p['Data final planejada']||p.Data_Fim_Plan||'').split('T')[0]));
+  setV('pm-fimext', (String(p['Data final estendida']||p.Data_Fim_Ext||'').split('T')[0]));
   setV('pm-fimreal', (String(p['Data final real']||'').split('T')[0]));
   setV('pm-duracao', p['DuraÃ§Ã£o (meses)']||p.Duracao_Meses||'');
   setV('pm-valor', p['Planned Value (R$)']||p.Valor_PTRB||'');
@@ -7131,6 +7143,7 @@ async function saveProjectEdits(){
   const inicio=document.getElementById('pm-inicio').value;
   const fim=document.getElementById('pm-fim').value;
   const fimplan=document.getElementById('pm-fimplan').value;
+  const fimext=document.getElementById('pm-fimext').value;
   const fimreal=document.getElementById('pm-fimreal').value;
   const duracao=projectDurationMonths(inicio,fimreal||fimplan);
   const valor=parseEnglishNumber(document.getElementById('pm-valor').value);
@@ -7158,6 +7171,7 @@ async function saveProjectEdits(){
     'Data de inÃ­cio ':inicio,
     'Data final':fim,
     'Data final planejada':fimplan||'', Data_Fim_Plan:fimplan||'',
+    'Data final estendida':fimext||'', Data_Fim_Ext:fimext||'',
     'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
     'DuraÃ§Ã£o (meses)':duracao||'', Duracao_Meses:duracao||'',
     'Planned Value (R$)':valor, Valor_PTRB:valor,
@@ -7269,6 +7283,7 @@ async function saveNewProject(){
   const inicio=document.getElementById('pm-inicio').value;
   const fim=document.getElementById('pm-fim').value;
   const fimplan=document.getElementById('pm-fimplan').value;
+  const fimext=document.getElementById('pm-fimext').value;
   const fimreal=document.getElementById('pm-fimreal').value;
   const duracao=projectDurationMonths(inicio,fimreal||fimplan);
   const valor=parseEnglishNumber(document.getElementById('pm-valor').value);
@@ -7314,6 +7329,7 @@ async function saveNewProject(){
     'Data de início ':inicio,
     'Data final':fim,
     'Data final planejada':fimplan||'', Data_Fim_Plan:fimplan||'',
+    'Data final estendida':fimext||'', Data_Fim_Ext:fimext||'',
     'Data final real':fimreal||'', Data_Fim_Real:fimreal||'',
     'Duração (meses)':duracao||'', Duracao_Meses:duracao||'',
     'Planned Value (R$)':valor, Valor_PTRB:valor,
